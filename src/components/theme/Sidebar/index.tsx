@@ -1,0 +1,269 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { memo, useState } from "react";
+
+const Sidebar = () => {
+  const pathname = usePathname();
+
+  // const [isSelected, setIsSelected] = useState("/");
+
+  const commonMenu = [
+    {
+      name: "Tổng quan",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="1em"
+          height="1em"
+          viewBox="0 0 16 16"
+        >
+          <path
+            fill="currentColor"
+            fillRule="evenodd"
+            d="M2.5 5.5v-3h3v3zM1 2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm8 .25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 9 2.25M9.75 5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5zM2.5 10.5v3h3v-3zM2 9a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1zm7.75.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5zm0 3.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+      link: "/",
+    },
+  ];
+
+  const menuSidebar = {
+    Department: [
+      ...commonMenu,
+      {
+        name: "Quản lý giảng viên",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 32 32"
+          >
+            <g fill="currentColor">
+              <path d="M28.99 30V16.98c0-.54-.44-.99-.99-.99h-8V12h2v1.19c0 .45.36.81.8.81h3.39c.45 0 .81-.36.81-.8V4.81c0-.45-.36-.81-.8-.81h-3.39c-.45 0-.81.36-.81.81V6h-2V2.92c0-.51-.41-.92-.92-.92H3.92c-.51 0-.92.41-.92.92v27.06h1.98v-4.95c0-.57.46-1.03 1.03-1.03h10.96c.57 0 1.03.46 1.03 1.03V30h-.99v-4.65c0-.19-.15-.35-.35-.35h-2.28c-.19 0-.35.15-.35.35V30H11zM20 27.01V24h1.5c.28 0 .5.23.5.5v2c0 .28-.22.5-.5.51zm0-5V19h1.5c.28 0 .5.23.5.5v2c0 .28-.22.5-.5.51zM22 11h-2V7h2zm5 8.5v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0 5v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V24.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m-13.99-20v2c0 .28-.22.5-.5.5h-2.02c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0 7c0 .28-.22.5-.5.5h-2.02c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0 3v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V14.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0 5v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m5.01 2c0 .28-.23.5-.5.51H15.5c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.23.5-.5.51H15.5c-.28 0-.5-.23-.5-.5V14.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0-3c0 .28-.23.5-.5.5H15.5c-.28 0-.5-.23-.5-.5v-2c0-.28.22-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.23.5-.5.5H15.5c-.28 0-.5-.22-.5-.5v-2c0-.28.22-.5.5-.5h2.02c.28 0 .5.23.5.5m-10.01 17c0 .28-.22.5-.5.51H5.49c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.22.5-.5.51H5.49c-.28 0-.5-.23-.5-.5V14.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0-3c0 .28-.22.5-.5.5H5.49c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.22.5-.5.5H5.49c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5" />
+              <path d="M13 30h-2.98v-4.65c0-.2.16-.35.35-.35h2.28c.19 0 .35.15.35.35zm-4.02-4.65V30H6v-4.65c0-.2.15-.35.35-.35h2.28c.2 0 .35.16.35.35" />
+            </g>
+          </svg>
+        ),
+        link: "/department/lecturers",
+      },
+    ],
+    Lecturer: [
+      ...commonMenu,
+      {
+        name: "Quản lý lớp học",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2M9 4h2v5l-1-.75L9 9zm9 16H6V4h1v9l3-2.25L13 13V4h5z"
+            />
+          </svg>
+        ),
+        link: "/lecturer/classes",
+      },
+    ],
+    Student: [
+      ...commonMenu,
+      {
+        name: "Danh sách lớp học",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2M9 4h2v5l-1-.75L9 9zm9 16H6V4h1v9l3-2.25L13 13V4h5z"
+            />
+          </svg>
+        ),
+        link: "/student/classes",
+      },
+    ],
+  };
+
+  // const menuSidebar = [
+  //   {
+  //     name: "Quản lý khoa",
+  //     icon: (
+  //       <svg
+  //         xmlns="http://www.w3.org/2000/svg"
+  //         width="1em"
+  //         height="1em"
+  //         viewBox="0 0 32 32"
+  //       >
+  //         <g fill="currentColor">
+  //           <path d="M28.99 30V16.98c0-.54-.44-.99-.99-.99h-8V12h2v1.19c0 .45.36.81.8.81h3.39c.45 0 .81-.36.81-.8V4.81c0-.45-.36-.81-.8-.81h-3.39c-.45 0-.81.36-.81.81V6h-2V2.92c0-.51-.41-.92-.92-.92H3.92c-.51 0-.92.41-.92.92v27.06h1.98v-4.95c0-.57.46-1.03 1.03-1.03h10.96c.57 0 1.03.46 1.03 1.03V30h-.99v-4.65c0-.19-.15-.35-.35-.35h-2.28c-.19 0-.35.15-.35.35V30H11zM20 27.01V24h1.5c.28 0 .5.23.5.5v2c0 .28-.22.5-.5.51zm0-5V19h1.5c.28 0 .5.23.5.5v2c0 .28-.22.5-.5.51zM22 11h-2V7h2zm5 8.5v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0 5v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V24.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m-13.99-20v2c0 .28-.22.5-.5.5h-2.02c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0 7c0 .28-.22.5-.5.5h-2.02c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0 3v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V14.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0 5v2c0 .28-.22.5-.5.51h-2.02c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m5.01 2c0 .28-.23.5-.5.51H15.5c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.23.5-.5.51H15.5c-.28 0-.5-.23-.5-.5V14.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0-3c0 .28-.23.5-.5.5H15.5c-.28 0-.5-.23-.5-.5v-2c0-.28.22-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.23.5-.5.5H15.5c-.28 0-.5-.22-.5-.5v-2c0-.28.22-.5.5-.5h2.02c.28 0 .5.23.5.5m-10.01 17c0 .28-.22.5-.5.51H5.49c-.28 0-.5-.23-.5-.5V19.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.22.5-.5.51H5.49c-.28 0-.5-.23-.5-.5V14.5c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5m0-3c0 .28-.22.5-.5.5H5.49c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5zm0-7v2c0 .28-.22.5-.5.5H5.49c-.28 0-.5-.23-.5-.5v-2c0-.28.23-.5.5-.5h2.02c.28 0 .5.23.5.5" />
+  //           <path d="M13 30h-2.98v-4.65c0-.2.16-.35.35-.35h2.28c.19 0 .35.15.35.35zm-4.02-4.65V30H6v-4.65c0-.2.15-.35.35-.35h2.28c.2 0 .35.16.35.35" />
+  //         </g>
+  //       </svg>
+  //     ),
+  //     link: "/department",
+  //   },
+  //   {
+  //     name: "Quản lý lớp học",
+  //     icon: (
+  //       <svg
+  //         xmlns="http://www.w3.org/2000/svg"
+  //         width="1em"
+  //         height="1em"
+  //         viewBox="0 0 24 24"
+  //       >
+  //         <path
+  //           fill="currentColor"
+  //           d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2M9 4h2v5l-1-.75L9 9zm9 16H6V4h1v9l3-2.25L13 13V4h5z"
+  //         />
+  //       </svg>
+  //     ),
+  //     link: "/class",
+  //   },
+  //   {
+  //     name: "Danh sách lớp học",
+  //     icon: (
+  //       <svg
+  //         xmlns="http://www.w3.org/2000/svg"
+  //         width="1em"
+  //         height="1em"
+  //         viewBox="0 0 16 16"
+  //       >
+  //         <path
+  //           fill="currentColor"
+  //           fillRule="evenodd"
+  //           d="M2.5 5.5v-3h3v3zM1 2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm8 .25a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 9 2.25M9.75 5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5zM2.5 10.5v3h3v-3zM2 9a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1zm7.75.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5zm0 3.5a.75.75 0 0 0 0 1.5h4.5a.75.75 0 0 0 0-1.5z"
+  //           clipRule="evenodd"
+  //         />
+  //       </svg>
+  //     ),
+  //     link: "/",
+  //   },
+  // ];
+
+  console.log("menuSidebar", menuSidebar);
+  return (
+    <div className="w-full h-full relative bg-white border-r border-[#E2E8F0] max-w-0 sm:max-w-[270px] min-h-screen">
+      <div className="p-2">
+        {/* logo */}
+        <div className="flex items-center justify-center gap-2 mb-4 p-[12px]">
+          <img
+            src="https://yt3.googleusercontent.com/bGfunjaNdyEf-iUzAbmY7zFHrDbd5toOKmaUk0ld2ehCx4bPWUKfAibz4yY693vY7oyRHZPy=s900-c-k-c0x00ffffff-no-rj"
+            alt=""
+            className="h-[40px] w-[40px]"
+          />
+          <div>
+            <h6 className="!font-bold">Phòng đào tạo</h6>
+            <p className="!text-[12px] text-[#E2E8F0]">Hệ thống quản lý</p>
+          </div>
+        </div>
+        {/* Menu Sidebar */}
+        <div>
+          <ul className="font-semibold">
+            {/* <h6 className="text-center">Department</h6>
+            {menuSidebar.Department.map((item, index) => (
+              <Link
+                key={index}
+                href={item.link}
+                // onClick={() => setIsSelected(item.link)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
+                  pathname === item.link
+                    ? "bg-[#F4E6E6] text-[#8B0000]"
+                    : "text-gray-700"
+                }`}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            ))} */}
+
+            <h6 className="text-center">Lecturer</h6>
+            {menuSidebar.Lecturer.map((item, index) => (
+              <Link
+                key={index}
+                href={item.link}
+                // onClick={() => setIsSelected(item.link)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
+                  pathname === item.link
+                    ? "bg-[#F4E6E6] text-[#8B0000]"
+                    : "text-gray-700"
+                }`}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            ))}
+
+            {/* <h6 className="text-center">Student</h6>
+            {menuSidebar.Student.map((item, index) => (
+              <Link
+                key={index}
+                href={item.link}
+                // onClick={() => setIsSelected(item.link)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
+                  pathname === item.link
+                    ? "bg-[#F4E6E6] text-[#8B0000]"
+                    : "text-gray-700"
+                }`}
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </Link>
+            ))} */}
+          </ul>
+        </div>
+
+        <div className="absolute bottom-0 border-t border-[#E2E8F0] w-full p-2">
+          <div className="bg-[#F8FAFC] p-2 rounded-2xl flex justify-between items-center gap-2">
+            <div className="flex gap-2">
+              <div className="p-2 bg-[#EBF0FD] rounded-full w-fit">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5m0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3m9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="!text-[14px] !font-bold">Đặng Thành Hưng</p>
+                <p className="!text-[12px] text-[#64748B]">Phòng đào tạo</p>
+              </div>
+            </div>
+            <div className="p-2 hover:bg-[#EBF0FD] rounded-full cursor-pointer">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                className="text-[#64748B]"
+              >
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="square"
+                  strokeWidth="2"
+                  d="M15.5 16.5L20 12l-4.5-4.5m3.25 4.5H9m0 8.5H4v-17h5"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default memo(Sidebar);
