@@ -149,10 +149,16 @@ const Sidebar = () => {
   //   },
   // ];
 
-  console.log("menuSidebar", menuSidebar);
+  const isActive = (menuLink: string) => {
+    if (menuLink === "/") {
+      return pathname === "/";
+    }
+    return pathname.startsWith(menuLink);
+  };
+
   return (
-    <div className="w-full h-full relative bg-white border-r border-[#E2E8F0] max-w-0 sm:max-w-[270px] min-h-screen">
-      <div className="p-2">
+    <div className="flex flex-col h-full justify-between w-full h-screen sticky top-0 bg-white border-r border-[#E2E8F0] sm:max-w-[270px]">
+      <div className="p-2 ">
         {/* logo */}
         <div className="flex items-center justify-center gap-2 mb-4 p-[12px]">
           <img
@@ -192,7 +198,7 @@ const Sidebar = () => {
                 href={item.link}
                 // onClick={() => setIsSelected(item.link)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
-                  pathname === item.link
+                  isActive(item.link)
                     ? "bg-[#F4E6E6] text-[#8B0000]"
                     : "text-gray-700"
                 }`}
@@ -220,45 +226,44 @@ const Sidebar = () => {
             ))} */}
           </ul>
         </div>
-
-        <div className="absolute bottom-0 border-t border-[#E2E8F0] w-full p-2">
-          <div className="bg-[#F8FAFC] p-2 rounded-2xl flex justify-between items-center gap-2">
-            <div className="flex gap-2">
-              <div className="p-2 bg-[#EBF0FD] rounded-full w-fit">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5m0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3m9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="!text-[14px] !font-bold">Đặng Thành Hưng</p>
-                <p className="!text-[12px] text-[#64748B]">Phòng đào tạo</p>
-              </div>
-            </div>
-            <div className="p-2 hover:bg-[#EBF0FD] rounded-full cursor-pointer">
+      </div>
+      <div className=" border-t border-[#E2E8F0] w-full p-2">
+        <div className="bg-[#F8FAFC] p-2 rounded-2xl flex justify-between items-center gap-2">
+          <div className="flex gap-2">
+            <div className="p-2 bg-[#EBF0FD] rounded-full w-fit">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
                 height="20"
                 viewBox="0 0 24 24"
-                className="text-[#64748B]"
               >
                 <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="square"
-                  strokeWidth="2"
-                  d="M15.5 16.5L20 12l-4.5-4.5m3.25 4.5H9m0 8.5H4v-17h5"
+                  fill="currentColor"
+                  d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5m0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3m9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"
                 />
               </svg>
             </div>
+            <div>
+              <p className="!text-[14px] !font-bold">Đặng Thành Hưng</p>
+              <p className="!text-[12px] text-[#64748B]">Phòng đào tạo</p>
+            </div>
+          </div>
+          <div className="p-2 hover:bg-[#EBF0FD] rounded-full cursor-pointer">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              className="text-[#64748B]"
+            >
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="square"
+                strokeWidth="2"
+                d="M15.5 16.5L20 12l-4.5-4.5m3.25 4.5H9m0 8.5H4v-17h5"
+              />
+            </svg>
           </div>
         </div>
       </div>

@@ -1,18 +1,22 @@
 import { memo } from "react";
 
 interface ContentHeaderProps {
-  title: string;
+  title?: string;
+  courseCode?: string;
+  room?: string;
 
-  showExport: boolean;
-  onExport: () => void;
+  showExport?: boolean;
+  onExport?: () => void;
 
-  addLabel: string;
-  showAdd: boolean;
-  onAdd: () => void;
+  addLabel?: string;
+  showAdd?: boolean;
+  onAdd?: () => void;
 }
 
 const ContentHeader = ({
   title,
+  courseCode,
+  room,
   showExport = false,
   onExport,
   addLabel,
@@ -23,7 +27,11 @@ const ContentHeader = ({
     <div className="flex justify-between items-center mb-4">
       <div>
         <h2>{title}</h2>
-        {/* <p className="!text-[14px] text-[#64748B]">Phòng: A704</p> */}
+        {courseCode && room && (
+          <p className="!text-[14px] text-[#64748B]">
+            <span>{courseCode}</span> - <span>Phòng: {room}</span>
+          </p>
+        )}
       </div>
       <div className="flex gap-2">
         {showExport && (
