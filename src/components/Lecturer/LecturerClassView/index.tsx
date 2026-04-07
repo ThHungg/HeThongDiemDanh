@@ -8,10 +8,11 @@ const LecturerClassView = () => {
     {
       id: 1,
       code: "IS430",
-      name: "Kiểm thử và đảm chất lượng phần mềm",
+      name: "Kiểm thử và đảm bảo chất lượng phần mềm", // Đã sửa lỗi chính tả "đảm chất lượng"
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
     },
     {
       id: 2,
@@ -20,54 +21,61 @@ const LecturerClassView = () => {
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 3, Tiết 4-5",
     },
     {
-      id: 1,
+      id: 3,
       code: "IS430",
       name: "Công nghệ Blockchain",
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 4, Tiết 1-3\nThứ 6, Tiết 1-3",
     },
     {
-      id: 2,
+      id: 4,
       code: "IS430",
       name: "Công nghệ Blockchain",
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
     },
     {
-      id: 1,
+      id: 5,
       code: "IS430",
       name: "Công nghệ Blockchain",
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 5, Tiết 7-9",
     },
     {
-      id: 2,
+      id: 6,
       code: "IS430",
       name: "Công nghệ Blockchain",
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
     },
     {
-      id: 1,
+      id: 7,
       code: "IS430",
       name: "Công nghệ Blockchain",
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 3, Tiết 1-3\nThứ 5, Tiết 1-2",
     },
     {
-      id: 2,
+      id: 8,
       code: "IS430",
       name: "Công nghệ Blockchain",
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
     },
   ];
   return (
@@ -88,6 +96,7 @@ const LecturerClassView = () => {
             className={item.name}
             subjectClass={item.subjectClass}
             room={item.room}
+            classSchedule={item.schedule}
             lecturer={item.lecturer}
           />
         ))}

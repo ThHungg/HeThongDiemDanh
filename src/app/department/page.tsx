@@ -1,4 +1,3 @@
-import ListDepartment from "@/components/DepartmentPage/ListDepartment";
 import { memo } from "react";
 
 const DepartmentPage = () => {
@@ -18,7 +17,7 @@ const DepartmentPage = () => {
           Thêm khoa mới
         </button>
       </div>
-      <ListDepartment />
+
     </div>
   );
 };

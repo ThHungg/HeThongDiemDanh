@@ -6,6 +6,7 @@ interface ClassCardProps {
   subjectClass: string;
   room: string;
   lecturer: string;
+  classSchedule: string;
 }
 const ClassCard = ({
   classCode,
@@ -13,22 +14,24 @@ const ClassCard = ({
   subjectClass,
   room,
   lecturer,
+  classSchedule,
 }: ClassCardProps) => {
   return (
-    <div className="w-full border border-gray-200 rounded-xl overflow-hidden">
-      <div className="bg-[#8B0000]/5 p-5 ">
+    <div className="w-full h-full flex flex-col border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-[#8B0000]/5 p-4 flex-1">
+        {" "}
         <span className="p-2 text-[12px] bg-[#8B0000] text-white font-bold rounded-lg">
           {classCode}
         </span>
-        <h5
-          className="font-bold mt-[12px] truncate"
-          title={className}
-        >
+        <h5 className="font-bold mt-[12px] truncate" title={className}>
           {className}
-        </h5> 
+        </h5>
+        <span className="text-[11px] text-[#94A3B8] font-bold rounded-lg whitespace-pre-line">
+          {classSchedule} - {room}
+        </span>
       </div>
-      <div className="p-6 bg-white">
-        <div className=" space-y-2 mb-[24px]">
+      <div className="p-4 bg-white">
+        <div className=" space-y-2 mb-[16px]">
           <div className="flex justify-between">
             <span className="text-gray-500 text-[13px] font-semibold">
               Mã lớp:

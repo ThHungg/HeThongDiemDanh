@@ -1,6 +1,8 @@
+"use client";
 import { memo } from "react";
 import Sidebar from "../Sidebar";
 import Header from "../Header";
+import { usePathname } from "next/navigation";
 
 const MasterLayout = ({
   children,
@@ -8,14 +10,14 @@ const MasterLayout = ({
 }: {
   children: React.ReactNode;
 }) => {
-  //   const pathname = usePathname();
-  //   if (pathname === "/login") {
-  //     return (
-  //       <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-  //         {children}
-  //       </div>
-  //     );
-  //   }
+  const pathname = usePathname();
+  if (pathname === "/login") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+        {children}
+      </div>
+    );
+  }
   return (
     <div className="flex">
       <Sidebar />

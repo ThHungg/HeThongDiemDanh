@@ -1,17 +1,20 @@
-import { memo } from "react";
+"use client";
+import { memo, useState } from "react";
 import LoginForm from "../LoginForm";
+import VerifyOtpModal from "@/components/Common/Modals/VerifyOtpModal";
 
 const AuthCard = () => {
+  const [openModalOtp, setOpenModalOtp] = useState(false);
   return (
     <div className="bg-white p-6 rounded-xl shadow-lg min-w-[400px]">
       <div className="flex flex-col items-center gap-2 mb-[12px]">
-        <div className="p-3 bg-[#EBF0FD] rounded-full">
+        <div className="p-3 bg-[#8B0000]/10 rounded-full">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="26"
+            height="26"
             viewBox="0 0 24 24"
-            className="text-[#135BEC]"
+            className="text-[#8B0000]"
           >
             <g fill="none">
               <path d="M2 8.5L12 2l10 6.5l-4 2.6l-6 3.9l-6-3.9z" />
@@ -26,13 +29,16 @@ const AuthCard = () => {
           </svg>
         </div>
         <div className="text-center">
-          <h3 className="text-[#135BEC]">Hệ thống điểm danh</h3>
-          <p className="!text-[11px]">Hệ thống quản lý điểm danh thông minh</p>
+          <h3 className="text-[#8B0000] font-semibold">Hệ thống điểm danh</h3>
+          <p className="text-[11px]">Hệ thống quản lý điểm danh thông minh</p>
         </div>
       </div>
       <LoginForm />
-      <button className="w-full py-2 flex items-center justify-center gap-2 bg-[#135BEC] text-white font-semibold rounded-2xl shadow-md ">
-        Đăng nhập
+      <button
+        onClick={() => setOpenModalOtp(true)}
+        className="w-full py-2 flex items-center justify-center gap-2 bg-[#8B0000] text-white font-semibold rounded-2xl shadow-md "
+      >
+        Gửi mã xác thực
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -45,6 +51,9 @@ const AuthCard = () => {
           />
         </svg>
       </button>
+      {openModalOtp && (
+        <VerifyOtpModal onClose={() => setOpenModalOtp(false)} />
+      )}
     </div>
   );
 };
