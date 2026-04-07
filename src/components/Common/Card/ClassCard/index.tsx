@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { memo } from "react";
 
 interface ClassCardProps {
@@ -45,7 +46,10 @@ const ClassCard = ({
             <p className="text-[14px] font-bold">{lecturer}</p>
           </div>
         </div>
-        <button className="py-1.5 bg-[#0F172A] text-white font-semibold w-full rounded-2xl flex items-center justify-center gap-2 hover:bg-[#1E293B] transition-colors">
+        <Link
+          href="/lecturer/classes/hung"
+          className="py-1.5 bg-[#0F172A] text-white font-semibold w-full rounded-2xl flex items-center justify-center gap-2 hover:bg-[#1E293B] transition-colors"
+        >
           <span> Xem chi tiết</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +65,7 @@ const ClassCard = ({
               d="M.5 7h10M7 10.5L10.5 7L7 3.5m6.5 0v7"
             />
           </svg>
-        </button>
+        </Link>
       </div>
     </div>
   );

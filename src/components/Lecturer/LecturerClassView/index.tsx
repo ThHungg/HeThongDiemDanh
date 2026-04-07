@@ -1,6 +1,5 @@
 import ContentHeader from "@/components/Common/ContentHeader";
 import { memo } from "react";
-import ClassListTable from "../ClassListTable";
 import ClassCard from "@/components/Common/Card/ClassCard";
 
 const LecturerClassView = () => {
@@ -8,7 +7,7 @@ const LecturerClassView = () => {
     {
       id: 1,
       code: "IS430",
-      name: "Kiểm thử và đảm bảo chất lượng phần mềm", // Đã sửa lỗi chính tả "đảm chất lượng"
+      name: "Kiểm thử và đảm bảo chất lượng phần mềm", 
       subjectClass: "243IS430.02",
       room: "A701",
       lecturer: "TS. Nguyễn Văn A",

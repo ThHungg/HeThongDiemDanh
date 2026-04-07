@@ -1,5 +1,6 @@
 "use client";
 import formatTime from "@/utils/formatTime";
+import Link from "next/link";
 import { memo, useEffect, useState } from "react";
 
 const VerifyOtpModal = ({ onClose }: { onClose: () => void }) => {
@@ -69,9 +70,12 @@ const VerifyOtpModal = ({ onClose }: { onClose: () => void }) => {
               />
             ))}
         </div>
-        <button className="mb-3 mt-6 w-2/3 mx-auto px-6 py-3 font-semibold bg-[#8B0000] text-white rounded-xl hover:bg-[#8B0000]/80 focus:outline-none">
-          Xác thực
-        </button>
+        <Link href="/lecturer/classes">
+          {" "}
+          <button className="mb-3 mt-6 w-2/3 mx-auto px-6 py-3 font-semibold bg-[#8B0000] text-white rounded-xl hover:bg-[#8B0000]/80 focus:outline-none">
+            Xác thực
+          </button>
+        </Link>
         <div className="space-y-1">
           <p className="text-[12px] flex justify-center gap-1 items-center">
             <svg

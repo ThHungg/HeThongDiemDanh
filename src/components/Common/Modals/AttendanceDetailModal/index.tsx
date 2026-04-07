@@ -1,12 +1,53 @@
-import { memo } from "react";
+"use client";
+import { memo, useState } from "react";
 import avatar from "../../../../../public/assets/Images/Avatar.png";
 
 const AttendanceDetailModal = ({ onClose }: { onClose: () => void }) => {
+  const [isSelected, setIsSelected] = useState<Number | null>(null);
+
+  const listClass = [
+    {
+      id: 1,
+      code: "IS430",
+      name: "Kiểm thử và đảm bảo chất lượng phần mềm",
+      subjectClass: "243IS430.02",
+      room: "A701",
+      lecturer: "TS. Nguyễn Văn A",
+      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
+    },
+    {
+      id: 2,
+      code: "SE302",
+      name: "Công nghệ phần mềm",
+      subjectClass: "243SE302.01",
+      room: "B2.01",
+      lecturer: "ThS. Trần Thị B",
+      schedule: "Thứ 3, Tiết 4-5\nThứ 6, Tiết 1-3",
+    },
+    {
+      id: 3,
+      code: "IT001",
+      name: "Cấu trúc dữ liệu và Giải thuật",
+      subjectClass: "243IT001.05",
+      room: "C103",
+      lecturer: "TS. Lê Hoàng C",
+      schedule: "Thứ 4, Tiết 7-9",
+    },
+    {
+      id: 4,
+      code: "CS112",
+      name: "Phân tích và thiết kế hệ thống",
+      subjectClass: "243CS112.H21",
+      room: "A2.10",
+      lecturer: "PGS.TS. Phạm Văn D",
+      schedule: "Thứ 2, Tiết 4-5\nThứ 5, Tiết 7-9",
+    },
+  ];
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="max-w-[800px] w-full bg-white rounded-lg ">
         {/* Header */}
-        <div className="px-[24px] py-[12px] flex justify-between">
+        <div className="px-[24px] py-[12px]  flex justify-between">
           <div className="flex items-center gap-2">
             <div>
               {" "}
@@ -65,6 +106,94 @@ const AttendanceDetailModal = ({ onClose }: { onClose: () => void }) => {
               </svg>
               Gửi Email
             </button>
+          </div>
+        </div>
+        {/* Body */}
+        <div className="grid grid-cols-12 border-t border-[#8B0000]/10">
+          <div className="col-span-4 border-r border-[#8B0000]/10 px-4 py-3">
+            <h6 className="font-semibold text-[#737373] mb-[12px]">
+              Danh sách môn học
+            </h6>
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px]">
+              {listClass.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setIsSelected(item.id)}
+                  className={
+                    isSelected === item.id
+                      ? "border border-[#8B0000] rounded-lg p-2 bg-[#FFF0EE]"
+                      : "border border-[#8B0000]/10 rounded-lg p-2"
+                  }
+                >
+                  <div className="flex justify-between items-center">
+                    <p className="text-[12px] font-semibold text-[#737373]">
+                      {item.subjectClass}
+                    </p>
+                    <p
+                      className={`px-2 text-[12px] font-semibold rounded-lg ${
+                        isSelected === item.id
+                          ? "bg-[#FEE2E2] text-[#8B0000]"
+                          : "bg-[#DCFCE7] text-[#15803D]"
+                      }`}
+                    >
+                      9,5
+                    </p>
+                  </div>
+                  <h6 className="font-bold !text-[14px]">{item.name}</h6>
+                  <p className="text-[12px] font-semibold text-[#737373]">
+                    Giảng viên: {item.lecturer}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="col-span-8  p-3">
+            <h4 className="mb-[12px]">Chi tiết môn học</h4>
+            <div className="mb-[12px] border border-[#FCEAE8] rounded-2xl overflow-hidden bg-white w-full">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#FDF2F0]">
+                  <tr>
+                    <th className="px-6 py-3 text-[12px] font-semibold text-[#737373]">
+                      BUỔI HỌC / NGÀY
+                    </th>
+                    <th className="px-6 py-3 text-[12px] font-semibold text-[#737373]">
+                      ĐIỂM SỐ
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {Array(6)
+                    .fill(0)
+                    .map((_, index) => (
+                      <tr key={index} className="border-b border-[#8B0000]/10">
+                        <td className="px-6 py-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[14px] font-bold">
+                              Thứ Hai, 15/10
+                            </span>
+                            <span className="text-[11px] text-[#737373]/80">
+                              Ca Sáng (7:30 - 9:30)
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-3">
+                          <span className="text-[16px] font-black ">9,5</span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => onClose()}
+                className="px-3 py-2 bg-[#8B0000] text-white rounded-lg hover:bg-[#8B0000]/90 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       </div>

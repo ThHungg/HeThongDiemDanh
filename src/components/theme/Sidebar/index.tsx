@@ -32,7 +32,7 @@ const Sidebar = () => {
 
   const menuSidebar = {
     Department: [
-      ...commonMenu,
+      // ...commonMenu,
       {
         name: "Quản lý giảng viên",
         icon: (
@@ -75,7 +75,7 @@ const Sidebar = () => {
       },
     ],
     Lecturer: [
-      ...commonMenu,
+      // ...commonMenu,
       {
         name: "Quản lý lớp học",
         icon: (
