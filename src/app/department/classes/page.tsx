@@ -1,23 +1,23 @@
 import ContentHeader from "@/components/Common/ContentHeader";
+import ClassesTable from "@/components/Department/Classes/ClassesTable";
 import FilterBar from "@/components/Department/FilterBar";
 import StudentsTable from "@/components/Department/Students/StudentsTable";
 import { memo } from "react";
 
-const StudentManagementPage = () => {
+const ClassManagementPage = () => {
   return (
     <div className="p-[24px]">
       <ContentHeader
-        title="Quản lý sinh viên"
+        title="Quản lý lớp học"
         showExport={true}
         onExport={() => {}}
         addLabel="Thêm lớp học"
         showAdd={false}
         onAdd={() => {}}
       />
-      <FilterBar />
-      <StudentsTable />
+      <ClassesTable />
     </div>
   );
 };
 
-export default memo(StudentManagementPage);
+export default memo(ClassManagementPage);

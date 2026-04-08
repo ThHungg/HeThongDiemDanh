@@ -1,9 +1,7 @@
 "use client";
-import FilterBar from "@/components/Common/FilterBar";
 import AttendanceDetailModal from "@/components/Common/Modals/AttendanceDetailModal";
 import Pagination from "@/components/Common/Pagination";
-import ProgressBar from "@/components/Common/ProgressBar";
-import { Fragment, memo, useState } from "react";
+import { memo, useState } from "react";
 
 const StudentsTable = () => {
   const [openAttendanceDetail, setOpenAttendanceDetail] = useState(false);
@@ -84,11 +82,8 @@ const StudentsTable = () => {
   ];
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
-      <div className="p-4">
-        <FilterBar />
-      </div>
       <table className="w-full border-collapse border border-gray-200">
-        <thead className="bg-[#F8FAFC] text-[#64748B] border-b border-gray-200">
+        <thead className="bg-[#F8FAFC] text-[14px] text-[#64748B] border-b border-gray-200">
           <tr>
             <th className="text-left px-4 py-3 font-semibold">MSV</th>
             <th className="text-left px-4 py-3 font-semibold">Họ và tên</th>
@@ -100,7 +95,7 @@ const StudentsTable = () => {
             <th className="text-left px-4 py-3 font-semibold">Hành động</th>
           </tr>
         </thead>
-        <tbody className="bg-white text-[#475569]">
+        <tbody className="bg-white text-[14px] text-[#475569]">
           {studentData.map((student) => (
             <tr
               key={student.id}
@@ -171,7 +166,7 @@ const StudentsTable = () => {
       </table>
       <Pagination
         currentPage={2}
-        totalPages={3} // Tính toán dựa trên data của bạn
+        totalPages={3}
         totalItems={124}
         itemsPerPage={14}
         onPageChange={(page) => page}

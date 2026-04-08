@@ -1,5 +1,5 @@
 "use client";
-import FilterBar from "@/components/Common/FilterBar";
+import FilterBar from "@/components/Department/FilterBar";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import Pagination from "@/components/Common/Pagination";
 import { memo, useState } from "react";
@@ -141,32 +141,32 @@ const ClassDetailListTable = () => {
     },
   ]);
   const dates = [
-    "01/09 (Ca 1)",
-    "01/09 (Ca 2)",
-    "08/09",
-    "15/09",
-    "16/09",
-    "17/09",
-    "22/09",
-    "29/09",
-    "06/10",
-    "13/10",
-    "20/10",
-    "27/10",
-    "03/11",
-    "01/09 (Ca 1)",
-    "01/09 (Ca 2)",
-    "08/09",
-    "15/09",
-    "16/09",
-    "17/09",
-    "22/09",
-    "29/09",
-    "06/10",
-    "13/10",
-    "20/10",
-    "27/10",
-    "03/11",
+    "01/09 (5-7)",
+    "01/09 (6-8)",
+    "08/09 (6-7)",
+    "15/09 (6-7)",
+    "16/09 (6-7)",
+    "17/09 (6-7)",
+    "22/09 (6-7)",
+    "29/09 (6-7)",
+    "06/10 (6-7)",
+    "13/10 (6-7)",
+    "20/10 (6-7)",
+    "27/10 (6-7)",
+    "03/11 (6-7)",
+    "01/09 (11-13)",
+    "01/09 (9-11)",
+    "08/09 (6-7)",
+    "15/09 (6-7)",
+    "16/09 (6-7)",
+    "17/09 (6-7)",
+    "22/09 (6-7)",
+    "29/09 (6-7)",
+    "06/10 (6-7)",
+    "13/10 (6-7)",
+    "20/10 (6-7)",
+    "27/10 (6-7)",
+    "03/11 (6-7)",
   ];
 
   const getScoreColor = (score: number | null | undefined) => {
@@ -199,15 +199,87 @@ const ClassDetailListTable = () => {
   };
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
-      <div className="p-4">
-        <FilterBar />
+      {/* Filter */}
+      <div className="flex justify-between items-center p-4">
+        <div className="flex items-center justify-center w-full max-w-[300px] px-4">
+          <div className="relative w-full max-w-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            >
+              <path
+                fill="currentColor"
+                d="m19.485 20.154l-6.262-6.262q-.75.639-1.725.989t-1.96.35q-2.398 0-4.064-1.666Q3.808 11.898 3.808 9.5t1.666-4.064t4.064-1.667t4.065 1.667T15.269 9.5q0 1.042-.369 2.017t-.97 1.668l6.262 6.261zM9.539 14.23q1.99 0 3.36-1.37t1.37-3.361t-1.37-3.36t-3.36-1.37t-3.361 1.37t-1.37 3.36t1.37 3.36t3.36 1.37"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo khoa, lớp, hoặc sinh viên"
+              className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
+            />
+          </div>
+        </div>
+        <div className="flex gap-3 items-center">
+          <div className="text-[13px] text-[#475569] flex items-center gap-2">
+            <span className="">Lớp: </span>
+            <select
+              name=""
+              id=""
+              className="bg-white border border-gray-300 rounded-md py-2 px-2 focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer"
+            >
+              <option value="">Công nghệ Blockchain (243IS430.02)</option>
+              <option value="">Công nghệ Blockchain (243IS430.03)</option>
+              <option value="">Công nghệ phần mềm (243IS430.03)</option>
+              <option value="">Công nghệ Blockchain (243IS430.03)</option>
+            </select>
+          </div>
+          {/* <div className="text-[13px] text-[#475569] flex items-center gap-2">
+            <span className="">Bộ lọc: </span>
+            <select
+              name=""
+              id=""
+              className="bg-white border border-gray-300 rounded-md py-2 px-2 focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer"
+            >
+              <option value="">Tất cả khoa</option>
+              <option value="">Khoa công nghệ thông tin</option>
+              <option value="">Khoa điện tử viễn thông</option>
+              <option value="">Khoa cơ khí</option>
+            </select>
+          </div> */}
+        </div>
       </div>
-      <div>
-        <p className="bg-[#F8FAFC] text-[#64748B] py-1 text-center !text-[12px]">
-          {" "}
-          Nhập điểm (0-10) trực tiếp vào các ô bên dưới
-        </p>
+      <div className="bg-[#F8FAFC] py-2 px-4">
+        <div className="flex justify-between items-center w-3/5">
+          <div className="flex gap-5 ">
+            <p className="space-x-1 font-bold">
+              <span className="px-2 py-1 bg-[#DCFCE7] text-[#166534] rounded-lg text-[12px]">
+                10
+              </span>
+              <span className="text-[12px] text-[#737373]">Có mặt</span>
+            </p>
+            <p className="space-x-1 font-bold">
+              <span className="px-2 py-1 bg-[#FEF9C3] text-[#854D0E] rounded-lg text-[12px]">
+                1-9
+              </span>
+              <span className="text-[12px] text-[#737373]">Muộn</span>
+            </p>
+            <p className="space-x-1 font-bold">
+              <span className="px-2 py-1 bg-[#F4E6E6] text-[#8B0000] rounded-lg text-[12px]">
+                0
+              </span>
+              <span className="text-[12px] text-[#737373]">Nghỉ</span>
+            </p>
+          </div>
+          <p className="font-semibold text-[#737373] text-center !text-[12px]">
+            {" "}
+            Nhập điểm (0-10) trực tiếp vào các ô bên dưới
+          </p>
+        </div>
       </div>
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-200">
           <thead className="border-b border-gray-200">
@@ -221,7 +293,7 @@ const ClassDetailListTable = () => {
               {dates.map((date, index) => (
                 <th
                   key={index}
-                  className="text-left px-4 py-3 font-semibold w-[70px] text-[12px] whitespace-nowrap"
+                  className="text-center px-4 py-3 font-semibold w-[20px] text-[12px] "
                 >
                   {date}
                 </th>

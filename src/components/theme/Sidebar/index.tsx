@@ -34,7 +34,7 @@ const Sidebar = () => {
     Department: [
       // ...commonMenu,
       {
-        name: "Quản lý giảng viên",
+        name: "Quản lý lớp học",
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ const Sidebar = () => {
             </g>
           </svg>
         ),
-        link: "/department/lecturers",
+        link: "/department/classes",
       },
       {
         name: "Quản lý sinh viên",
