@@ -1,5 +1,7 @@
+import getScoreColor from "@/utils/getScoreColor";
 import Link from "next/link";
 import { memo } from "react";
+import ProgressBar from "../../ProgressBar";
 
 interface ClassCardProps {
   classCode: string;
@@ -8,6 +10,13 @@ interface ClassCardProps {
   room: string;
   lecturer: string;
   classSchedule: string;
+  averageAttendance?: number;
+  attendanceProgress?: {
+    attended: number;
+    total: number;
+  };
+  href?: string;
+  onClick?: () => void;
 }
 const ClassCard = ({
   classCode,
@@ -16,7 +25,14 @@ const ClassCard = ({
   room,
   lecturer,
   classSchedule,
+  averageAttendance,
+  attendanceProgress,
+  href,
+  onClick,
 }: ClassCardProps) => {
+  const percentage = attendanceProgress
+    ? Math.round((attendanceProgress.attended / attendanceProgress.total) * 100)
+    : 0;
   return (
     <div className="w-full h-full flex flex-col border border-gray-200 rounded-xl overflow-hidden">
       <div className="bg-[#8B0000]/5 p-4 flex-1">
@@ -45,27 +61,69 @@ const ClassCard = ({
             </span>
             <p className="text-[14px] font-bold">{lecturer}</p>
           </div>
-        </div>
-        <Link
-          href="/lecturer/classes/hung"
-          className="py-1.5 bg-[#0F172A] text-white font-semibold w-full rounded-2xl flex items-center justify-center gap-2 hover:bg-[#1E293B] transition-colors"
-        >
-          <span> Xem chi tiết</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 14 14"
-          >
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M.5 7h10M7 10.5L10.5 7L7 3.5m6.5 0v7"
+          {averageAttendance !== undefined && (
+            <div className="flex justify-between">
+              <span className="text-gray-500 text-[13px] font-semibold">
+                Điểm trung bình:
+              </span>
+              <p
+                className={`${getScoreColor(averageAttendance)} text-[14px] font-bold`}
+              >
+                {averageAttendance?.toFixed(1)}
+              </p>
+            </div>
+          )}
+          {attendanceProgress && (
+            <ProgressBar
+              percent={percentage}
+              attended={attendanceProgress.attended}
+              total={attendanceProgress.total}
             />
-          </svg>
-        </Link>
+          )}
+        </div>
+        {href ? (
+          <Link
+            href={href}
+            className="py-1.5 bg-[#0F172A] text-white font-semibold w-full rounded-2xl flex items-center justify-center gap-2 hover:bg-[#1E293B] transition-colors"
+          >
+            <span> Xem chi tiết</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 14 14"
+            >
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M.5 7h10M7 10.5L10.5 7L7 3.5m6.5 0v7"
+              />
+            </svg>
+          </Link>
+        ) : (
+          <button
+            onClick={onClick}
+            className="py-1.5 bg-[#0F172A] text-white font-semibold w-full rounded-2xl flex items-center justify-center gap-2 hover:bg-[#1E293B] transition-colors"
+          >
+            <span> Xem chi tiết</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 14 14"
+            >
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M.5 7h10M7 10.5L10.5 7L7 3.5m6.5 0v7"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

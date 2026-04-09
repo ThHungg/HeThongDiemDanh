@@ -97,6 +97,7 @@ const LecturerClassesPage = () => {
             room={item.room}
             classSchedule={item.schedule}
             lecturer={item.lecturer}
+            href={`/lecturer/classes/${item.id}`}
           />
         ))}
       </div>

@@ -95,7 +95,7 @@ const Sidebar = () => {
       },
     ],
     Student: [
-      ...commonMenu,
+      // ...commonMenu,
       {
         name: "Danh sách lớp học",
         icon: (

@@ -11,12 +11,8 @@ const MasterLayout = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
-  if (pathname === "/login") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-        {children}
-      </div>
-    );
+  if (pathname === "/login" || pathname === "/student") {
+    return <div className="">{children}</div>;
   }
   return (
     <div className="flex">

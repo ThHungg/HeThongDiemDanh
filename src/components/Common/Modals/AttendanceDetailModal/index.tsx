@@ -2,7 +2,13 @@
 import { memo, useState } from "react";
 import avatar from "../../../../../public/assets/Images/Avatar.png";
 
-const AttendanceDetailModal = ({ onClose }: { onClose: () => void }) => {
+const AttendanceDetailModal = ({
+  onClose,
+  isStudent,
+}: {
+  onClose: () => void;
+  isStudent: boolean;
+}) => {
   const [isSelected, setIsSelected] = useState<Number | null>(null);
 
   const listClass = [
@@ -87,67 +93,76 @@ const AttendanceDetailModal = ({ onClose }: { onClose: () => void }) => {
               </h6>
               <p>9,1</p>
             </div>
-            <div className="h-3/4 mx-4 border-l-1 rounded-2xl border-[#8B0000]/10"></div>
-            <button className="text-[14px] flex items-center gap-2 text-white bg-[#8B0000] whitespace-nowrap font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="currentColor"
-                  d="M4 7H1a1 1 0 0 0 0 2h3a1 1 0 0 0 0-2m-1 4H1a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2m-.75 4H1a1 1 0 0 0 0 2h1.25a1 1 0 0 0 0-2m21.68-7.63a.15.15 0 0 0-.15 0l-8.32 7.31a2.4 2.4 0 0 1-1.55.61a1.73 1.73 0 0 1-1.36-.61L6.42 7.4a.14.14 0 0 0-.15 0a.2.2 0 0 0-.1.13l-1.43 9A1.25 1.25 0 0 0 6 18h15a1.8 1.8 0 0 0 1.72-1.5l1.28-9a.12.12 0 0 0-.07-.13"
-                />
-                <path
-                  fill="currentColor"
-                  d="M13.46 13.92a.94.94 0 0 0 1.32 0l8.28-7.27a.41.41 0 0 0 .14-.38C23.15 6 22.83 6 22.73 6H7.89a.56.56 0 0 0-.55.27a.33.33 0 0 0 0 .38Z"
-                />
-              </svg>
-              Gửi Email
-            </button>
+
+            {!isStudent && (
+              <>
+                <div className="h-3/4 mx-4 border-l-1 rounded-2xl border-[#8B0000]/10"></div>
+                <button className="text-[14px] flex items-center gap-2 text-white bg-[#8B0000] whitespace-nowrap font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M4 7H1a1 1 0 0 0 0 2h3a1 1 0 0 0 0-2m-1 4H1a1 1 0 0 0 0 2h2a1 1 0 0 0 0-2m-.75 4H1a1 1 0 0 0 0 2h1.25a1 1 0 0 0 0-2m21.68-7.63a.15.15 0 0 0-.15 0l-8.32 7.31a2.4 2.4 0 0 1-1.55.61a1.73 1.73 0 0 1-1.36-.61L6.42 7.4a.14.14 0 0 0-.15 0a.2.2 0 0 0-.1.13l-1.43 9A1.25 1.25 0 0 0 6 18h15a1.8 1.8 0 0 0 1.72-1.5l1.28-9a.12.12 0 0 0-.07-.13"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M13.46 13.92a.94.94 0 0 0 1.32 0l8.28-7.27a.41.41 0 0 0 .14-.38C23.15 6 22.83 6 22.73 6H7.89a.56.56 0 0 0-.55.27a.33.33 0 0 0 0 .38Z"
+                    />
+                  </svg>
+                  Gửi Email
+                </button>
+              </>
+            )}
           </div>
         </div>
         {/* Body */}
         <div className="grid grid-cols-12 border-t border-[#8B0000]/10">
-          <div className="col-span-4 border-r border-[#8B0000]/10 px-4 py-3">
-            <h6 className="font-semibold text-[#737373] mb-[12px]">
-              Danh sách môn học
-            </h6>
-            <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px]">
-              {listClass.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => setIsSelected(item.id)}
-                  className={
-                    isSelected === item.id
-                      ? "border border-[#8B0000] rounded-lg p-2 bg-[#FFF0EE]"
-                      : "border border-[#8B0000]/10 rounded-lg p-2"
-                  }
-                >
-                  <div className="flex justify-between items-center">
+          {!isStudent && (
+            <div className="col-span-4 border-r border-[#8B0000]/10 px-4 py-3">
+              <h6 className="font-semibold text-[#737373] mb-[12px]">
+                Danh sách môn học
+              </h6>
+              <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px]">
+                {listClass.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setIsSelected(item.id)}
+                    className={
+                      isSelected === item.id
+                        ? "border border-[#8B0000] rounded-lg p-2 bg-[#FFF0EE]"
+                        : "border border-[#8B0000]/10 rounded-lg p-2"
+                    }
+                  >
+                    <div className="flex justify-between items-center">
+                      <p className="text-[12px] font-semibold text-[#737373]">
+                        {item.subjectClass}
+                      </p>
+                      <p
+                        className={`px-2 text-[12px] font-semibold rounded-lg ${
+                          isSelected === item.id
+                            ? "bg-[#FEE2E2] text-[#8B0000]"
+                            : "bg-[#DCFCE7] text-[#15803D]"
+                        }`}
+                      >
+                        9,5
+                      </p>
+                    </div>
+                    <h6 className="font-bold !text-[14px]">{item.name}</h6>
                     <p className="text-[12px] font-semibold text-[#737373]">
-                      {item.subjectClass}
-                    </p>
-                    <p
-                      className={`px-2 text-[12px] font-semibold rounded-lg ${
-                        isSelected === item.id
-                          ? "bg-[#FEE2E2] text-[#8B0000]"
-                          : "bg-[#DCFCE7] text-[#15803D]"
-                      }`}
-                    >
-                      9,5
+                      Giảng viên: {item.lecturer}
                     </p>
                   </div>
-                  <h6 className="font-bold !text-[14px]">{item.name}</h6>
-                  <p className="text-[12px] font-semibold text-[#737373]">
-                    Giảng viên: {item.lecturer}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="col-span-8  p-3">
+          )}
+          <div
+            className={`${isStudent ? "col-span-12" : "col-span-8"} px-4 py-3`}
+          >
             <h4 className="mb-[12px]">Chi tiết môn học</h4>
             <div className="mb-[12px] border border-[#FCEAE8] rounded-2xl overflow-hidden bg-white w-full">
               <table className="w-full text-left border-collapse">

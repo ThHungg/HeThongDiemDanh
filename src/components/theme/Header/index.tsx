@@ -8,7 +8,7 @@ const Header = () => {
     <div className="w-full py-2 bg-white border-b border-[#E2E8F0] relative flex items-center justify-between px-4">
       <div></div>
       <div className="flex items-center justify-center w-full max-w-[500px] px-4">
-        <div className="relative w-full max-w-md">
+        {/* <div className="relative w-full max-w-md">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
@@ -26,7 +26,7 @@ const Header = () => {
             placeholder="Tìm kiếm theo khoa, lớp, hoặc sinh viên"
             className="bg-[#F1F5F9] text-[12px] rounded-lg py-2 pl-10 pr-4 w-full border border-gray-400 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
           />
-        </div>
+        </div> */}
       </div>
       <div className="flex items-center h-full gap-4">
         <div className="flex items-center gap-2">

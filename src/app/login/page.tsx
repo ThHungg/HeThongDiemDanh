@@ -3,7 +3,7 @@ import { memo } from "react";
 
 const LoginPage = () => {
   return (
-    <div>
+    <div className="flex min-h-screen items-center justify-center">
       <AuthCard />
     </div>
   );

@@ -3,6 +3,7 @@ import FilterBar from "@/components/Department/FilterBar";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import Pagination from "@/components/Common/Pagination";
 import { memo, useState } from "react";
+import getScoreColor from "@/utils/getScoreColor";
 
 interface Student {
   id: number;
@@ -141,40 +142,33 @@ const ClassDetailListTable = () => {
     },
   ]);
   const dates = [
-    "01/09 (5-7)",
-    "01/09 (6-8)",
-    "08/09 (6-7)",
-    "15/09 (6-7)",
-    "16/09 (6-7)",
-    "17/09 (6-7)",
-    "22/09 (6-7)",
-    "29/09 (6-7)",
-    "06/10 (6-7)",
-    "13/10 (6-7)",
-    "20/10 (6-7)",
-    "27/10 (6-7)",
-    "03/11 (6-7)",
-    "01/09 (11-13)",
-    "01/09 (9-11)",
-    "08/09 (6-7)",
-    "15/09 (6-7)",
-    "16/09 (6-7)",
-    "17/09 (6-7)",
-    "22/09 (6-7)",
-    "29/09 (6-7)",
-    "06/10 (6-7)",
-    "13/10 (6-7)",
-    "20/10 (6-7)",
-    "27/10 (6-7)",
-    "03/11 (6-7)",
+    { date: "01/09", time: "(6-8)" },
+    { date: "01/09", time: "(6-8)" },
+    { date: "08/09", time: "(6-7)" },
+    { date: "15/09", time: "(6-7)" },
+    { date: "16/09", time: "(6-7)" },
+    { date: "17/09", time: "(6-7)" },
+    { date: "22/09", time: "(6-7)" },
+    { date: "29/09", time: "(6-7)" },
+    { date: "06/10", time: "(6-7)" },
+    { date: "13/10", time: "(6-7)" },
+    { date: "20/10", time: "(6-7)" },
+    { date: "27/10", time: "(6-7)" },
+    { date: "03/11", time: "(6-7)" },
+    { date: "01/09", time: "(11-13)" },
+    { date: "01/09", time: "(9-11)" },
+    { date: "08/09", time: "(6-7)" },
+    { date: "15/09", time: "(6-7)" },
+    { date: "16/09", time: "(6-7)" },
+    { date: "17/09", time: "(6-7)" },
+    { date: "22/09", time: "(6-7)" },
+    { date: "29/09", time: "(6-7)" },
+    { date: "06/10", time: "(6-7)" },
+    { date: "13/10", time: "(6-7)" },
+    { date: "20/10", time: "(6-7)" },
+    { date: "27/10", time: "(6-7)" },
+    { date: "03/11", time: "(6-7)" },
   ];
-
-  const getScoreColor = (score: number | null | undefined) => {
-    if (score === null || score === undefined) return "text-gray-400";
-    if (score >= 8) return "text-green-600";
-    if (score >= 5) return "text-amber-500";
-    return "text-red-500";
-  };
 
   const handleScoreChange = (
     studentId: number,
@@ -236,6 +230,9 @@ const ClassDetailListTable = () => {
               <option value="">Công nghệ Blockchain (243IS430.03)</option>
             </select>
           </div>
+          <button className="text-[14px] bg-[#8B0000] text-white font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors">
+            Lưu thay đổi
+          </button>
           {/* <div className="text-[13px] text-[#475569] flex items-center gap-2">
             <span className="">Bộ lọc: </span>
             <select
@@ -280,110 +277,143 @@ const ClassDetailListTable = () => {
         </div>
       </div>
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-200">
-          <thead className="border-b border-gray-200">
-            <tr className="bg-[#F8FAFC] text-[#64748B] divide-x divide-gray-200">
-              <th className="text-left px-4 py-3 font-semibold">STT</th>
-              <th className="text-left px-4 py-3 font-semibold">Mã SV</th>
-              <th className="text-left px-4 py-3 font-semibold">Họ và tên</th>
-              <th className="text-left px-4 py-3 font-semibold whitespace-nowrap bg-[#F4E6E6] text-[#8B0000]">
-                Điểm TB
-              </th>
-              {dates.map((date, index) => (
-                <th
-                  key={index}
-                  className="text-center px-4 py-3 font-semibold w-[20px] text-[12px] "
-                >
-                  {date}
+      <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {/* BẢNG 1: CỐ ĐỊNH */}
+        <div className="flex-shrink-0 shadow-[4px_0_8px_rgba(0,0,0,0.05)] z-10">
+          <table className="border-collapse">
+            <thead className="border-b border-gray-200">
+              <tr className="bg-[#F8FAFC] text-[#64748B] h-[52px]">
+                <th className="text-left px-4 py-3 font-semibold border-r border-gray-200">
+                  STT
                 </th>
-              ))}
-
-              <th className="text-left px-4 py-3 font-semibold">Ghi chú</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {students.map((student, index) => (
-              <tr
-                key={student.id}
-                className="divide-x divide-gray-200 text-left hover:bg-gray-50"
-              >
-                <td className="px-4 py-3 text-[#8B0000] font-semibold">
-                  {index + 1}
-                </td>
-                <td className="px-4 py-3 font-semibold">{student.code}</td>
-                <td className="px-4 py-3 whitespace-nowrap font-bold">
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="cursor-pointer hover:underline text-gray-800"
-                      onClick={() => setOpenStudentDetail(true)}
-                    >
-                      {student.name}
-                    </button>
-
-                    <div className="relative group flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 48 48"
-                        className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                <th className="text-left px-4 py-3 font-semibold border-r border-gray-200">
+                  Mã SV
+                </th>
+                <th className="text-left px-4 py-3 font-semibold border-r border-gray-200 min-w-[180px]">
+                  Họ và tên
+                </th>
+                <th className="text-left px-4 py-3 font-semibold whitespace-nowrap bg-[#F4E6E6] text-[#8B0000]">
+                  Điểm TB
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {students.map((student, index) => (
+                <tr
+                  key={student.id}
+                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                >
+                  <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
+                    {index + 1}
+                  </td>
+                  <td className="px-4 py-3 font-semibold border-r border-gray-200">
+                    {student.code}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="cursor-pointer hover:underline text-gray-800"
+                        onClick={() => setOpenStudentDetail(true)}
                       >
-                        <g
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="4"
-                        >
-                          <path d="M44 24V9H24H4V24V39H24" />
-                          <path d="M44 34L30 34" />
-                          <path d="M39 29L44 34L39 39" />
-                          <path d="M4 9L24 24L44 9" />
-                        </g>
-                      </svg>
+                        {student.name}
+                      </button>
 
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
-                        <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
-                          Gửi email cảnh báo tới sinh viên
+                      <div className="relative group flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 48 48"
+                          className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <g
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="4"
+                          >
+                            <path d="M44 24V9H24H4V24V39H24" />
+                            <path d="M44 34L30 34" />
+                            <path d="M39 29L44 34L39 39" />
+                            <path d="M4 9L24 24L44 9" />
+                          </g>
+                        </svg>
+
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
+                          <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
+                            Gửi email cảnh báo tới sinh viên
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
-                  10
-                </td>
-                {student.scores.map((score, scoreIndex) => (
-                  <td
-                    key={scoreIndex}
-                    className={`px-4 py-3 font-semibold text-center ${getScoreColor(score)}`}
-                  >
-                    <input
-                      type="string"
-                      value={score === null || score === undefined ? "" : score}
-                      placeholder="-"
-                      onChange={(e) =>
-                        handleScoreChange(
-                          student.id,
-                          scoreIndex,
-                          e.target.value,
-                        )
-                      }
-                      className={`w-full h-8 text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] ${
-                        score === 0
-                          ? "  text-gray-400"
-                          : `  ${getScoreColor(score)}`
-                      }`}
-                    />
                   </td>
-                ))}
+                  <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
+                    10
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-                <td className="px-4 py-3 whitespace-nowrap">{student.note}</td>
+        {/* BẢNG 2: CÓ THỂ CUỘN NGANG */}
+        <div className="flex-1 overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead className="border-b border-gray-200">
+              <tr className="bg-[#F8FAFC] text-[#64748B] h-[52px] divide-x divide-gray-200">
+                {dates.map((item, index) => (
+                  <th
+                    key={index}
+                    className="text-center px-2 py-3 font-semibold text-[11px] min-w-[100px] border-r border-gray-200"
+                  >
+                    <div className="leading-tight">
+                      <div className="font-bold">{item.date}</div>
+                      <div className="text-[9px] opacity-70">{item.time}</div>
+                    </div>
+                  </th>
+                ))}
+                <th className="text-left px-4 py-3 font-semibold min-w-[150px]">
+                  Ghi chú
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {students.map((student) => (
+                <tr
+                  key={student.id}
+                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                >
+                  {student.scores.map((score, scoreIndex) => (
+                    <td
+                      key={scoreIndex}
+                      className={`p-0 border-r border-gray-200 ${getScoreColor(score)}`}
+                    >
+                      <input
+                        type="text"
+                        value={
+                          score === null || score === undefined ? "" : score
+                        }
+                        placeholder="-"
+                        onChange={(e) =>
+                          handleScoreChange(
+                            student.id,
+                            scoreIndex,
+                            e.target.value,
+                          )
+                        }
+                        className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
+                      />
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 whitespace-nowrap text-gray-400 italic min-w-[150px]">
+                    {student.note}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
       {/* <Pagination
         currentPage={2}
