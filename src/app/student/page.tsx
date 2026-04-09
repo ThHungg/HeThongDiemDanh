@@ -170,8 +170,8 @@ const StudentPage = () => {
       </div>
       {openAttendanceDetailModal && (
         <AttendanceDetailModal
-          isStudent={true}
           onClose={() => setOpenAttendanceDetailModal(false)}
+          isStudent={true}
         />
       )}
     </div>

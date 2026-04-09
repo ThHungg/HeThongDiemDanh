@@ -172,7 +172,10 @@ const StudentsTable = () => {
         onPageChange={(page) => page}
       />
       {openAttendanceDetail && (
-        <AttendanceDetailModal onClose={() => setOpenAttendanceDetail(false)} />
+        <AttendanceDetailModal
+          isStudent={false}
+          onClose={() => setOpenAttendanceDetail(false)}
+        />
       )}
     </div>
   );
