@@ -3,12 +3,25 @@ const dotenv = require("dotenv");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
 const { connectDB } = require("./config/db");
+const routes = require("./routes");
 
 dotenv.config();
-
 const app = express();
 const port = process.env.PORT || 3001;
+
+// CORS configuration
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  }),
+);
+
+//middleware
+app.use(cookieParser());
 
 //init middleware
 app.use(morgan("dev"));
@@ -22,9 +35,7 @@ connectDB();
 app.use(express.json());
 
 //init routes
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+routes(app);
 
 //handle errors
 app.use((req, res, next) => {
