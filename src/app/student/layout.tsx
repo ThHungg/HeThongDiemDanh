@@ -14,7 +14,9 @@ const LayoutStudent = ({ children }: { children: React.ReactNode }) => {
           />
           <div>
             <h6 className="!font-bold">Trường Đại học Thăng Long</h6>
-            <p className="!text-[12px] text-[#737373] font-semibold">Hệ thống quản lý</p>
+            <p className="!text-[12px] text-[#737373] font-semibold">
+              Hệ thống quản lý
+            </p>
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 ">

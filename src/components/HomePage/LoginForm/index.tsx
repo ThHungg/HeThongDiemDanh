@@ -1,7 +1,13 @@
 "use client";
 import { memo, useState } from "react";
 
-const LoginForm = () => {
+const LoginForm = ({
+  userCode,
+  setUserCode,
+}: {
+  userCode: string;
+  setUserCode: (code: string) => void;
+}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberPassword, setRememberPassword] = useState(false);
   return (
@@ -26,6 +32,8 @@ const LoginForm = () => {
           <input
             type="text"
             id="email"
+            onChange={(e) => setUserCode(e.target.value)}
+            value={userCode}
             placeholder="Vui lòng nhập email của bạn"
             className="bg-[#F8FAFC] text-[14px] pl-10 py-3 rounded-2xl w-full border border-[#E2E8F0] ring-1 ring-transparent focus:ring-[#8B0000] transition-all outline-none"
           />
