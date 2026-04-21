@@ -14,8 +14,8 @@ const sequelize = new Sequelize(
     logging: false,
     dialectOptions: {
       ssl: {
-        minVersion: "TLSv1.2",
-        rejectUnauthorized: true, // Tiết lập này quan trọng để TiDB chấp nhận
+        require: true,
+        rejectUnauthorized: false,
       },
     },
     pool: {
