@@ -1,6 +1,6 @@
 "use client";
-import { useMutationHooks } from "@/Hooks/useMutationHooks";
-import { useUserHooks } from "@/Hooks/useUserHooks";
+import { useMutationHooks } from "@/hooks/useMutationHooks";
+import { useUserHooks } from "@/hooks/useUserHooks";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { memo, useState } from "react";

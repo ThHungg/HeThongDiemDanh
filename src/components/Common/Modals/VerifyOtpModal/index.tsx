@@ -1,5 +1,5 @@
 "use client";
-import { useMutationHooks } from "@/Hooks/useMutationHooks";
+import { useMutationHooks } from "@/hooks/useMutationHooks";
 import formatTime from "@/utils/formatTime";
 import { memo, useEffect, useRef, useState } from "react";
 import * as authService from "@/services/authenService";

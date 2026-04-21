@@ -4,7 +4,7 @@ import LoginForm from "../LoginForm";
 import VerifyOtpModal from "@/components/Common/Modals/VerifyOtpModal";
 import * as authService from "../../../services/authenService";
 import { toast } from "react-toastify";
-import { useMutationHooks } from "@/Hooks/useMutationHooks";
+import { useMutationHooks } from "@/hooks/useMutationHooks";
 import Loading from "@/components/Common/Loading";
 
 const AuthCard = () => {
