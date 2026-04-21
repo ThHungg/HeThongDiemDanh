@@ -45,16 +45,40 @@ const VerifyOtp = async (req, res) => {
       });
     }
     const response = await authService.VerifyOtp(userCode.toUpperCase(), otp);
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
     const { refreshToken, ...newResponse } = response;
 
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json(newResponse);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
+const Logout = async (req, res) => {
+  try {
+    const token = req.cookies.refreshToken;
+    if (token) {
+      res.clearCookie("refreshToken");
+    }
+    return res.status(200).json({
+      status: "Success",
+      code: 200,
+      message: "Đăng xuất thành công",
+    });
   } catch (e) {
     console.log(e);
     return res.status(500).json({
@@ -84,4 +108,4 @@ const RefreshToken = async (req, res) => {
   }
 };
 
-module.exports = { SendOtp, VerifyOtp, RefreshToken };
+module.exports = { SendOtp, VerifyOtp, Logout, RefreshToken };

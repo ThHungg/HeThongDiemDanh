@@ -2,10 +2,11 @@ const SinhVien = require("../models/SinhVien");
 const GiangVien = require("../models/GiangVien");
 const sendEmail = require("../utils/sendEmail");
 const jwtService = require("./jwtService");
-
+const { emailQueue } = require("./mailQueueService");
+const redis = require("../config/redis");
 const otpStore = new Map();
 
-const   SendOtp = async (userCode) => {
+const SendOtp = async (userCode) => {
   try {
     let info;
     if (userCode[0] === "A") {
@@ -37,13 +38,7 @@ const   SendOtp = async (userCode) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const expiresIn = 5 * 60 * 1000;
-    otpStore.set(userCode, { otp, expiresIn: Date.now() + expiresIn });
-    setTimeout(() => {
-      if (otpStore.has(userCode) && otpStore.get(userCode).otp === otp) {
-        otpStore.delete(userCode);
-      }
-    }, expiresIn);
+    await redis.set(`otp:${userCode}`, otp, "EX", 300);
 
     const subject = "OTP cho hệ thống điểm danh";
     const html = `<p>Xin chào ${info.ten},</p>
@@ -52,15 +47,19 @@ const   SendOtp = async (userCode) => {
                   <p>Trân trọng,</p>
                   <p>Hệ thống Điểm danh</p>`;
 
-    const sendOtp = await sendEmail(email, subject, html);
+    await emailQueue.add("sendEmail", {
+      to: email,
+      subject: subject,
+      html: html,
+    });
 
-    if (!sendOtp) {
-      return {
-        status: "Err",
-        code: 500,
-        message: "Lỗi khi gửi email OTP, vui lòng thử lại sau",
-      };
-    }
+    // const expiresIn = 5 * 60 * 1000;
+    // otpStore.set(userCode, { otp, expiresIn: Date.now() + expiresIn });
+    // setTimeout(() => {
+    //   if (otpStore.has(userCode) && otpStore.get(userCode).otp === otp) {
+    //     otpStore.delete(userCode);
+    //   }
+    // }, expiresIn);
 
     return {
       status: "Success",
@@ -79,10 +78,12 @@ const   SendOtp = async (userCode) => {
 
 const VerifyOtp = async (userCode, otp) => {
   try {
-    const record = otpStore.get(userCode);
+    // const record = otpStore.get(userCode);
+    const record = await redis.get(`otp:${userCode}`);
+    console.log("record", record);
+    console.log("otp", otp);
     const isMasterOtp = otp === "123456";
-    const isValidStoredOtp =
-      record && record.otp === otp && record.expiresIn > Date.now();
+    const isValidStoredOtp = record && record === otp;
     if (!isMasterOtp && !isValidStoredOtp) {
       return {
         status: "Err",
@@ -95,15 +96,42 @@ const VerifyOtp = async (userCode, otp) => {
 
     let info;
     let role;
+    let filteredInfo;
     if (userCode[0] === "A") {
       info = await SinhVien.findOne({
         where: { ma_sinh_vien: userCode },
       });
+      if (!info) {
+        return {
+          status: "Err",
+          code: 404,
+          message: "Không tìm thấy người dùng",
+        };
+      }
       role = "Sinh_vien";
+      filteredInfo = {
+        ten: info.ten,
+        ma_sinh_vien: info.ma_sinh_vien,
+        dien_thoai1: info.dien_thoai1,
+        dien_thoai2: info.dien_thoai2,
+        email1: info.email1,
+        email2: info.email2,
+        khoa: info.khoa,
+        khoa_nhap_hoc: info.khoa_nhap_hoc,
+        lop_chuyen_nganh: info.lop_chuyen_nganh,
+        role: role,
+      };
     } else {
       info = await GiangVien.findOne({
         where: { ma_giang_vien: userCode },
       });
+      if (!info) {
+        return {
+          status: "Err",
+          code: 404,
+          message: "Không tìm thấy người dùng",
+        };
+      }
       if (info.quan_tri === 1) {
         role = "Quan_tri";
       } else if (info.giang_vien === 1) {
@@ -113,6 +141,17 @@ const VerifyOtp = async (userCode, otp) => {
       } else if (info.thinh_giang === 1) {
         role = "Thinh_giang";
       }
+
+      filteredInfo = {
+        ten: info.ten,
+        ma_giang_vien: info.ma_giang_vien,
+        dien_thoai: info.dien_thoai,
+        email1: info.email1,
+        email2: info.email2,
+        don_vi: info.don_vi,
+        hoc_vi: info.hoc_vi,
+        role: role,
+      };
     }
 
     const accessToken = jwtService.generateAccessToken({
@@ -130,6 +169,7 @@ const VerifyOtp = async (userCode, otp) => {
       message: "Đăng nhập thành công",
       accessToken,
       refreshToken,
+      filteredInfo,
     };
   } catch (e) {
     console.log(e);

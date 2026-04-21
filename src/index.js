@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connectDB } = require("./config/db");
 const routes = require("./routes");
+const redis = require("./config/redis");
+require("./services/mailQueueService");
 
 dotenv.config();
 const app = express();
