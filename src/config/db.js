@@ -12,6 +12,12 @@ const sequelize = new Sequelize(
     port: process.env.DB_PORT,
     dialect: "mysql",
     logging: false,
+    dialectOptions: {
+      ssl: {
+        minVersion: "TLSv1.2",
+        rejectUnauthorized: true, // Tiết lập này quan trọng để TiDB chấp nhận
+      },
+    },
     pool: {
       max: 5,
       min: 0,
