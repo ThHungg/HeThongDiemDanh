@@ -17,7 +17,7 @@ const port = process.env.PORT || 3001;
 // CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://he-thong-diem-danh.vercel.app/"],
+    origin: ["http://localhost:3000", "https://he-thong-diem-danh.vercel.app"],
     credentials: true,
   }),
 );
