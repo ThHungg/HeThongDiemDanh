@@ -1,13 +1,29 @@
 "use client";
+import { useMutationHooks } from "@/Hooks/useMutationHooks";
+import { useUserHooks } from "@/Hooks/useUserHooks";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { memo, useState } from "react";
+import * as authService from "@/services/authenService";
+import { toast } from "react-toastify";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const { role } = useUserHooks();
+  const router = useRouter();
 
   // const [isSelected, setIsSelected] = useState("/");
 
+  const logout = useMutationHooks(() => authService.logoutService());
+
+  const handleLogout = () => {
+    logout.mutate(null, {
+      onSuccess: (res) => {
+        toast.success(res.message || "Đăng xuất thành công!");
+        router.push("/login");
+      },
+    });
+  };
   const commonMenu = [
     {
       name: "Tổng quan",
@@ -197,40 +213,45 @@ const Sidebar = () => {
         {/* Menu Sidebar */}
         <div>
           <ul className="font-semibold">
-            <h6 className="text-center">Department</h6>
-            {menuSidebar.Department.map((item, index) => (
-              <Link
-                key={index}
-                href={item.link}
-                // onClick={() => setIsSelected(item.link)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
-                  pathname === item.link
-                    ? "bg-[#F4E6E6] text-[#8B0000]"
-                    : "text-gray-700"
-                }`}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </Link>
-            ))}
+            {(role === "Quan_tri" || role === "Thu_ky") && (
+              <>
+                {menuSidebar.Department.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.link}
+                    // onClick={() => setIsSelected(item.link)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
+                      pathname === item.link
+                        ? "bg-[#F4E6E6] text-[#8B0000]"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </>
+            )}
 
-            <h6 className="text-center">Lecturer</h6>
-            {menuSidebar.Lecturer.map((item, index) => (
-              <Link
-                key={index}
-                href={item.link}
-                // onClick={() => setIsSelected(item.link)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
-                  isActive(item.link)
-                    ? "bg-[#F4E6E6] text-[#8B0000]"
-                    : "text-gray-700"
-                }`}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </Link>
-            ))}
-
+            {role === "Giang_vien" && (
+              <>
+                {menuSidebar.Lecturer.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.link}
+                    // onClick={() => setIsSelected(item.link)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
+                      isActive(item.link)
+                        ? "bg-[#F4E6E6] text-[#8B0000]"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </>
+            )}
             {/* <h6 className="text-center">Student</h6>
             {menuSidebar.Student.map((item, index) => (
               <Link
@@ -272,21 +293,24 @@ const Sidebar = () => {
             </div>
           </div>
           <div className="p-2 hover:bg-[#EBF0FD] rounded-full cursor-pointer">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              className="text-[#64748B]"
-            >
-              <path
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="square"
-                strokeWidth="2"
-                d="M15.5 16.5L20 12l-4.5-4.5m3.25 4.5H9m0 8.5H4v-17h5"
-              />
-            </svg>
+            <button onClick={() => handleLogout()}>
+              {" "}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                className="text-[#64748B]"
+              >
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="square"
+                  strokeWidth="2"
+                  d="M15.5 16.5L20 12l-4.5-4.5m3.25 4.5H9m0 8.5H4v-17h5"
+                />
+              </svg>
+            </button>
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ const LoginForm = ({
     <div className="mb-[12px]">
       <div className="flex flex-col mb-[12px]">
         <label htmlFor="email" className="text-[14px] font-bold mb-[4px]">
-          Email sinh viên
+          Tài khoản
         </label>
         <div className="relative">
           <svg
@@ -34,7 +34,7 @@ const LoginForm = ({
             id="email"
             onChange={(e) => setUserCode(e.target.value)}
             value={userCode}
-            placeholder="Vui lòng nhập email của bạn"
+            placeholder="Vui lòng nhập mã tài khoản của bạn"
             className="bg-[#F8FAFC] text-[14px] pl-10 py-3 rounded-2xl w-full border border-[#E2E8F0] ring-1 ring-transparent focus:ring-[#8B0000] transition-all outline-none"
           />
         </div>

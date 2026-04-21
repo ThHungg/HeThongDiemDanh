@@ -11,7 +11,12 @@ const MasterLayout = ({
   children: React.ReactNode;
 }) => {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/student") {
+  if (
+    pathname === "/login" ||
+    pathname === "/student" ||
+    pathname === "/403" ||
+    pathname === "/404"
+  ) {
     return <div className="">{children}</div>;
   }
   return (

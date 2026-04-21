@@ -10,7 +10,6 @@ import Loading from "@/components/Common/Loading";
 const AuthCard = () => {
   const [openModalOtp, setOpenModalOtp] = useState(false);
   const [userCode, setUserCode] = useState("");
-  console.log(userCode);
 
   const sendOtp = useMutationHooks((userCode: string) =>
     authService.loginService(userCode),
@@ -24,6 +23,7 @@ const AuthCard = () => {
     sendOtp.mutate(userCode, {
       onSuccess: (res: any) => {
         toast.success(res.message || "Mã OTP đã được gửi thành công!");
+        setOpenModalOtp(true);
       },
     });
   };
@@ -60,11 +60,7 @@ const AuthCard = () => {
         onClick={() => handleSendOtp(userCode)}
         disabled={sendOtp.isPending}
         // Thêm h-[40px] (hoặc chiều cao cố định của bạn) để khung không bị sụp khi đổi nội dung
-        className={`w-full h-[42px] py-2 flex items-center justify-center gap-2 text-white font-semibold rounded-2xl shadow-md transition-all duration-300 ${
-          sendOtp.isPending
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-[#8B0000] hover:bg-[#a00000]"
-        }`}
+        className="w-full h-[42px] py-2 flex bg-[#8B0000] hover:bg-[#a00000] items-center justify-center gap-2 text-white font-semibold rounded-2xl shadow-md transition-all duration-300"
       >
         {sendOtp.isPending ? (
           <Loading text="Đang gửi..." />
@@ -86,7 +82,10 @@ const AuthCard = () => {
         )}
       </button>
       {openModalOtp && (
-        <VerifyOtpModal onClose={() => setOpenModalOtp(false)} />
+        <VerifyOtpModal
+          onClose={() => setOpenModalOtp(false)}
+          userCode={userCode}
+        />
       )}
     </div>
   );
