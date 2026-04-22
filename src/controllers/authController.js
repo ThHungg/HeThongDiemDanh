@@ -89,6 +89,25 @@ const Logout = async (req, res) => {
   }
 };
 
+const GetCurrentUser = async (req, res) => {
+  try {
+    const id = req.user.code;
+    const role = req.user.role;
+    const response = await authService.GetCurrentUser(id, role);
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
 const RefreshToken = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
@@ -108,4 +127,4 @@ const RefreshToken = async (req, res) => {
   }
 };
 
-module.exports = { SendOtp, VerifyOtp, Logout, RefreshToken };
+module.exports = { SendOtp, VerifyOtp, Logout, GetCurrentUser, RefreshToken };

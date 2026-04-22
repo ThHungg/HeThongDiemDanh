@@ -155,10 +155,12 @@ const VerifyOtp = async (userCode, otp) => {
     }
 
     const accessToken = jwtService.generateAccessToken({
+      id: info.id,
       code: userCode,
       role,
     });
     const refreshToken = jwtService.generateRefreshToken({
+      id: info.id,
       code: userCode,
       role,
     });
@@ -181,4 +183,64 @@ const VerifyOtp = async (userCode, otp) => {
   }
 };
 
-module.exports = { SendOtp, VerifyOtp };
+const GetCurrentUser = async (id, role) => {
+  try {
+    if (role === "Sinh_vien") {
+      const student = await SinhVien.findOne({
+        where: { ma_sinh_vien: id },
+      });
+
+      if (student) {
+        return {
+          status: "Success",
+          code: 200,
+          data: {
+            ten: student.ten,
+            ma_sinh_vien: student.ma_sinh_vien,
+            dien_thoai1: student.dien_thoai1,
+            dien_thoai2: student.dien_thoai2,
+            email1: student.email1,
+            email2: student.email2,
+            khoa: student.khoa,
+            khoa_nhap_hoc: student.khoa_nhap_hoc,
+            lop_chuyen_nganh: student.lop_chuyen_nganh,
+          },
+        };
+      }
+    } else if (
+      role === "Giang_vien" ||
+      role === "Quan_tri" ||
+      role === "Thu_ky" ||
+      role === "Thinh_giang"
+    ) {
+      const lecturer = await GiangVien.findOne({
+        where: { ma_giang_vien: id },
+      });
+
+      if (lecturer) {
+        return {
+          status: "Success",
+          code: 200,
+          data: {
+            ten: lecturer.ten,
+            ma_giang_vien: lecturer.ma_giang_vien,
+            dien_thoai: lecturer.dien_thoai,
+            email1: lecturer.email1,
+            email2: lecturer.email2,
+            don_vi: lecturer.don_vi,
+            hoc_vi: lecturer.hoc_vi,
+          },
+        };
+      }
+    }
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
+module.exports = { SendOtp, VerifyOtp, GetCurrentUser };
