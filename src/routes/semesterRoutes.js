@@ -3,5 +3,6 @@ const router = express.Router();
 const semesterController = require("../controllers/semesterController");
 
 router.get("/current", semesterController.getCurrentSemester);
+router.get("/", semesterController.getAllSemesters);
 
 module.exports = router;

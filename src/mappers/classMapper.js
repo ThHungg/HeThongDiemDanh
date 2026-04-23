@@ -6,6 +6,12 @@ const mapClasses = (classes) => {
     tenLop: cls.ten_lop,
     soLuongDangKy: cls.sldk,
     sucChua: cls.suc_chua,
+    giangVien: cls.giang_vien
+      ? {
+          ten: cls.giang_vien.ten,
+          maGiangVien: cls.giang_vien.ma_giang_vien,
+        }
+      : null,
     hocPhan: cls.hoc_phan
       ? {
           tenHocPhan: cls.hoc_phan.ten_hoc_phan,
@@ -15,6 +21,7 @@ const mapClasses = (classes) => {
     thoiKhoaBieuChiTiet: cls.thoi_khoa_bieu_chi_tiet.map((tkb) => ({
       tiet: `${tkb.bat_dau}-${tkb.ket_thuc}`,
       thu: tkb.thu,
+      phong: tkb.phong,
     })),
   }));
 };
@@ -40,6 +47,7 @@ const mapClassInfo = (classInfo) => {
       //   ketThuc: tkb.ket_thuc,
       tiet: `${tkb.bat_dau}-${tkb.ket_thuc}`,
       thu: tkb.thu,
+      phong: tkb.phong,
     })),
     ky: classInfo.ky
       ? {
@@ -79,8 +87,46 @@ const mapSessions = (sessions) => {
   }));
 };
 
+//Student
+const mapStudentClasses = (studentData) => {
+  return {
+    maSinhVien: studentData.ma_sinh_vien,
+    ten: studentData.ten,
+    dangKy: studentData.dang_ky
+      .filter((dk) => dk.thong_tin_tkb !== null)
+      .map((dk) => ({
+        id: dk.id,
+        maLopHocPhan: dk.ma_lop_hoc_phan,
+        giangVien: dk.thong_tin_tkb?.giang_vien
+          ? {
+              ten: dk.thong_tin_tkb.giang_vien.ten,
+              maGiangVien: dk.thong_tin_tkb.giang_vien.ma_giang_vien,
+            }
+          : null,
+        hocPhan: dk.thong_tin_tkb
+          ? {
+              maHocPhan: dk.thong_tin_tkb.ma_hoc_phan,
+              tenHocPhan: dk.thong_tin_tkb.hoc_phan.ten_hoc_phan,
+              tenLop: dk.thong_tin_tkb.ten_lop,
+              soLuongDangKy: dk.thong_tin_tkb.sldk,
+              sucChua: dk.thong_tin_tkb.suc_chua,
+            }
+          : null,
+        thoiKhoaBieuChiTiet: dk.thong_tin_tkb
+          ? dk.thong_tin_tkb.thoi_khoa_bieu_chi_tiet.map((tkb) => ({
+              tiet: `${tkb.bat_dau}-${tkb.ket_thuc}`,
+              thu: tkb.thu,
+              phong: tkb.phong,
+            }))
+          : [],
+      })),
+  };
+};
+
 module.exports = {
   mapClasses,
   mapClassInfo,
   mapSessions,
+  //Student
+  mapStudentClasses,
 };

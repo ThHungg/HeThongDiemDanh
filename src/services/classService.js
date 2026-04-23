@@ -2,6 +2,7 @@ const {
   mapClasses,
   mapClassInfo,
   mapSessions,
+  mapStudentClasses,
 } = require("../mappers/classMapper");
 const {
   Tkb,
@@ -11,6 +12,7 @@ const {
   SinhVien,
   Ky,
   BuoiHoc,
+  GiangVien,
 } = require("../models");
 const { getAttendanceDates } = require("../utils/dateHelper");
 
@@ -21,7 +23,8 @@ const getClassesByLecturer = async (lecturerId, semester) => {
     if (semester) {
       currentSemester = semester;
     } else {
-      currentSemester = await semesterService.getCurrentSemester();
+      const semesterRes = await semesterService.getCurrentSemester();
+      currentSemester = semesterRes?.data?.ma_ky;
     }
 
     console.log(currentSemester);
@@ -40,6 +43,11 @@ const getClassesByLecturer = async (lecturerId, semester) => {
       ],
       include: [
         {
+          model: GiangVien,
+          as: "giang_vien",
+          attributes: ["ten", "ma_giang_vien"],
+        },
+        {
           model: HocPhan,
           as: "hoc_phan",
           attributes: ["ten_hoc_phan", "ma_hoc_phan"],
@@ -47,12 +55,12 @@ const getClassesByLecturer = async (lecturerId, semester) => {
         {
           model: TkbChiTiet,
           as: "thoi_khoa_bieu_chi_tiet",
-          attributes: ["bat_dau", "ket_thuc", "thu"],
+          attributes: ["bat_dau", "ket_thuc", "thu", "phong"],
         },
       ],
       order: [["id", "DESC"]],
     });
-
+    console.log(classes);
     const transformedClasses = mapClasses(classes);
 
     return {
@@ -72,7 +80,8 @@ const getClassesByLecturer = async (lecturerId, semester) => {
 
 const getClassByLecturerAndId = async (lecturerId, classCode) => {
   try {
-    const currentSemester = await semesterService.getCurrentSemester();
+    const semesterRes = await semesterService.getCurrentSemester();
+    const currentSemester = semesterRes?.data;
     const classInfo = await Tkb.findOne({
       where: {
         ma_lop_hoc_phan: classCode,
@@ -86,6 +95,11 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
         "suc_chua",
       ],
       include: [
+        {
+          model: GiangVien,
+          as: "giang_vien",
+          attributes: ["ten", "ma_giang_vien"],
+        },
         {
           model: DangKy,
           as: "danh_sach_dang_ky",
@@ -139,11 +153,11 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
         {
           model: TkbChiTiet,
           as: "chi_tiet_tiet_hoc",
-          attributes: ["id", "bat_dau", "ket_thuc", "thu"],
+          attributes: ["id", "bat_dau", "ket_thuc", "thu", "phong"],
         },
       ],
     });
-
+    console.log("classInfoTransformed.id", classInfoTransformed.id);
     if (sessions.length === 0) {
       const semesterStartDate = classInfoTransformed.ky?.batDauKyHoc;
       const semesterEndDate = classInfoTransformed.ky?.ketThucKyHoc;
@@ -192,7 +206,76 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
   }
 };
 
+//Student
+const getClassesByStudent = async (studentId, semester) => {
+  try {
+    console.log("studentId", studentId);
+    const semesterRes = await semesterService.getCurrentSemester();
+    const currentSemester = semesterRes?.data?.ma_ky;
+
+    const classes = await SinhVien.findOne({
+      where: {
+        ma_sinh_vien: studentId,
+      },
+      attributes: ["ma_sinh_vien", "ten"],
+      include: {
+        model: DangKy,
+        as: "dang_ky",
+        attributes: ["id", "ma_lop_hoc_phan"],
+        include: {
+          model: Tkb,
+          as: "thong_tin_tkb",
+          // where: {
+          //   ma_ky: semester || currentSemester,
+          // },
+          attributes: [
+            "id",
+            "ma_lop_hoc_phan",
+            "ma_hoc_phan",
+            "ten_lop",
+            "sldk",
+            "suc_chua",
+          ],
+
+          include: [
+            {
+              model: GiangVien,
+              as: "giang_vien",
+              attributes: ["ten", "ma_giang_vien"],
+            },
+            {
+              model: TkbChiTiet,
+              as: "thoi_khoa_bieu_chi_tiet",
+              attributes: ["id", "bat_dau", "ket_thuc", "thu", "phong"],
+            },
+            {
+              model: HocPhan,
+              as: "hoc_phan",
+              attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+            },
+          ],
+        },
+      },
+    });
+    console.log(mapStudentClasses(classes));
+    return {
+      status: "Ok",
+      code: 200,
+      data: mapStudentClasses(classes),
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
+  //Student
+  getClassesByStudent,
 };

@@ -42,13 +42,11 @@ const roleMiddleware = (allowedRole) => {
     if (allowedRole.includes(userRole)) {
       next();
     } else {
-      return res
-        .status(403)
-        .json({
-          status: "Err",
-          code: 403,
-          message: "Bạn không có quyền truy cập",
-        });
+      return res.status(403).json({
+        status: "Err",
+        code: 403,
+        message: "Bạn không có quyền truy cập",
+      });
     }
   };
 };

@@ -17,6 +17,23 @@ const getCurrentSemester = async (req, res) => {
   }
 };
 
+const getAllSemesters = async (req, res) => {
+  try {
+    const response = await semesterService.getAllSemesters();
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
 module.exports = {
   getCurrentSemester,
+  getAllSemesters,
 };
