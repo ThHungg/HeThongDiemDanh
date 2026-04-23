@@ -96,7 +96,7 @@ const VerifyOtpModal = ({
           router.push("/lecturer/classes");
         }
         if (res.filteredInfo.role === "Sinh_vien") {
-          router.push("/student/classes");
+          router.push("/student");
         }
       },
     });

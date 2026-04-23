@@ -3,8 +3,26 @@ import ClassCard from "@/components/Common/Card/ClassCard";
 import StudentInfoCard from "@/components/Common/Card/StudentInfoCard";
 import AttendanceDetailModal from "@/components/Common/Modals/AttendanceDetailModal";
 import { memo, useState } from "react";
+import * as classService from "@/services/classService";
+import { useQuery } from "@tanstack/react-query";
 
 const StudentPage = () => {
+  const getClasses = async () => {
+    const res = await classService.getClassesByStudentService();
+    return res;
+  };
+
+  const {
+    data: classes,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["student-classes"],
+    queryFn: getClasses,
+  });
+
+  console.log(classes);
+
   const [openAttendanceDetailModal, setOpenAttendanceDetailModal] =
     useState(false);
 
@@ -153,17 +171,18 @@ const StudentPage = () => {
         Lớp học của tôi
       </h5>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 ">
-        {classData.map((item, index) => (
+        {classes?.data?.dangKy?.map((item: any, index: number) => (
           <ClassCard
             key={index}
-            classCode={item.code}
-            className={item.name}
-            subjectClass={item.subjectClass}
-            room={item.room}
-            classSchedule={item.schedule}
-            lecturer={item.lecturer}
-            averageAttendance={item.averageAttendance}
-            attendanceProgress={item.attendanceProgress}
+            classCode={item.hocPhan?.maHocPhan}
+            className={item.hocPhan?.tenHocPhan}
+            subjectClass={item?.maLopHocPhan}
+            classSchedule={item.thoiKhoaBieuChiTiet}
+            // room={item.room}
+            // classSchedule={item.schedule}
+            lecturer={item.giangVien?.ten}
+            // averageAttendance={item.averageAttendance}
+            // attendanceProgress={item.attendanceProgress}
             onClick={() => setOpenAttendanceDetailModal(true)}
           />
         ))}

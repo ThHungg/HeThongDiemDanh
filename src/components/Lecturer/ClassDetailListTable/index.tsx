@@ -4,6 +4,7 @@ import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import Pagination from "@/components/Common/Pagination";
 import { memo, useState } from "react";
 import getScoreColor from "@/utils/getScoreColor";
+import { formatDate } from "@/utils/formatDatt";
 
 interface Student {
   id: number;
@@ -13,8 +14,26 @@ interface Student {
   note: string;
 }
 
-const ClassDetailListTable = () => {
+interface ListStudent {
+  listStudents?: {
+    id: number;
+    maSinhVien: string;
+    ten: string;
+    lopChuyenNganh: string;
+  }[];
+  classSession: {
+    ngayHoc: string;
+    chiTietTietHoc: {
+      tiet: string;
+      thu: string;
+    };
+  }[];
+}
+
+const ClassDetailListTable = ({ listStudents, classSession }: ListStudent) => {
   const [openStudentDetail, setOpenStudentDetail] = useState(false);
+  console.log(listStudents);
+  console.log(classSession);
   const [students, setStudents] = useState<Student[]>([
     {
       id: 1,
@@ -298,7 +317,7 @@ const ClassDetailListTable = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {students.map((student, index) => (
+              {listStudents?.map((student, index) => (
                 <tr
                   key={student.id}
                   className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
@@ -307,7 +326,7 @@ const ClassDetailListTable = () => {
                     {index + 1}
                   </td>
                   <td className="px-4 py-3 font-semibold border-r border-gray-200">
-                    {student.code}
+                    {student.maSinhVien}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
                     <div className="flex items-center gap-2">
@@ -315,7 +334,7 @@ const ClassDetailListTable = () => {
                         className="cursor-pointer hover:underline text-gray-800"
                         onClick={() => setOpenStudentDetail(true)}
                       >
-                        {student.name}
+                        {student.ten}
                       </button>
 
                       <div className="relative group flex items-center">
@@ -362,14 +381,19 @@ const ClassDetailListTable = () => {
           <table className="w-full border-collapse">
             <thead className="border-b border-gray-200">
               <tr className="bg-[#F8FAFC] text-[#64748B] h-[52px] divide-x divide-gray-200">
-                {dates.map((item, index) => (
+                {classSession?.map((item, index) => (
                   <th
                     key={index}
                     className="text-center px-2 py-3 font-semibold text-[11px] min-w-[100px] border-r border-gray-200"
                   >
                     <div className="leading-tight">
-                      <div className="font-bold">{item.date}</div>
-                      <div className="text-[9px] opacity-70">{item.time}</div>
+                      <div className="font-bold">
+                        {formatDate(item.ngayHoc)} (T{item.chiTietTietHoc.thu})
+                      </div>
+                      <div className="text-[9px] opacity-70">
+                        Tiết {item.chiTietTietHoc.tiet}
+                        {/* - {item.chiTietTietHoc.thu} */}
+                      </div>
                     </div>
                   </th>
                 ))}

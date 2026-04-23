@@ -1,82 +1,28 @@
+"use client";
 import ClassCard from "@/components/Common/Card/ClassCard";
 import ContentHeader from "@/components/Common/ContentHeader";
+import { useMutationHooks } from "@/hooks/useMutationHooks";
 import { memo } from "react";
+import * as classService from "@/services/classService";
+import { useQuery } from "@tanstack/react-query";
+import { useSemesterStore } from "@/store/useSemesterStore";
 
 const LecturerClassesPage = () => {
-  const classData = [
-    {
-      id: 1,
-      code: "IS430",
-      name: "Kiểm thử và đảm bảo chất lượng phần mềm",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
-    },
-    {
-      id: 2,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 3, Tiết 4-5",
-    },
-    {
-      id: 3,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 4, Tiết 1-3\nThứ 6, Tiết 1-3",
-    },
-    {
-      id: 4,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
-    },
-    {
-      id: 5,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 5, Tiết 7-9",
-    },
-    {
-      id: 6,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
-    },
-    {
-      id: 7,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 3, Tiết 1-3\nThứ 5, Tiết 1-2",
-    },
-    {
-      id: 8,
-      code: "IS430",
-      name: "Công nghệ Blockchain",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
-    },
-  ];
+  const semester = useSemesterStore((state) => state.selectedSemester);
+  const getClasses = async () => {
+    const res = await classService.getClassesByLecturerService();
+    return res;
+  };
+
+  const {
+    data: classes,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["lecturer-classes", semester],
+    queryFn: getClasses,
+  });
+
   return (
     <div className="p-[24px]">
       <ContentHeader
@@ -87,20 +33,31 @@ const LecturerClassesPage = () => {
         showAdd={false}
         onAdd={() => {}}
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 ">
-        {classData.map((item, index) => (
-          <ClassCard
-            key={index}
-            classCode={item.code}
-            className={item.name}
-            subjectClass={item.subjectClass}
-            room={item.room}
-            classSchedule={item.schedule}
-            lecturer={item.lecturer}
-            href={`/lecturer/classes/${item.id}`}
-          />
-        ))}
-      </div>
+      {classes?.data?.length === 0 ? (
+        <div className="w-full mt-10 flex items-center justify-center">
+          <p className="text-gray-500 text-[16px]">Không có lớp học nào.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 ">
+          {classes?.data?.map((item: any, index: number) => (
+            <ClassCard
+              key={index}
+              classCode={item.hocPhan?.maHocPhan}
+              className={item.hocPhan?.tenHocPhan}
+              subjectClass={item.maLopHocPhan}
+              room={item.room || "A701"}
+              classSchedule={item.thoiKhoaBieuChiTiet.map((schedule: any) => {
+                return {
+                  thu: schedule.thu,
+                  tiet: schedule.tiet,
+                };
+              })}
+              lecturer={item.giangVien?.ten}
+              href={`/lecturer/classes/${item.maLopHocPhan}`}
+            />
+          ))}
+        </div>
+      )}
       {/* <ClassListTable /> */}
     </div>
   );

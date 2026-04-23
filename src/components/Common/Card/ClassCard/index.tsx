@@ -4,12 +4,18 @@ import { memo } from "react";
 import ProgressBar from "../../ProgressBar";
 
 interface ClassCardProps {
-  classCode: string;
-  className: string;
-  subjectClass: string;
-  room: string;
-  lecturer: string;
-  classSchedule: string;
+  classCode?: string;
+  className?: string;
+  subjectClass?: string;
+  room?: string;
+  lecturer?: string;
+  classSchedule?: [
+    {
+      tiet: string;
+      thu: string;
+      phong: string;
+    },
+  ];
   averageAttendance?: number;
   attendanceProgress?: {
     attended: number;
@@ -44,7 +50,12 @@ const ClassCard = ({
           {className}
         </h5>
         <span className="text-[11px] text-[#94A3B8] font-bold rounded-lg whitespace-pre-line">
-          {classSchedule} - {room}
+          {classSchedule
+            ?.map(
+              (schedule) =>
+                `Thứ ${schedule.thu}: Tiết ${schedule.tiet} (${schedule.phong})`,
+            )
+            .join("\n")}
         </span>
       </div>
       <div className="p-4 bg-white">

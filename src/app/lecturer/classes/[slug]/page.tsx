@@ -1,14 +1,32 @@
+"use client";
 import ContentHeader from "@/components/Common/ContentHeader";
 import { memo } from "react";
-import StatsCard from "@/components/Common/Card/StatsCard";
 import ClassDetailListTable from "@/components/Lecturer/ClassDetailListTable";
+import * as classService from "@/services/classService";
+import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 const DetailClassPage = () => {
+  const classCode = useParams().slug as string;
+  console.log(classCode);
+  const getDetailClass = async (classCode: string) => {
+    const res = await classService.getDetailClassByLecturerService(classCode);
+    return res;
+  };
+
+  const {
+    data: detailClass,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["lecturer-classes", classCode],
+    queryFn: () => getDetailClass(classCode),
+  });
   return (
     <div className="p-[24px]">
       <ContentHeader
-        title="Cấu trúc dữ liệu và giải thuật"
-        courseCode="243IT001.05"
+        title={detailClass?.data?.hocPhan?.tenHocPhan}
+        courseCode={detailClass?.data?.maLopHocPhan}
         room="A704"
         showExport={true}
         onExport={() => {}}
@@ -68,7 +86,23 @@ const DetailClassPage = () => {
           color="#2563EB"
         />
       </div> */}
-      <ClassDetailListTable />
+      <ClassDetailListTable
+        listStudents={
+          detailClass?.data?.danhSachDangKy?.map((student: any) => ({
+            id: student.id,
+            maSinhVien: student.maSinhVien,
+            ten: student.ten,
+            lopChuyenNganh: student.lopChuyenNganh,
+          })) || []
+        }
+        classSession={detailClass?.data?.buoi_hoc?.map((session: any) => ({
+          ngayHoc: session.ngayHoc,
+          chiTietTietHoc: {
+            tiet: session.chiTietTietHoc.tiet,
+            thu: session.chiTietTietHoc.thu,
+          },
+        }))}
+      />
     </div>
   );
 };
