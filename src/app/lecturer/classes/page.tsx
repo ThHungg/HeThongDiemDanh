@@ -50,6 +50,7 @@ const LecturerClassesPage = () => {
                 return {
                   thu: schedule.thu,
                   tiet: schedule.tiet,
+                  phong: schedule.phong,
                 };
               })}
               lecturer={item.giangVien?.ten}

@@ -1,6 +1,33 @@
 import { memo } from "react";
+import * as studentService from "@/services/studentService";
+import { useQuery } from "@tanstack/react-query";
 
-const StudentDetailModal = ({ onClose }: { onClose: () => void }) => {
+const StudentDetailModal = ({
+  onClose,
+  studentId,
+}: {
+  onClose: () => void;
+  studentId: string;
+}) => {
+  const getStudentDetail = async (studentId: string) => {
+    try {
+      const res = await studentService.getStudentByIdService(studentId);
+      console.log(res);
+      return res;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const {
+    data: student,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["student-detail", studentId],
+    queryFn: () => getStudentDetail(studentId),
+  });
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="p-2 bg-white rounded-2xl min-w-[400px]">
@@ -53,7 +80,7 @@ const StudentDetailModal = ({ onClose }: { onClose: () => void }) => {
                   Họ và tên
                 </span>
                 <p className="text-[#1E293B] font-bold text-[16px]">
-                  Đặng Thành Hưng
+                  {student?.data?.ten || "N/A"}
                 </p>
               </div>
               <div>
@@ -89,10 +116,19 @@ const StudentDetailModal = ({ onClose }: { onClose: () => void }) => {
 
               <div>
                 <span className="text-[11px] text-[#94A3B8] font-bold uppercase  ">
+                  Mã sinh viên
+                </span>
+                <p className="text-[#1E293B] font-bold text-[16px]">
+                  {student?.data?.ma_sinh_vien || "N/A"}
+                </p>
+              </div>
+
+              <div>
+                <span className="text-[11px] text-[#94A3B8] font-bold uppercase  ">
                   Điện thoại
                 </span>
                 <p className="text-[#1E293B] font-bold text-[16px]">
-                  0999 123 456
+                  {student?.data?.dien_thoai1 || "N/A"}
                 </p>
               </div>
               <div>
@@ -100,7 +136,7 @@ const StudentDetailModal = ({ onClose }: { onClose: () => void }) => {
                   Email 1 (Chính)
                 </span>
                 <p className="text-[#8B0000] font-bold text-[16px]">
-                  a46588@thanglong.edu.vn
+                  {student?.data?.email1 || "N/A"}
                 </p>
               </div>
 
@@ -109,7 +145,7 @@ const StudentDetailModal = ({ onClose }: { onClose: () => void }) => {
                   Email 2
                 </span>
                 <p className="text-[#94A3B8] font-bold italic text-[14px]">
-                  Chưa cập nhật
+                  {student?.data?.email2 || "Chưa cập nhật"}
                 </p>
               </div>
             </div>

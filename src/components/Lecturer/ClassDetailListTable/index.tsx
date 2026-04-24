@@ -5,6 +5,10 @@ import Pagination from "@/components/Common/Pagination";
 import { memo, useState } from "react";
 import getScoreColor from "@/utils/getScoreColor";
 import { formatDate } from "@/utils/formatDatt";
+import * as attendanceService from "@/services/attendanceService";
+import { useQuery } from "@tanstack/react-query";
+import { useMutationHooks } from "@/hooks/useMutationHooks";
+import { toast } from "react-toastify";
 
 interface Student {
   id: number;
@@ -15,6 +19,7 @@ interface Student {
 }
 
 interface ListStudent {
+  classCode: string;
   listStudents?: {
     id: number;
     maSinhVien: string;
@@ -30,186 +35,78 @@ interface ListStudent {
   }[];
 }
 
-const ClassDetailListTable = ({ listStudents, classSession }: ListStudent) => {
+const ClassDetailListTable = ({
+  listStudents,
+  classSession,
+  classCode,
+}: ListStudent) => {
   const [openStudentDetail, setOpenStudentDetail] = useState(false);
-  console.log(listStudents);
-  console.log(classSession);
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: 1,
-      code: "A46588",
-      name: "Đặng Thành Hưng",
-      scores: [
-        10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 9, 8, 10, 10, 10, 10, 10,
-        10, 10, 10, 10, 10, 10, 9, 8,
-      ],
-      note: "Hoàn thành",
-    },
-    {
-      id: 2,
-      code: "A12345",
-      name: "Nguyễn Văn A",
-      scores: [
-        8, 7, 9, 8, 7, 8, 9, 7, 8, 8, 7, 1, 2, 10, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 9, 8,
-      ],
-      note: "Khá",
-    },
-    {
-      id: 3,
-      code: "A67890",
-      name: "Đặng Thành Hưng",
-      scores: [
-        9, 9, 10, 9, 9, 10, 9, 9, 10, 9, 9, 4, 5, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 10, 9, 8,
-      ],
-      note: "Xuất sắc",
-    },
-    {
-      id: 4,
-      code: "A11111",
-      name: "Đặng Thành Hưng",
-      scores: [
-        6, 7, 6, 7, 6, 7, 6, 7, 6, 7, 6, 6, 7, 10, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 9, 8,
-      ],
-      note: "Trung bình",
-    },
-    {
-      id: 5,
-      code: "A22222",
-      name: "Đặng Thành Hưng",
-      scores: [
-        10, 9, 10, 9, 10, 9, 10, 9, 10, 9, 10, 9, 8, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 10, 9, 8,
-      ],
-      note: "Xuất sắc",
-    },
-    {
-      id: 6,
-      code: "A33333",
-      name: "Đặng Thành Hưng",
-      scores: [
-        7, 8, 7, 8, 7, 8, 7, 8, 7, 8, 7, 6, 7, 10, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 9, 8,
-      ],
-      note: "Khá",
-    },
-    {
-      id: 7,
-      code: "A44444",
-      name: "Đặng Thành Hưng",
-      scores: [
-        5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 5, 6, 7, 10, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 9, 8,
-      ],
-      note: "Yếu",
-    },
-    {
-      id: 8,
-      code: "A55555",
-      name: "Đặng Thành Hưng",
-      scores: [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-      ],
-      note: "Giỏi",
-    },
-    {
-      id: 9,
-      code: "A66666",
-      name: "Đặng Thành Hưng",
-      scores: [
-        10, 10, 9, 10, 10, 9, 10, 10, 9, 10, 10, 6, 7, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 10, 10, 9, 8,
-      ],
-      note: "Xuất sắc",
-    },
-    {
-      id: 10,
-      code: "A465888",
-      name: "Đặng Thành Hưng",
-      scores: [
-        6, 6, 7, 6, 6, 7, 6, 6, 4, 6, 6, 6, 7, 10, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 9, 8,
-      ],
-      note: "Trung bình",
-    },
-  ]);
-  const dates = [
-    { date: "01/09", time: "(6-8)" },
-    { date: "01/09", time: "(6-8)" },
-    { date: "08/09", time: "(6-7)" },
-    { date: "15/09", time: "(6-7)" },
-    { date: "16/09", time: "(6-7)" },
-    { date: "17/09", time: "(6-7)" },
-    { date: "22/09", time: "(6-7)" },
-    { date: "29/09", time: "(6-7)" },
-    { date: "06/10", time: "(6-7)" },
-    { date: "13/10", time: "(6-7)" },
-    { date: "20/10", time: "(6-7)" },
-    { date: "27/10", time: "(6-7)" },
-    { date: "03/11", time: "(6-7)" },
-    { date: "01/09", time: "(11-13)" },
-    { date: "01/09", time: "(9-11)" },
-    { date: "08/09", time: "(6-7)" },
-    { date: "15/09", time: "(6-7)" },
-    { date: "16/09", time: "(6-7)" },
-    { date: "17/09", time: "(6-7)" },
-    { date: "22/09", time: "(6-7)" },
-    { date: "29/09", time: "(6-7)" },
-    { date: "06/10", time: "(6-7)" },
-    { date: "13/10", time: "(6-7)" },
-    { date: "20/10", time: "(6-7)" },
-    { date: "27/10", time: "(6-7)" },
-    { date: "03/11", time: "(6-7)" },
-  ];
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [attendance, setAttendance] = useState<any>({
+    attendanceData: [],
+  });
 
-  const handleScoreChange = (
-    studentId: number,
-    scoreIndex: number,
-    value: string,
+  const handleUpdateStudentScore = (
+    scoreId: number,
+    newScore: number,
+    note: string,
   ) => {
-    if (
-      value !== "" &&
-      (isNaN(Number(value)) || Number(value) < 0 || Number(value) > 10)
-    ) {
-      return;
-    }
-    const newStudents = students.map((student) => {
-      if (student.id === studentId) {
-        const newScores = [...student.scores];
-        newScores[scoreIndex] = value === "" ? null : Number(value);
-        return { ...student, scores: newScores };
+    setAttendance((prev: any) => {
+      const existingData = prev.attendanceData;
+      const existingDataIndex = existingData.findIndex(
+        (item: any) => item.id === scoreId,
+      );
+
+      if (existingDataIndex > -1) {
+        const updateData = [...existingData];
+        updateData[existingDataIndex] = {
+          id: scoreId,
+          diem_so: newScore,
+          ghi_chu: note,
+        };
+        return { attendanceData: updateData };
+      } else {
+        return {
+          attendanceData: [
+            ...existingData,
+            { id: scoreId, diem_so: newScore, ghi_chu: note },
+          ],
+        };
       }
-      return student;
     });
-    setStudents(newStudents);
   };
+
+  const getAttendance = async (classCode: string) => {
+    const res = await attendanceService.getAttendanceByClassService(classCode);
+    return res;
+  };
+
+  const {
+    data: attendanceData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["attendance", classCode],
+    queryFn: () => getAttendance(classCode),
+  });
+
+  const updateAttendance = useMutationHooks((attendance: any[]) =>
+    attendanceService.updateAttendanceByClassService(attendance),
+  );
+
+  const handleSaveAttendance = async () => {
+    console.log("=== DEBUG handleSaveAttendance ===");
+    console.log("attendance", attendance);
+    updateAttendance.mutate(attendance, {
+      onSuccess: (res: any) => {
+        console.log("attendanceData", attendance);
+        refetch();
+        toast.success(res.message || "Mã OTP đã được gửi thành công!");
+      },
+    });
+  };
+  console.log("Length", classSession?.length);
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
@@ -249,7 +146,10 @@ const ClassDetailListTable = ({ listStudents, classSession }: ListStudent) => {
               <option value="">Công nghệ Blockchain (243IS430.03)</option>
             </select>
           </div>
-          <button className="text-[14px] bg-[#8B0000] text-white font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors">
+          <button
+            onClick={handleSaveAttendance}
+            className="text-[14px] bg-[#8B0000] text-white font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors"
+          >
             Lưu thay đổi
           </button>
           {/* <div className="text-[13px] text-[#475569] flex items-center gap-2">
@@ -332,7 +232,10 @@ const ClassDetailListTable = ({ listStudents, classSession }: ListStudent) => {
                     <div className="flex items-center gap-2">
                       <button
                         className="cursor-pointer hover:underline text-gray-800"
-                        onClick={() => setOpenStudentDetail(true)}
+                        onClick={() => {
+                          setSelectedStudent(student.maSinhVien);
+                          setOpenStudentDetail(true);
+                        }}
                       >
                         {student.ten}
                       </button>
@@ -403,51 +306,56 @@ const ClassDetailListTable = ({ listStudents, classSession }: ListStudent) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {students.map((student) => (
-                <tr
-                  key={student.id}
-                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                >
-                  {student.scores.map((score, scoreIndex) => (
-                    <td
-                      key={scoreIndex}
-                      className={`p-0 border-r border-gray-200 ${getScoreColor(score)}`}
-                    >
-                      <input
-                        type="text"
-                        value={
-                          score === null || score === undefined ? "" : score
-                        }
-                        placeholder="-"
-                        onChange={(e) =>
-                          handleScoreChange(
-                            student.id,
-                            scoreIndex,
-                            e.target.value,
-                          )
-                        }
-                        className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
-                      />
-                    </td>
-                  ))}
-                  <td className="px-4 py-3 whitespace-nowrap text-gray-400 italic min-w-[150px]">
-                    {student.note}
-                  </td>
-                </tr>
-              ))}
+              {attendanceData?.data?.attendance?.map(
+                (attendance: any, index: number) => (
+                  <tr
+                    key={index}
+                    className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                  >
+                    {Array(classSession?.length || 0)
+                      .fill(null)
+                      .map((_, scoreIndex) => {
+                        const score = attendance.lichSuDiemDanh?.[scoreIndex];
+                        return (
+                          <>
+                            <td
+                              key={scoreIndex}
+                              className={`p-0 border-r border-gray-200 ${getScoreColor(score?.diemSo)}`}
+                            >
+                              <input
+                                type="number"
+                                defaultValue={score?.diemSo || ""}
+                                onChange={(e) =>
+                                  handleUpdateStudentScore(
+                                    score.id,
+                                    parseFloat(e.target.value),
+                                    score?.ghi_chu || "123",
+                                  )
+                                }
+                                placeholder="-"
+                                className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
+                              />
+                            </td>
+                          </>
+                        );
+                      })}
+                    {attendanceData?.data?.attendance?.[index]?.ghiChu && (
+                      <td className="px-4 py-3 whitespace-nowrap text-gray-400 italic min-w-[150px]">
+                        {attendance.ghiChu || ""}
+                      </td>
+                    )}
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         </div>
       </div>
-      {/* <Pagination
-        currentPage={2}
-        totalPages={3} // Tính toán dựa trên data của bạn
-        totalItems={124}
-        itemsPerPage={14}
-        onPageChange={(page) => page}
-      /> */}
       {openStudentDetail && (
-        <StudentDetailModal onClose={() => setOpenStudentDetail(false)} />
+        <StudentDetailModal
+          onClose={() => setOpenStudentDetail(false)}
+          studentId={selectedStudent}
+        />
       )}
     </div>
   );

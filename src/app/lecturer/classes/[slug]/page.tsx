@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 
 const DetailClassPage = () => {
   const classCode = useParams().slug as string;
-  console.log(classCode);
+
   const getDetailClass = async (classCode: string) => {
     const res = await classService.getDetailClassByLecturerService(classCode);
     return res;
@@ -87,6 +87,7 @@ const DetailClassPage = () => {
         />
       </div> */}
       <ClassDetailListTable
+        classCode={classCode}
         listStudents={
           detailClass?.data?.danhSachDangKy?.map((student: any) => ({
             id: student.id,
@@ -98,6 +99,7 @@ const DetailClassPage = () => {
         classSession={detailClass?.data?.buoi_hoc?.map((session: any) => ({
           ngayHoc: session.ngayHoc,
           chiTietTietHoc: {
+            
             tiet: session.chiTietTietHoc.tiet,
             thu: session.chiTietTietHoc.thu,
           },
