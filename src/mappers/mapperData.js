@@ -123,10 +123,33 @@ const mapStudentClasses = (studentData) => {
   };
 };
 
+//Attendance
+const mapAttendanceByClass = (sessions) => {
+  return sessions.map((dk) => ({
+    id: dk.id,
+    maSinhVien: dk.sinh_vien?.ma_sinh_vien,
+    ten: dk.sinh_vien?.ten,
+    lopChuyenNganh: dk.sinh_vien?.lop_chuyen_nganh,
+    maLopHocPhan: dk.ma_lop_hoc_phan,
+    lichSuDiemDanh: dk.sinh_vien?.lich_su_diem_danh
+      ? dk.sinh_vien.lich_su_diem_danh.map((diem) => ({
+          id: diem.id,
+          buoiHocId: diem.buoi_hoc_id,
+          diemSo: parseFloat(diem.diem_so),
+          thoiGianDiemDanh: diem.thoi_gian_diem_danh,
+          ghiChu: diem.ghi_chu,
+          maGiangVien: diem.ma_giang_vien,
+        }))
+      : [],
+  }));
+};
+
 module.exports = {
   mapClasses,
   mapClassInfo,
   mapSessions,
   //Student
   mapStudentClasses,
+  //Attendance
+  mapAttendanceByClass,
 };

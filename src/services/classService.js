@@ -1,9 +1,10 @@
+const { or } = require("sequelize");
 const {
   mapClasses,
   mapClassInfo,
   mapSessions,
   mapStudentClasses,
-} = require("../mappers/classMapper");
+} = require("../mappers/mapperData");
 const {
   Tkb,
   HocPhan,
@@ -13,10 +14,12 @@ const {
   Ky,
   BuoiHoc,
   GiangVien,
+  DiemDanh,
 } = require("../models");
 const { getAttendanceDates } = require("../utils/dateHelper");
 
 const semesterService = require("./semesterService");
+
 const getClassesByLecturer = async (lecturerId, semester) => {
   try {
     let currentSemester;
@@ -108,6 +111,7 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
             {
               model: SinhVien,
               as: "sinh_vien",
+              orders: [["id", "DESC"]],
               attributes: ["ma_sinh_vien", "ten", "lop_chuyen_nganh"],
             },
           ],
@@ -134,6 +138,14 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
             "ket_thuc_ky_hoc",
           ],
         },
+      ],
+      order: [
+        [
+          { model: DangKy, as: "danh_sach_dang_ky" },
+          { model: SinhVien, as: "sinh_vien" },
+          "id",
+          "ASC",
+        ],
       ],
     });
     if (!classInfo) {
