@@ -218,76 +218,7 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
   }
 };
 
-//Student
-const getClassesByStudent = async (studentId, semester) => {
-  try {
-    console.log("studentId", studentId);
-    const semesterRes = await semesterService.getCurrentSemester();
-    const currentSemester = semesterRes?.data?.ma_ky;
-
-    const classes = await SinhVien.findOne({
-      where: {
-        ma_sinh_vien: studentId,
-      },
-      attributes: ["ma_sinh_vien", "ten"],
-      include: {
-        model: DangKy,
-        as: "dang_ky",
-        attributes: ["id", "ma_lop_hoc_phan"],
-        include: {
-          model: Tkb,
-          as: "thong_tin_tkb",
-          // where: {
-          //   ma_ky: semester || currentSemester,
-          // },
-          attributes: [
-            "id",
-            "ma_lop_hoc_phan",
-            "ma_hoc_phan",
-            "ten_lop",
-            "sldk",
-            "suc_chua",
-          ],
-
-          include: [
-            {
-              model: GiangVien,
-              as: "giang_vien",
-              attributes: ["ten", "ma_giang_vien"],
-            },
-            {
-              model: TkbChiTiet,
-              as: "thoi_khoa_bieu_chi_tiet",
-              attributes: ["id", "bat_dau", "ket_thuc", "thu", "phong"],
-            },
-            {
-              model: HocPhan,
-              as: "hoc_phan",
-              attributes: ["ten_hoc_phan", "ma_hoc_phan"],
-            },
-          ],
-        },
-      },
-    });
-    console.log(mapStudentClasses(classes));
-    return {
-      status: "Ok",
-      code: 200,
-      data: mapStudentClasses(classes),
-    };
-  } catch (e) {
-    console.log(e);
-    return {
-      status: "Err",
-      code: 500,
-      message: "Lỗi hệ thống vui lòng thử lại sau",
-    };
-  }
-};
-
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
-  //Student
-  getClassesByStudent,
 };

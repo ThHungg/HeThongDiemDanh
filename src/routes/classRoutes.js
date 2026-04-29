@@ -18,11 +18,6 @@ router.get(
   classController.getClassByLecturerAndId,
 );
 
-//Student routes
-router.get(
-  "/student/myClasses",
-  authMiddleware,
-  classController.getClassesByStudent,
-);
+
 
 module.exports = router;
