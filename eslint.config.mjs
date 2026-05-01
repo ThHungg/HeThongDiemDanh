@@ -13,6 +13,15 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Tắt hoàn toàn cảnh báo "Unexpected any"
+      "@typescript-eslint/no-explicit-any": "off",
+
+      // Nếu bạn muốn tắt cả cảnh báo khi dùng any trong mảng (ví dụ: any[])
+      "@typescript-eslint/no-unsafe-assignment": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

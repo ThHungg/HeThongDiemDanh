@@ -45,12 +45,10 @@ const ClassDetailListTable = ({
   const [attendance, setAttendance] = useState<any>({
     attendanceData: [],
   });
+  const [noteUpdates, setNoteUpdates] = useState<{ [key: number]: string }>({});
 
-  const handleUpdateStudentScore = (
-    scoreId: number,
-    newScore: number,
-    note: string,
-  ) => {
+  const handleUpdateStudentScore = (scoreId: number, newScore: number) => {
+    const note = noteUpdates[scoreId] || "";
     setAttendance((prev: any) => {
       const existingData = prev.attendanceData;
       const existingDataIndex = existingData.findIndex(
@@ -63,13 +61,19 @@ const ClassDetailListTable = ({
           id: scoreId,
           diem_so: newScore,
           ghi_chu: note,
+          thoi_gian_diem_danh: new Date().toISOString(),
         };
         return { attendanceData: updateData };
       } else {
         return {
           attendanceData: [
             ...existingData,
-            { id: scoreId, diem_so: newScore, ghi_chu: note },
+            {
+              id: scoreId,
+              diem_so: newScore,
+              ghi_chu: note,
+              thoi_gian_diem_danh: new Date().toISOString(),
+            },
           ],
         };
       }
@@ -91,20 +95,64 @@ const ClassDetailListTable = ({
     queryFn: () => getAttendance(classCode),
   });
 
-  const updateAttendance = useMutationHooks((attendance: any[]) =>
-    attendanceService.updateAttendanceByClassService(attendance),
+  const updateAttendance = useMutationHooks((data: any) =>
+    attendanceService.updateAttendanceByClassService(data),
   );
 
   const handleSaveAttendance = async () => {
-    console.log("=== DEBUG handleSaveAttendance ===");
-    console.log("attendance", attendance);
-    updateAttendance.mutate(attendance, {
-      onSuccess: (res: any) => {
-        console.log("attendanceData", attendance);
-        refetch();
-        toast.success(res.message || "Mã OTP đã được gửi thành công!");
+    let updatedRecords: any[] = [];
+
+    if (attendance.attendanceData.length > 0) {
+      updatedRecords = attendance.attendanceData.map((item: any) => ({
+        ...item,
+        ghi_chu:
+          noteUpdates[item.id] !== undefined
+            ? noteUpdates[item.id]
+            : item.ghi_chu,
+      }));
+    }
+
+    if (
+      Object.keys(noteUpdates).length > 0 &&
+      attendance.attendanceData.length === 0
+    ) {
+      // Lấy dữ liệu gốc từ API và merge với ghi chú mới
+      attendanceData?.data?.attendance?.forEach((att: any) => {
+        att.lichSuDiemDanh?.forEach((score: any) => {
+          if (noteUpdates[score.id]) {
+            updatedRecords.push({
+              id: score.id,
+              diem_so: score.diemSo,
+              ghi_chu: noteUpdates[score.id],
+              thoi_gian_diem_danh: new Date().toISOString(),
+            });
+          }
+        });
+      });
+    }
+
+    console.log("updatedRecords final", updatedRecords);
+
+    if (updatedRecords.length === 0) {
+      toast.warning("Không có dữ liệu thay đổi");
+      return;
+    }
+
+    updateAttendance.mutate(
+      { attendanceData: updatedRecords },
+      {
+        onSuccess: (res: any) => {
+          refetch();
+          toast.success(res.message || "Cập nhật điểm danh thành công!");
+          setAttendance({ attendanceData: [] });
+          setNoteUpdates({});
+        },
+        onError: (error: any) => {
+          console.error("Update error", error);
+          toast.error(error?.response?.data?.message || "Cập nhật thất bại");
+        },
       },
-    });
+    );
   };
   console.log("Length", classSession?.length);
   return (
@@ -152,19 +200,6 @@ const ClassDetailListTable = ({
           >
             Lưu thay đổi
           </button>
-          {/* <div className="text-[13px] text-[#475569] flex items-center gap-2">
-            <span className="">Bộ lọc: </span>
-            <select
-              name=""
-              id=""
-              className="bg-white border border-gray-300 rounded-md py-2 px-2 focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer"
-            >
-              <option value="">Tất cả khoa</option>
-              <option value="">Khoa công nghệ thông tin</option>
-              <option value="">Khoa điện tử viễn thông</option>
-              <option value="">Khoa cơ khí</option>
-            </select>
-          </div> */}
         </div>
       </div>
       <div className="bg-[#F8FAFC] py-2 px-4">
@@ -295,7 +330,6 @@ const ClassDetailListTable = ({
                       </div>
                       <div className="text-[9px] opacity-70">
                         Tiết {item.chiTietTietHoc.tiet}
-                        {/* - {item.chiTietTietHoc.thu} */}
                       </div>
                     </div>
                   </th>
@@ -306,47 +340,58 @@ const ClassDetailListTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {attendanceData?.data?.attendance?.map(
-                (attendance: any, index: number) => (
-                  <tr
-                    key={index}
-                    className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                  >
-                    {Array(classSession?.length || 0)
-                      .fill(null)
-                      .map((_, scoreIndex) => {
-                        const score = attendance.lichSuDiemDanh?.[scoreIndex];
-                        return (
-                          <>
-                            <td
-                              key={scoreIndex}
-                              className={`p-0 border-r border-gray-200 ${getScoreColor(score?.diemSo)}`}
-                            >
-                              <input
-                                type="number"
-                                defaultValue={score?.diemSo || ""}
-                                onChange={(e) =>
-                                  handleUpdateStudentScore(
-                                    score.id,
-                                    parseFloat(e.target.value),
-                                    score?.ghi_chu || "123",
-                                  )
-                                }
-                                placeholder="-"
-                                className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
-                              />
-                            </td>
-                          </>
-                        );
-                      })}
-                    {attendanceData?.data?.attendance?.[index]?.ghiChu && (
-                      <td className="px-4 py-3 whitespace-nowrap text-gray-400 italic min-w-[150px]">
-                        {attendance.ghiChu || ""}
-                      </td>
-                    )}
-                  </tr>
-                ),
-              )}
+              {attendanceData?.data?.attendance?.map((attendance: any) => (
+                <tr
+                  key={attendance.id}
+                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                >
+                  {Array(classSession?.length || 0)
+                    .fill(null)
+                    .map((_, scoreIndex) => {
+                      const score = attendance.lichSuDiemDanh?.[scoreIndex];
+                      return (
+                        <td
+                          key={scoreIndex}
+                          className={`p-0 border-r border-gray-200 ${getScoreColor(score?.diemSo)}`}
+                        >
+                          <input
+                            type="number"
+                            defaultValue={score?.diemSo || ""}
+                            onChange={(e) =>
+                              handleUpdateStudentScore(
+                                score.id,
+                                parseFloat(e.target.value),
+                              )
+                            }
+                            placeholder="-"
+                            className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
+                          />
+                        </td>
+                      );
+                    })}
+                  <td className="px-4 py-3 min-w-[150px] border-r border-gray-200">
+                    <input
+                      type="text"
+                      value={
+                        noteUpdates[attendance.lichSuDiemDanh?.[0]?.id] ??
+                        attendance.lichSuDiemDanh?.[0]?.ghiChu ??
+                        ""
+                      }
+                      onChange={(e) => {
+                        const firstScoreId = attendance.lichSuDiemDanh?.[0]?.id;
+                        if (firstScoreId) {
+                          setNoteUpdates((prev) => ({
+                            ...prev,
+                            [firstScoreId]: e.target.value,
+                          }));
+                        }
+                      }}
+                      placeholder="Nhập ghi chú..."
+                      className="w-full px-2 py-2 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8B0000] bg-white"
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

@@ -27,7 +27,7 @@ export function proxy(request: NextRequest) {
       if (role === "Sinh_vien") {
         return NextResponse.redirect(new URL("/student/classes", request.url));
       }
-      return NextResponse.redirect(new URL("/403", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
     if (pathname.startsWith("/department")) {

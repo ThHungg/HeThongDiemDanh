@@ -88,7 +88,7 @@ const StudentDetailModal = ({
                   Ngày sinh
                 </span>
                 <p className="text-[#1E293B] font-bold text-[16px]">
-                  12/12/2026
+                  {student?.data?.ngay_sinh}
                 </p>
               </div>
 
@@ -96,14 +96,16 @@ const StudentDetailModal = ({
                 <span className="text-[11px] text-[#94A3B8] font-bold uppercase  ">
                   Lớp
                 </span>
-                <p className="text-[#1E293B] font-bold text-[16px]">TT35CL07</p>
+                <p className="text-[#1E293B] font-bold text-[16px]">
+                  {student?.data?.lop_chuyen_nganh}
+                </p>
               </div>
               <div>
                 <span className="text-[11px] text-[#94A3B8] font-bold uppercase  ">
                   Ngành học
                 </span>
                 <p className="text-[#1E293B] font-bold text-[16px]">
-                  Công nghệ thông tin
+                  {student?.data?.nganh}
                 </p>
               </div>
 
@@ -111,7 +113,7 @@ const StudentDetailModal = ({
                 <span className="text-[11px] text-[#94A3B8] font-bold uppercase  ">
                   Khoa
                 </span>
-                <p className="text-[#1E293B] font-bold text-[16px]">Toán Tin</p>
+                <p className="text-[#1E293B] font-bold text-[16px]">Toán tin</p>
               </div>
 
               <div>
