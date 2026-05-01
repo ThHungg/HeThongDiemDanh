@@ -126,16 +126,22 @@ const mapStudentClasses = (studentData) => {
 //Attendance
 const mapAttendanceByClass = (sessions) => {
   return sessions.map((dk) => ({
+    // Giữ nguyên các field cũ để không làm gãy UI Frontend
     id: dk.id,
     maSinhVien: dk.sinh_vien?.ma_sinh_vien,
     ten: dk.sinh_vien?.ten,
     lopChuyenNganh: dk.sinh_vien?.lop_chuyen_nganh,
     maLopHocPhan: dk.ma_lop_hoc_phan,
+
+    // Giữ nguyên logic map cũ, chỉ fix logic parseFloat
     lichSuDiemDanh: dk.sinh_vien?.lich_su_diem_danh
       ? dk.sinh_vien.lich_su_diem_danh.map((diem) => ({
           id: diem.id,
           buoiHocId: diem.buoi_hoc_id,
-          diemSo: parseFloat(diem.diem_so),
+          // Cách fix an toàn cho điểm 0:
+          // Nếu diem_so là null/undefined thì trả về null (để frontend hiện "-")
+          // Nếu có giá trị thì dùng parseFloat
+          diemSo: diem.diem_so !== null ? parseFloat(diem.diem_so) : null,
           thoiGianDiemDanh: diem.thoi_gian_diem_danh,
           ghiChu: diem.ghi_chu,
           maGiangVien: diem.ma_giang_vien,

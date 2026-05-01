@@ -7,6 +7,7 @@ const TkbChiTiet = require("./ThoiKhoaBieuChiTiet");
 const DangKy = require("./DangKy");
 const BuoiHoc = require("./BuoiHoc");
 const DiemDanh = require("./DiemDanh");
+const ChuyenCan = require("./ChuyenCan"); // Đảm bảo bạn đã tạo file này
 
 /**
  * 1. QUẢN LÝ THỜI KHÓA BIỂU (TKB) TỔNG QUAN
@@ -123,6 +124,16 @@ DiemDanh.belongsTo(GiangVien, {
   as: "nguoi_xac_nhan",
 });
 
+// Đăng ký - ChuyenCan (1 - 1): Một lượt đăng ký lớp học có 1 bản ghi tổng kết điểm
+DangKy.hasOne(ChuyenCan, {
+  foreignKey: "dang_ky_id",
+  as: "chuyen_can",
+});
+
+ChuyenCan.belongsTo(DangKy, {
+  foreignKey: "dang_ky_id",
+  as: "dang_ky",
+});
 module.exports = {
   SinhVien,
   GiangVien,
@@ -133,4 +144,5 @@ module.exports = {
   DangKy,
   BuoiHoc,
   DiemDanh,
+  ChuyenCan, 
 };

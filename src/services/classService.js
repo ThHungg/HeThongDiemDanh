@@ -169,7 +169,6 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
         },
       ],
     });
-    console.log("classInfoTransformed.id", classInfoTransformed.id);
     if (sessions.length === 0) {
       const semesterStartDate = classInfoTransformed.ky?.batDauKyHoc;
       const semesterEndDate = classInfoTransformed.ky?.ketThucKyHoc;
