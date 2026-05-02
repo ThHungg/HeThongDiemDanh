@@ -6,11 +6,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { memo, useState } from "react";
 import * as authService from "@/services/authenService";
 import { toast } from "react-toastify";
+import { useUserStore } from "@/store/useUserStore";
 
 const Sidebar = () => {
   const pathname = usePathname();
   const { role } = useUserHooks();
   const router = useRouter();
+  const profile = useUserStore((state) => state.profile);
 
   // const [isSelected, setIsSelected] = useState("/");
 
@@ -288,8 +290,18 @@ const Sidebar = () => {
               </svg>
             </div>
             <div>
-              <p className="!text-[14px] !font-bold">Đặng Thành Hưng</p>
-              <p className="!text-[12px] text-[#64748B]">Phòng đào tạo</p>
+              <p className="!text-[14px] !font-bold">
+                {profile?.ten || "User"}
+              </p>
+              {profile?.role === "Giang_vien" ? (
+                <p className="!text-[12px] ">Giảng viên</p>
+              ) : profile?.role === "Quan_tri" ? (
+                <p className="!text-[12px]">Quản trị viên</p>
+              ) : profile?.role === "Thu_ky" ? (
+                <p className="!text-[12px]">Thư ký</p>
+              ) : profile?.role === "Sinh_vien" ? (
+                <p className="!text-[12px]">Sinh viên</p>
+              ) : null}
             </div>
           </div>
           <div className="p-2 hover:bg-[#EBF0FD] rounded-full cursor-pointer">

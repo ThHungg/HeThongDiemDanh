@@ -37,6 +37,25 @@ export const getDetailClassByLecturerService = async (classCode: string) => {
     }
 }
 
+export const getAllClassesService = async () => {
+  try {
+    const semesterData = localStorage.getItem("semester-data");
+
+    const semester = semesterData
+      ? JSON.parse(semesterData).state.selectedSemester
+      : "";
+    const res = await axiosInstance.get("/classes/getAll", {
+      params: {
+        semester: semester,
+      },
+    });
+    console.log(res);
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+};
+
 //Student
 
 export const getClassesByStudentService = async () => {

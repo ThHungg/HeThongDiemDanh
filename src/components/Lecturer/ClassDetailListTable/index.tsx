@@ -6,7 +6,7 @@ import { memo, useState } from "react";
 import getScoreColor from "@/utils/getScoreColor";
 import { formatDate } from "@/utils/formatDatt";
 import * as attendanceService from "@/services/attendanceService";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutationHooks } from "@/hooks/useMutationHooks";
 import { toast } from "react-toastify";
 
@@ -25,6 +25,7 @@ interface ListStudent {
     maSinhVien: string;
     ten: string;
     lopChuyenNganh: string;
+    diemChuyenCan: number | null;
   }[];
   classSession: {
     ngayHoc: string;
@@ -40,6 +41,7 @@ const ClassDetailListTable = ({
   classSession,
   classCode,
 }: ListStudent) => {
+  const queryClient = useQueryClient();
   const [openStudentDetail, setOpenStudentDetail] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [attendance, setAttendance] = useState<any>({
@@ -118,16 +120,16 @@ const ClassDetailListTable = ({
     ) {
       // Lấy dữ liệu gốc từ API và merge với ghi chú mới
       attendanceData?.data?.attendance?.forEach((att: any) => {
-        att.lichSuDiemDanh?.forEach((score: any) => {
-          if (noteUpdates[score.id]) {
+        if (noteUpdates[att.id]) {
+          att.lichSuDiemDanh?.forEach((score: any) => {
             updatedRecords.push({
               id: score.id,
               diem_so: score.diemSo,
-              ghi_chu: noteUpdates[score.id],
+              ghi_chu: noteUpdates[att.id],
               thoi_gian_diem_danh: new Date().toISOString(),
             });
-          }
-        });
+          });
+        }
       });
     }
 
@@ -142,7 +144,9 @@ const ClassDetailListTable = ({
       { attendanceData: updatedRecords },
       {
         onSuccess: (res: any) => {
-          refetch();
+          queryClient.invalidateQueries({
+            queryKey: ["attendance", classCode],
+          });
           toast.success(res.message || "Cập nhật điểm danh thành công!");
           setAttendance({ attendanceData: [] });
           setNoteUpdates({});
@@ -155,6 +159,10 @@ const ClassDetailListTable = ({
     );
   };
   console.log("Length", classSession?.length);
+  console.log(
+    "attendanceData?.data?.attendance?",
+    attendanceData?.data?.attendance,
+  );
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
@@ -252,64 +260,66 @@ const ClassDetailListTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {listStudents?.map((student, index) => (
-                <tr
-                  key={student.id}
-                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                >
-                  <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
-                    {index + 1}
-                  </td>
-                  <td className="px-4 py-3 font-semibold border-r border-gray-200">
-                    {student.maSinhVien}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="cursor-pointer hover:underline text-gray-800"
-                        onClick={() => {
-                          setSelectedStudent(student.maSinhVien);
-                          setOpenStudentDetail(true);
-                        }}
-                      >
-                        {student.ten}
-                      </button>
-
-                      <div className="relative group flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 48 48"
-                          className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+              {attendanceData?.data?.attendance?.map(
+                (student: any, index: number) => (
+                  <tr
+                    key={student.id}
+                    className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                  >
+                    <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-3 font-semibold border-r border-gray-200">
+                      {student.maSinhVien}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="cursor-pointer hover:underline text-gray-800"
+                          onClick={() => {
+                            setSelectedStudent(student.maSinhVien);
+                            setOpenStudentDetail(true);
+                          }}
                         >
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="4"
-                          >
-                            <path d="M44 24V9H24H4V24V39H24" />
-                            <path d="M44 34L30 34" />
-                            <path d="M39 29L44 34L39 39" />
-                            <path d="M4 9L24 24L44 9" />
-                          </g>
-                        </svg>
+                          {student.ten}
+                        </button>
 
-                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
-                          <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
-                            Gửi email cảnh báo tới sinh viên
+                        <div className="relative group flex items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 48 48"
+                            className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                          >
+                            <g
+                              fill="none"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="4"
+                            >
+                              <path d="M44 24V9H24H4V24V39H24" />
+                              <path d="M44 34L30 34" />
+                              <path d="M39 29L44 34L39 39" />
+                              <path d="M4 9L24 24L44 9" />
+                            </g>
+                          </svg>
+
+                          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
+                            <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
+                              Gửi email cảnh báo tới sinh viên
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
-                    10
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
+                      {student?.diemTrungBinh || "-"}
+                    </td>
+                  </tr>
+                ),
+              )}
             </tbody>
           </table>
         </div>
@@ -369,22 +379,19 @@ const ClassDetailListTable = ({
                         </td>
                       );
                     })}
-                  <td className="px-4 py-3 min-w-[150px] border-r border-gray-200">
+                  <td className="px-4 py-1.5 min-w-[150px] border-r border-gray-200">
                     <input
                       type="text"
                       value={
-                        noteUpdates[attendance.lichSuDiemDanh?.[0]?.id] ??
+                        noteUpdates[attendance.id] ??
                         attendance.lichSuDiemDanh?.[0]?.ghiChu ??
                         ""
                       }
                       onChange={(e) => {
-                        const firstScoreId = attendance.lichSuDiemDanh?.[0]?.id;
-                        if (firstScoreId) {
-                          setNoteUpdates((prev) => ({
-                            ...prev,
-                            [firstScoreId]: e.target.value,
-                          }));
-                        }
+                        setNoteUpdates((prev) => ({
+                          ...prev,
+                          [attendance.id]: e.target.value,
+                        }));
                       }}
                       placeholder="Nhập ghi chú..."
                       className="w-full px-2 py-2 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8B0000] bg-white"

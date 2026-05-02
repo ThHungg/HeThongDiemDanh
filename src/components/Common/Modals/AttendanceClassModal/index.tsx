@@ -1,5 +1,7 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
 import { memo, useState } from "react";
+import * as classService from "@/services/classService";
 interface Student {
   id: number;
   code: string;
@@ -8,7 +10,39 @@ interface Student {
   note: string;
 }
 
-const AttendanceClassModal = ({ onClose }: { onClose: () => void }) => {
+interface Student {
+  id: number;
+  code: string;
+  name: string;
+  scores: (number | null)[];
+  note: string;
+}
+
+interface ListStudent {
+  classCode: string;
+  listStudents?: {
+    id: number;
+    maSinhVien: string;
+    ten: string;
+    lopChuyenNganh: string;
+    diemChuyenCan: number | null;
+  }[];
+  classSession: {
+    ngayHoc: string;
+    chiTietTietHoc: {
+      tiet: string;
+      thu: string;
+    };
+  }[];
+}
+
+const AttendanceClassModal = ({
+  onClose,
+  isSelectedClasscode,
+}: {
+  onClose: () => void;
+  isSelectedClasscode: string;
+}) => {
   const [openStudentDetail, setOpenStudentDetail] = useState(false);
   const [students, setStudents] = useState<Student[]>([
     {
@@ -164,6 +198,22 @@ const AttendanceClassModal = ({ onClose }: { onClose: () => void }) => {
     "27/10 (6-7)",
     "03/11 (6-7)",
   ];
+
+  const getDetailClass = async (classCode: string) => {
+    const res = await classService.getDetailClassByLecturerService(classCode);
+    return res;
+  };
+
+  const {
+    data: detailClass,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["lecturer-classes", isSelectedClasscode],
+    queryFn: () => getDetailClass(isSelectedClasscode),
+  });
+
+  console.log("detailClass", detailClass);
 
   const getScoreColor = (score: number | null | undefined) => {
     if (score === null || score === undefined) return "text-gray-400";

@@ -94,12 +94,12 @@ const DetailClassPage = () => {
             maSinhVien: student.maSinhVien,
             ten: student.ten,
             lopChuyenNganh: student.lopChuyenNganh,
+            diemChuyenCan: student.diemChuyenCan,
           })) || []
         }
         classSession={detailClass?.data?.buoi_hoc?.map((session: any) => ({
           ngayHoc: session.ngayHoc,
           chiTietTietHoc: {
-            
             tiet: session.chiTietTietHoc.tiet,
             thu: session.chiTietTietHoc.thu,
           },

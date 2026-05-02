@@ -2,81 +2,29 @@
 import AttendanceClassModal from "@/components/Common/Modals/AttendanceClassModal";
 import Pagination from "@/components/Common/Pagination";
 import { memo, useState } from "react";
+import * as classService from "@/services/classService";
+import { useQuery } from "@tanstack/react-query";
+import { formatClassCode } from "@/utils/formatClassCode";
 
 const ClassesTable = () => {
-  const [openAttendanceClass, setOpenAttendanceClass] = useState(false);
-  const classData = [
-    {
-      id: "1",
-      classCode: "243IS332.01",
-      courseName: "Cấu trúc dữ liệu và giải thuật",
-      lecturer: "Dr. Nguyen Van An",
-      totalStudents: 45,
-      attendanceRate: 9.5,
-      schedule: "Thứ 2, Tiết 1-3 / Thứ 7, Tiết 3-4",
-    },
-    {
-      id: "2",
-      classCode: "243IS332.02",
-      courseName: "Cơ sở dữ liệu",
-      lecturer: "MSc. Le Thi Binh",
-      totalStudents: 42,
-      attendanceRate: 4.8,
-      schedule: "Thứ 3, Tiết 4-5",
-    },
-    {
-      id: "3",
-      classCode: "242IT110.05",
-      courseName: "Lập trình hướng đối tượng",
-      lecturer: "TS. Tran Duc Cuong",
-      totalStudents: 38,
-      attendanceRate: 8.2,
-    },
-    {
-      id: "4",
-      classCode: "241SE201.01",
-      courseName: "Phân tích thiết kế hệ thống",
-      lecturer: "MSc. Pham Minh Tuan",
-      totalStudents: 50,
-      attendanceRate: 7.5,
-      schedule: "Thứ 4, Tiết 1-3 / Thứ 6, Tiết 1-3",
-    },
-    {
-      id: "5",
-      classCode: "243NT402.03",
-      courseName: "Mạng máy tính",
-      lecturer: "Dr. Hoang Xuan Bach",
-      totalStudents: 44,
-      attendanceRate: 3.9,
-      schedule: "Thứ 4, Tiết 1-3 / Thứ 6, Tiết 1-3",
-    },
-    {
-      id: "6",
-      classCode: "242AI105.02",
-      courseName: "Trí tuệ nhân tạo",
-      lecturer: "TS. Dang Minh Hoa",
-      totalStudents: 35,
-      attendanceRate: 9.8,
-    },
-    {
-      id: "7",
-      classCode: "243WD101.01",
-      courseName: "Phát triển ứng dụng Web",
-      lecturer: "MSc. Vu Thanh Long",
-      totalStudents: 48,
-      attendanceRate: 6.2,
-      schedule: "Thứ 4, Tiết 1-3 / Thứ 6, Tiết 1-3",
-    },
-    {
-      id: "8",
-      classCode: "241OS202.04",
-      courseName: "Hệ điều hành",
-      lecturer: "Dr. Ngo Bao Chau",
-      totalStudents: 40,
-      attendanceRate: 8.9,
-      schedule: "Thứ 4, Tiết 1-3 / Thứ 6, Tiết 1-3",
-    },
-  ];
+  const [isSelectedClasscode, setIsSelectedClasscode] = useState("242IT38002");
+  const [openAttendanceClass, setOpenAttendanceClass] = useState(true);
+  const getAllClasses = async () => {
+    const res = await classService.getAllClassesService();
+    return res;
+  };
+
+  console.log(isSelectedClasscode);
+
+  const {
+    data: allClasses,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["all-classes"],
+    queryFn: () => getAllClasses(),
+  });
+
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
@@ -129,51 +77,58 @@ const ClassesTable = () => {
           </tr>
         </thead>
         <tbody className="bg-white text-[14px] text-[#475569]">
-          {classData.map((classItem) => (
+          {allClasses?.data?.map((classItem: any) => (
             <tr
               key={classItem.id}
               className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
             >
               <td className="text-left px-4 py-2 font-bold text-[#111827]">
-                {classItem.classCode}
+                {formatClassCode(classItem.ma_lop_hoc_phan, classItem.ten_lop)}
               </td>
 
               <td className="text-left px-4 py-2 font-semibold ">
-                <p> {classItem.courseName}</p>
-                {classItem.schedule && (
+                <p> {classItem.hoc_phan.ten_hoc_phan}</p>
+                {classItem.thoi_khoa_bieu_chi_tiet && (
                   <p className="text-[12px] text-gray-500 font-normal mt-0.5">
-                    {classItem.schedule}
+                    {classItem.thoi_khoa_bieu_chi_tiet?.map(
+                      (schedule: any, index: number) => (
+                        <span key={index}>
+                          Thứ {schedule.thu}, Tiết {schedule.bat_dau}-
+                          {schedule.ket_thuc}
+                          {index !==
+                            classItem.thoi_khoa_bieu_chi_tiet.length - 1 &&
+                            " / "}
+                        </span>
+                      ),
+                    )}
                   </p>
                 )}
               </td>
 
               <td className="text-left px-4 py-2 font-semibold text-gray-600">
-                {classItem.lecturer}
+                {classItem.giang_vien.ten}
               </td>
 
               <td className="text-left px-4 py-2 font-semibold text-gray-600">
-                {classItem.totalStudents}
+                {classItem.sldk} / {classItem.suc_chua}
               </td>
 
               <td className="text-left px-4 py-2 font-bold space-y-1 whitespace-nowrap">
                 {classItem.attendanceRate >= 9 ? (
-                  <span className="text-green-600">
-                    {classItem.attendanceRate}
-                  </span>
+                  <span className="text-green-600">1</span>
                 ) : classItem.attendanceRate >= 7 ? (
-                  <span className="text-yellow-600">
-                    {classItem.attendanceRate}
-                  </span>
+                  <span className="text-yellow-600">2</span>
                 ) : (
-                  <span className="text-red-600">
-                    {classItem.attendanceRate}
-                  </span>
+                  <span className="text-red-600">3</span>
                 )}
               </td>
 
               <td className="text-left px-4 py-2">
                 <button
-                  onClick={() => setOpenAttendanceClass(true)}
+                  onClick={() => {
+                    setOpenAttendanceClass(true);
+                    setIsSelectedClasscode(classItem.ma_lop_hoc_phan);
+                  }}
                   className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-semibold hover:bg-gray-100 transition-colors"
                 >
                   Chi tiết
@@ -191,7 +146,10 @@ const ClassesTable = () => {
         onPageChange={(page) => page}
       />
       {openAttendanceClass && (
-        <AttendanceClassModal onClose={() => setOpenAttendanceClass(false)} />
+        <AttendanceClassModal
+          isSelectedClasscode={isSelectedClasscode}
+          onClose={() => setOpenAttendanceClass(false)}
+        />
       )}
     </div>
   );
