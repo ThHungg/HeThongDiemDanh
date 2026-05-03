@@ -15,6 +15,7 @@ const {
   BuoiHoc,
   GiangVien,
   DiemDanh,
+  ChuyenCan,
 } = require("../models");
 const { getAttendanceDates } = require("../utils/dateHelper");
 
@@ -114,6 +115,11 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
               orders: [["id", "DESC"]],
               attributes: ["ma_sinh_vien", "ten", "lop_chuyen_nganh"],
             },
+            {
+              model: ChuyenCan,
+              as: "chuyen_can",
+              attributes: ["diem_trung_binh"],
+            },
           ],
         },
         {
@@ -205,7 +211,62 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
         ...classInfoTransformed,
         // buoi_hoc: mapSessions(sessions),
         buoi_hoc: mapSessions(sessions),
+        classInfo,
       },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
+const getAllClasses = async (semester) => {
+  try {
+    let currentSemester;
+    if (semester) {
+      currentSemester = semester;
+    } else {
+      const semesterRes = await semesterService.getCurrentSemester();
+      currentSemester = semesterRes?.data?.ma_ky;
+    }
+
+    const classes = await Tkb.findAll({
+      where: currentSemester ? { ma_ky: currentSemester } : {},
+      attributes: [
+        "id",
+        "ma_lop_hoc_phan",
+        "ma_hoc_phan",
+        "ten_lop",
+        "sldk",
+        "suc_chua",
+      ],
+      include: [
+        {
+          model: GiangVien,
+          as: "giang_vien",
+          attributes: ["ten", "ma_giang_vien"],
+        },
+        {
+          model: HocPhan,
+          as: "hoc_phan",
+          attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+        },
+        {
+          model: TkbChiTiet,
+          as: "thoi_khoa_bieu_chi_tiet",
+          attributes: ["bat_dau", "ket_thuc", "thu", "phong"],
+        },
+      ],
+      order: [["id", "DESC"]],
+    });
+    return {
+      status: "Ok",
+      code: 200,
+      data: classes,
     };
   } catch (e) {
     console.log(e);
@@ -220,4 +281,5 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
+  getAllClasses,
 };

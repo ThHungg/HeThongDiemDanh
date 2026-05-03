@@ -61,9 +61,26 @@ const getClassByLecturerAndId = async (req, res) => {
   }
 };
 
-
+const getAllClasses = async (req, res) => {
+  try {
+    const { semester } = req.query;
+    const response = await classService.getAllClasses(semester);
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
 
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
+  getAllClasses,
 };

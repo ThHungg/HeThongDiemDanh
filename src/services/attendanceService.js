@@ -10,10 +10,66 @@ const { mapAttendanceByClass } = require("../mappers/mapperData");
 const { sequelize } = require("../config/db");
 const { where, Op } = require("sequelize");
 
+const calculateAndUpdateChuyenCan = async (classCode, transaction = null) => {
+  try {
+    const tkb = await Tkb.findOne({
+      where: { ma_lop_hoc_phan: classCode },
+    });
+
+    if (!tkb) return;
+
+    const listDangky = await DangKy.findAll({
+      where: { ma_lop_hoc_phan: classCode },
+    });
+
+    for (const dk of listDangky) {
+      const sinhVienId = dk.sinh_vien_id;
+
+      const allScores = await DiemDanh.findAll({
+        where: { sinh_vien_id: sinhVienId },
+        include: [
+          {
+            model: BuoiHoc,
+            as: "buoi_hoc",
+            attributes: ["tkb_id"],
+            where: { tkb_id: tkb.id },
+            required: true,
+          },
+        ],
+        transaction,
+      });
+
+      if (allScores.length > 0) {
+        const totalScore = allScores.reduce(
+          (sum, s) => sum + parseFloat(s.diem_so),
+          0,
+        );
+        const avg = (totalScore / allScores.length).toFixed(2);
+        console.log(avg);
+        console.log("totalScore", totalScore);
+
+        // Thử update trước, nếu không có record thì tạo mới
+        const [updated] = await ChuyenCan.update(
+          { diem_trung_binh: avg },
+          { where: { dang_ky_id: dk.id }, transaction },
+        );
+        if (updated === 0) {
+          await ChuyenCan.create(
+            { dang_ky_id: dk.id, diem_trung_binh: avg },
+            { transaction },
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.log("Error calculating ChuyenCan:", e);
+  }
+};
+
 const getAttendanceByClass = async (classCode) => {
   try {
-    const today = new Date().toLocaleDateString("en-CA");
-    // const today = "2025-05-01";
+    // const today = new Date().toLocaleDateString("en-CA");
+    const today = "2026-02-04";
     const tkb = await Tkb.findOne({
       where: {
         ma_lop_hoc_phan: classCode,
@@ -71,6 +127,8 @@ const getAttendanceByClass = async (classCode) => {
     }
     if (newRecords.length > 0) {
       await DiemDanh.bulkCreate(newRecords, { ignoreDuplicates: true });
+      // Tính lại điểm trung bình sau khi auto-assign
+      await calculateAndUpdateChuyenCan(classCode);
     }
 
     const data = await DangKy.findAll({
@@ -90,6 +148,12 @@ const getAttendanceByClass = async (classCode) => {
                 : { buoi_hoc_id: -1 },
             required: false,
           },
+        },
+        {
+          model: ChuyenCan,
+          as: "chuyen_can",
+          attributes: ["diem_trung_binh"],
+          required: false,
         },
       ],
       order: [[{ model: SinhVien, as: "sinh_vien" }, "ten", "ASC"]],
@@ -177,17 +241,18 @@ const updateAttendanceByClass = async (attendanceData) => {
       transaction: t,
     });
 
-    console.log("attendances :", attendances);
-
     const dangKyIds = attendances
       .map((att) => att.buoi_hoc?.thoi_khoa_bieu?.danh_sach_dang_ky)
       .flat()
       .filter((dk) => dk !== null)
       .map((dk) => dk.id);
 
-    console.log(dangKyIds);
+    // Unique dangKyIds để tránh tính lại nhiều lần cho cùng 1 sinh viên
+    const uniqueDangKyIds = [...new Set(dangKyIds)];
 
-    for (const dkId of dangKyIds) {
+    console.log("uniqueDangKyIds :", uniqueDangKyIds);
+
+    for (const dkId of uniqueDangKyIds) {
       console.log(dkId);
       const attendanceRecord = attendances.find((att) =>
         att.buoi_hoc?.thoi_khoa_bieu?.danh_sach_dang_ky?.some(
@@ -215,13 +280,19 @@ const updateAttendanceByClass = async (attendanceData) => {
         0,
       );
       const avg = allScores.length > 0 ? totalScore / allScores.length : 0;
-      console.log(
-        `DangKy ID: ${dkId}, Total Score: ${totalScore}, Average: ${avg}`,
+      console.log();
+
+      // Thử update trước, nếu không có record thì tạo mới
+      const [updated] = await ChuyenCan.update(
+        { diem_trung_binh: avg.toFixed(2) },
+        { where: { dang_ky_id: dkId }, transaction: t },
       );
-      await ChuyenCan.upsert(
-        { dang_ky_id: dkId, diem_trung_binh: avg.toFixed(2) },
-        { transaction: t },
-      );
+      if (updated === 0) {
+        await ChuyenCan.create(
+          { dang_ky_id: dkId, diem_trung_binh: avg.toFixed(2) },
+          { transaction: t },
+        );
+      }
     }
 
     await t.commit();
@@ -245,6 +316,7 @@ const updateAttendanceByClass = async (attendanceData) => {
 module.exports = {
   getAttendanceByClass,
   updateAttendanceByClass,
+  calculateAndUpdateChuyenCan,
 };
 
 // const tkb = await Tkb.findOne({

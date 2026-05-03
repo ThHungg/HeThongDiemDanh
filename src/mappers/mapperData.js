@@ -64,6 +64,7 @@ const mapClassInfo = (classInfo) => {
       maSinhVien: dk.sinh_vien?.ma_sinh_vien,
       ten: dk.sinh_vien?.ten,
       lopChuyenNganh: dk.sinh_vien?.lop_chuyen_nganh,
+      diemChuyenCan: dk.chuyen_can?.diem_trung_binh,
     })),
   };
 };
@@ -132,6 +133,9 @@ const mapAttendanceByClass = (sessions) => {
     ten: dk.sinh_vien?.ten,
     lopChuyenNganh: dk.sinh_vien?.lop_chuyen_nganh,
     maLopHocPhan: dk.ma_lop_hoc_phan,
+    diemTrungBinh: dk.chuyen_can?.diem_trung_binh
+      ? parseFloat(dk.chuyen_can.diem_trung_binh).toFixed(2)
+      : null,
 
     // Giữ nguyên logic map cũ, chỉ fix logic parseFloat
     lichSuDiemDanh: dk.sinh_vien?.lich_su_diem_danh

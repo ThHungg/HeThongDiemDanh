@@ -18,6 +18,6 @@ router.get(
   classController.getClassByLecturerAndId,
 );
 
-
+router.get("/getAll", classController.getAllClasses);
 
 module.exports = router;
