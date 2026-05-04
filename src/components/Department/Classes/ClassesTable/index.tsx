@@ -8,7 +8,7 @@ import { formatClassCode } from "@/utils/formatClassCode";
 
 const ClassesTable = () => {
   const [isSelectedClasscode, setIsSelectedClasscode] = useState("242IT38002");
-  const [openAttendanceClass, setOpenAttendanceClass] = useState(true);
+  const [openAttendanceClass, setOpenAttendanceClass] = useState(false);
   const getAllClasses = async () => {
     const res = await classService.getAllClassesService();
     return res;
@@ -87,7 +87,7 @@ const ClassesTable = () => {
               </td>
 
               <td className="text-left px-4 py-2 font-semibold ">
-                <p> {classItem.hoc_phan.ten_hoc_phan}</p>
+                <p> {classItem?.hoc_phan?.ten_hoc_phan}</p>
                 {classItem.thoi_khoa_bieu_chi_tiet && (
                   <p className="text-[12px] text-gray-500 font-normal mt-0.5">
                     {classItem.thoi_khoa_bieu_chi_tiet?.map(
@@ -106,11 +106,11 @@ const ClassesTable = () => {
               </td>
 
               <td className="text-left px-4 py-2 font-semibold text-gray-600">
-                {classItem.giang_vien.ten}
+                {classItem.giang_vien?.ten}
               </td>
 
               <td className="text-left px-4 py-2 font-semibold text-gray-600">
-                {classItem.sldk} / {classItem.suc_chua}
+                {classItem?.sldk} / {classItem?.suc_chua}
               </td>
 
               <td className="text-left px-4 py-2 font-bold space-y-1 whitespace-nowrap">
@@ -127,7 +127,7 @@ const ClassesTable = () => {
                 <button
                   onClick={() => {
                     setOpenAttendanceClass(true);
-                    setIsSelectedClasscode(classItem.ma_lop_hoc_phan);
+                    setIsSelectedClasscode(classItem?.ma_lop_hoc_phan);
                   }}
                   className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-semibold hover:bg-gray-100 transition-colors"
                 >

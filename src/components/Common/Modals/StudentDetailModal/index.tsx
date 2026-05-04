@@ -29,7 +29,7 @@ const StudentDetailModal = ({
   });
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60">
       <div className="p-2 bg-white rounded-2xl min-w-[400px]">
         <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200 mb-[12px]">
           <div className="flex items-center gap-2">
