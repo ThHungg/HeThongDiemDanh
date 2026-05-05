@@ -12,4 +12,9 @@ router.get(
   studentController.getClassByStudentAndId,
 );
 
+//Department
+//Get All
+router.get("/", studentController.getAllStudents);
+router.get("/:studentId/classes", studentController.getClassesByStudentId);
+
 module.exports = router;

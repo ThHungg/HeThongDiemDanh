@@ -90,14 +90,26 @@ const mapSessions = (sessions) => {
 
 //Student
 const mapStudentClasses = (studentData) => {
+  console.log("studentData", studentData);
   return {
     maSinhVien: studentData.ma_sinh_vien,
     ten: studentData.ten,
+    lopChuyenNganh: studentData.lop_chuyen_nganh,
+    dienThoai1: studentData.dien_thoai1,
+    dienThoai2: studentData.dien_thoai2,
+    email1: studentData.email1,
+    lopChuyenNganh: studentData.lop_chuyen_nganh,
+    dienThoai1: studentData.dien_thoai1,
+    dienThoai2: studentData.dien_thoai2,
+    email1: studentData.email1,
     dangKy: studentData.dang_ky
       .filter((dk) => dk.thong_tin_tkb !== null)
       .map((dk) => ({
         id: dk.id,
         maLopHocPhan: dk.ma_lop_hoc_phan,
+        diemChuyenCan: dk.chuyen_can
+          ? parseFloat(dk.chuyen_can.diem_trung_binh).toFixed(2)
+          : null,
         giangVien: dk.thong_tin_tkb?.giang_vien
           ? {
               ten: dk.thong_tin_tkb.giang_vien.ten,
@@ -154,12 +166,45 @@ const mapAttendanceByClass = (sessions) => {
   }));
 };
 
+const mapStudents = (students) => {
+  return students.map((student) => {
+    const dangKy = student.dang_ky.map((dk) => ({
+      id: dk.id,
+      maLopHocPhan: dk.ma_lop_hoc_phan,
+      diemChuyenCan: dk.chuyen_can
+        ? parseFloat(dk.chuyen_can.diem_trung_binh).toFixed(2)
+        : null,
+    }));
+
+    const diemArr = dangKy
+      .map((dk) => parseFloat(dk.diemChuyenCan))
+      .filter((d) => !isNaN(d));
+
+    const diemTrungBinhChuyenCan =
+      diemArr.length > 0
+        ? (diemArr.reduce((a, b) => a + b) / diemArr.length).toFixed(2)
+        : null;
+
+    return {
+      maSinhVien: student.ma_sinh_vien,
+      ten: student.ten,
+      lopChuyenNganh: student.lop_chuyen_nganh,
+      dienThoai1: student.dien_thoai1,
+      dienThoai2: student.dien_thoai2,
+      email1: student.email1,
+      dangKy,
+      diemTrungBinhChuyenCan,
+    };
+  });
+};
+
 module.exports = {
   mapClasses,
   mapClassInfo,
   mapSessions,
   //Student
   mapStudentClasses,
+  mapStudents,
   //Attendance
   mapAttendanceByClass,
 };

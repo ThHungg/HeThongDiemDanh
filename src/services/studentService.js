@@ -9,8 +9,10 @@ const {
   BuoiHoc,
   GiangVien,
   DiemDanh,
+  ChuyenCan,
 } = require("../models");
-const { mapStudentClasses } = require("../mappers/mapperData");
+const { mapStudentClasses, mapStudents } = require("../mappers/mapperData");
+const { Op } = require("sequelize");
 
 const getStudentById = async (studentId) => {
   try {
@@ -181,8 +183,207 @@ const getClassByStudentAndId = async (studentId, classCode) => {
   }
 };
 
+const getAllStudents = async (semester, page, limit, search) => {
+  try {
+    const pageNumber = parseInt(page) || 1;
+    const limitNumber = parseInt(limit) || 10;
+    const offset = (pageNumber - 1) * limitNumber;
+    const semesterRes = await semesterService.getCurrentSemester();
+    const currentSemester = semesterRes?.data?.ma_ky;
+
+    const whereCondition = {};
+
+    if (search) {
+      whereCondition[Op.or] = [
+        { ma_sinh_vien: { [Op.like]: `%${search}%` } },
+        { ten: { [Op.like]: `%${search}%` } },
+        { lop_chuyen_nganh: { [Op.like]: `%${search}%` } },
+      ];
+    }
+
+    const { count, rows } = await SinhVien.findAndCountAll({
+      where: whereCondition,
+      attributes: [
+        "ma_sinh_vien",
+        "ten",
+        "lop_chuyen_nganh",
+        "dien_thoai1",
+        "dien_thoai2",
+        "email1",
+      ],
+      include: {
+        model: DangKy,
+        as: "dang_ky",
+        required: false,
+        attributes: ["id", "ma_lop_hoc_phan"],
+        where: {
+          ma_ky: semester || currentSemester,
+        },
+        include: [
+          {
+            model: ChuyenCan,
+            as: "chuyen_can",
+            attributes: ["id", "dang_ky_id", "diem_trung_binh"],
+          },
+          {
+            model: Tkb,
+            as: "thong_tin_tkb",
+            attributes: [
+              "id",
+              "ma_lop_hoc_phan",
+              "ma_hoc_phan",
+              "ten_lop",
+              "sldk",
+              "suc_chua",
+            ],
+            include: [
+              {
+                model: GiangVien,
+                as: "giang_vien",
+                attributes: ["ten", "ma_giang_vien"],
+              },
+              {
+                model: HocPhan,
+                as: "hoc_phan",
+                attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+              },
+            ],
+          },
+        ],
+      },
+      offset: offset,
+      limit: limitNumber,
+      order: [["ma_sinh_vien", "ASC"]],
+    });
+
+    const mappedStudents = mapStudents(rows);
+    const totalPages = Math.ceil(count / limitNumber);
+    return {
+      status: "Ok",
+      code: 200,
+      data: mappedStudents,
+      pagination: {
+        currentPage: page,
+        limit,
+        totalRecords: count,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
+const getClassesByStudentId = async (studentId, semester) => {
+  try {
+    const semesterRes = await semesterService.getCurrentSemester();
+    const currentSemester = semesterRes?.data?.ma_ky;
+
+    // Lấy thông tin sinh viên
+    const student = await SinhVien.findOne({
+      where: {
+        ma_sinh_vien: studentId,
+      },
+      attributes: [
+        "ma_sinh_vien",
+        "ten",
+        "lop_chuyen_nganh",
+        "dien_thoai1",
+        "dien_thoai2",
+        "email1",
+      ],
+    });
+
+    if (!student) {
+      return {
+        status: "Err",
+        code: 404,
+        message: "Không tìm thấy sinh viên",
+      };
+    }
+
+    // Lấy danh sách lớp học đã đăng ký
+    const classes = await DangKy.findAll({
+      where: {
+        msv: studentId,
+        ma_ky: semester || currentSemester,
+      },
+      attributes: ["id", "ma_lop_hoc_phan", "ma_hoc_phan"],
+      include: [
+        {
+          model: ChuyenCan,
+          as: "chuyen_can",
+          attributes: ["id", "dang_ky_id", "diem_trung_binh"],
+        },
+        {
+          model: Tkb,
+          as: "thong_tin_tkb",
+          attributes: [
+            "id",
+            "ma_lop_hoc_phan",
+            "ma_hoc_phan",
+            "ten_lop",
+            "sldk",
+            "suc_chua",
+          ],
+          include: [
+            {
+              model: GiangVien,
+              as: "giang_vien",
+              attributes: ["ten", "ma_giang_vien"],
+            },
+            {
+              model: TkbChiTiet,
+              as: "thoi_khoa_bieu_chi_tiet",
+              attributes: ["id", "bat_dau", "ket_thuc", "thu", "phong"],
+            },
+            {
+              model: HocPhan,
+              as: "hoc_phan",
+              attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+            },
+          ],
+        },
+      ],
+    });
+
+    // Truyền data đúng format vào mapper
+    const mappedData = mapStudentClasses({
+      ma_sinh_vien: student.ma_sinh_vien,
+      ten: student.ten,
+      lop_chuyen_nganh: student.lop_chuyen_nganh,
+      dien_thoai1: student.dien_thoai1,
+      dien_thoai2: student.dien_thoai2,
+      email1: student.email1,
+      dang_ky: classes,
+    });
+
+    return {
+      status: "Ok",
+      code: 200,
+      data: mappedData,
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getStudentById,
   getClassesByStudent,
   getClassByStudentAndId,
+  getAllStudents,
+  getClassesByStudentId,
 };
