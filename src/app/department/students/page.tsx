@@ -1,9 +1,12 @@
+"use client";
 import ContentHeader from "@/components/Common/ContentHeader";
 import FilterBar from "@/components/Department/FilterBar";
 import StudentsTable from "@/components/Department/Students/StudentsTable";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 const StudentManagementPage = () => {
+  const [searchValue, setSearchValue] = useState("A46588");
+
   return (
     <div className="p-[24px]">
       <ContentHeader
@@ -14,8 +17,8 @@ const StudentManagementPage = () => {
         showAdd={false}
         onAdd={() => {}}
       />
-      <FilterBar />
-      <StudentsTable />
+      <FilterBar onSearchChange={setSearchValue} />
+      <StudentsTable searchValue={searchValue} />
     </div>
   );
 };

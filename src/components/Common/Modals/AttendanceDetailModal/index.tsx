@@ -1,57 +1,43 @@
 "use client";
 import { memo, useState } from "react";
 import avatar from "../../../../../public/assets/Images/Avatar.png";
+import * as studentService from "@/services/studentService";
+import { useQuery } from "@tanstack/react-query";
+import { formatClassCode } from "@/utils/formatClassCode";
 
 const AttendanceDetailModal = ({
   onClose,
   isStudent,
+  studentId,
+  avgChuyenCan,
 }: {
   onClose: () => void;
   isStudent: boolean;
+  studentId: string;
+  avgChuyenCan: number | null;
 }) => {
-  const [isSelected, setIsSelected] = useState<Number | null>(null);
+  const [isSelected, setIsSelected] = useState<Number | null>(0);
+  console.log(isStudent);
+  console.log("studentId", studentId);
+  const getClassesByStudentId = async (studentId: string) => {
+    const res = await studentService.getClassesByStudentId(studentId);
+    console.log(res);
+    return res;
+  };
+  const {
+    data: classes,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["classes", studentId],
+    queryFn: () => getClassesByStudentId(studentId),
+  });
 
-  const listClass = [
-    {
-      id: 1,
-      code: "IS430",
-      name: "Kiểm thử và đảm bảo chất lượng phần mềm",
-      subjectClass: "243IS430.02",
-      room: "A701",
-      lecturer: "TS. Nguyễn Văn A",
-      schedule: "Thứ 2, Tiết 1-3\nThứ 7, Tiết 3-4",
-    },
-    {
-      id: 2,
-      code: "SE302",
-      name: "Công nghệ phần mềm",
-      subjectClass: "243SE302.01",
-      room: "B2.01",
-      lecturer: "ThS. Trần Thị B",
-      schedule: "Thứ 3, Tiết 4-5\nThứ 6, Tiết 1-3",
-    },
-    {
-      id: 3,
-      code: "IT001",
-      name: "Cấu trúc dữ liệu và Giải thuật",
-      subjectClass: "243IT001.05",
-      room: "C103",
-      lecturer: "TS. Lê Hoàng C",
-      schedule: "Thứ 4, Tiết 7-9",
-    },
-    {
-      id: 4,
-      code: "CS112",
-      name: "Phân tích và thiết kế hệ thống",
-      subjectClass: "243CS112.H21",
-      room: "A2.10",
-      lecturer: "PGS.TS. Phạm Văn D",
-      schedule: "Thứ 2, Tiết 4-5\nThứ 5, Tiết 7-9",
-    },
-  ];
+  console.log("classes", classes);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="max-w-[800px] w-full bg-white rounded-lg ">
+      <div className="max-w-[1000px] w-full bg-white rounded-lg ">
         {/* Header */}
         <div className="px-[24px] py-[12px]  flex justify-between">
           <div className="flex items-center gap-2">
@@ -91,7 +77,7 @@ const AttendanceDetailModal = ({
               <h6 className="font-semibold text-[#737373] whitespace-nowrap">
                 Điểm TB
               </h6>
-              <p>9,1</p>
+              <p>{avgChuyenCan || "-"}</p>
             </div>
 
             {!isStudent && (
@@ -127,7 +113,7 @@ const AttendanceDetailModal = ({
                 Danh sách môn học
               </h6>
               <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px]">
-                {listClass.map((item) => (
+                {/* {listClass.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => setIsSelected(item.id)}
@@ -154,6 +140,47 @@ const AttendanceDetailModal = ({
                     <h6 className="font-bold !text-[14px]">{item.name}</h6>
                     <p className="text-[12px] font-semibold text-[#737373]">
                       Giảng viên: {item.lecturer}
+                    </p>
+                  </div>
+                ))} */}
+                {classes?.data?.dangKy?.map((item: any, index: number) => (
+                  <div
+                    key={item.index}
+                    onClick={() => setIsSelected(index)}
+                    className={
+                      isSelected === index
+                        ? "border border-[#8B0000] rounded-lg p-2 bg-[#FFF0EE]"
+                        : "border border-[#8B0000]/10 rounded-lg p-2"
+                    }
+                  >
+                    <div className="flex justify-between items-center">
+                      <p className="text-[12px] font-semibold text-[#737373]">
+                        {formatClassCode(
+                          item.maLopHocPhan,
+                          item.hocPhan?.tenLop,
+                        )}
+                      </p>
+                      <p
+                        className={`px-2 text-[12px] font-semibold rounded-lg ${
+                          isSelected === item.id
+                            ? "bg-[#FEE2E2] text-[#8B0000]"
+                            : "bg-[#DCFCE7] text-[#15803D]"
+                        }`}
+                      >
+                        {item.diemChuyenCan || "N/A"}
+                      </p>
+                    </div>
+                    <h6 className="font-bold !text-[14px]">
+                      {item.hocPhan?.tenHocPhan}
+                      <br />
+                      <span className="text-[11px] text-[#94A3B8] font-bold rounded-lg">
+                        {item.thoiKhoaBieuChiTiet
+                          ?.map((s: any) => `T${s.thu} ${s.tiet} (${s.phong})`)
+                          ?.join(" / ")}
+                      </span>
+                    </h6>
+                    <p className="text-[12px] font-semibold text-[#737373]">
+                      Giảng viên: {item.giangVien?.ten}
                     </p>
                   </div>
                 ))}

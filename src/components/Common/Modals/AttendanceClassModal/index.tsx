@@ -37,6 +37,7 @@ const AttendanceClassModal = ({
   const [openDetailScore, setOpenDetailScore] = useState(false);
   const [selectedStudentScores, setSelectedStudentScores] = useState<any>(null);
 
+
   const getAttendance = async (classCode: string) => {
     const res = await attendanceService.getAttendanceByClassService(classCode);
     return res;
@@ -334,7 +335,7 @@ const AttendanceClassModal = ({
                                     onClick={() =>
                                       handleViewScoreDetail(attendance)
                                     }
-                                    className={`p-2 border-r border-gray-200 text-center font-semibold cursor-pointer hover:bg-opacity-80 transition-colors ${getScoreColor(score?.diemSo)}`}
+                                    className={`p-3 border-r border-gray-200 text-center font-semibold cursor-pointer hover:bg-opacity-80 transition-colors ${getScoreColor(score?.diemSo)}`}
                                   >
                                     {score?.diemSo ?? "-"}
                                   </td>
