@@ -198,6 +198,48 @@ const mapStudents = (students) => {
   });
 };
 
+const mapAttendanceByStudent = (attendanceData) => {
+  const groupedByClass = {};
+
+  attendanceData.forEach((record) => {
+    const tkbId = record.buoi_hoc?.thoi_khoa_bieu?.id;
+    if (!groupedByClass[tkbId]) {
+      groupedByClass[tkbId] = [];
+    }
+    groupedByClass[tkbId].push(record);
+  });
+
+  const result = Object.entries(groupedByClass).map(([tkbId, records]) => {
+    return {
+      lopHocPhanId: tkbId,
+      buoiHoc: records.map((record) => ({
+        id: record.id,
+        buoiHocId: record.buoi_hoc_id,
+        ngayHoc: record.buoi_hoc?.ngay_hoc,
+        diemSo: record.diem_so !== null ? parseFloat(record.diem_so) : null,
+        thoiGianDiemDanh: record.thoi_gian_diem_danh,
+        ghiChu: record.ghi_chu,
+        maGiangVien: record.ma_giang_vien,
+      })),
+      tongDiem: records.reduce((sum, r) => {
+        return sum + (r.diem_so !== null ? parseFloat(r.diem_so) : 0);
+      }, 0),
+      soLanCoMat: records.filter((r) => r.diem_so !== null).length,
+      soLanVang: records.filter((r) => r.diem_so === null).length,
+      diemTrungBinh:
+        records.length > 0
+          ? (
+              records.reduce((sum, r) => {
+                return sum + (r.diem_so !== null ? parseFloat(r.diem_so) : 0);
+              }, 0) / records.length
+            ).toFixed(2)
+          : null,
+    };
+  });
+
+  return result;
+};
+
 module.exports = {
   mapClasses,
   mapClassInfo,
@@ -207,4 +249,5 @@ module.exports = {
   mapStudents,
   //Attendance
   mapAttendanceByClass,
+  mapAttendanceByStudent,
 };

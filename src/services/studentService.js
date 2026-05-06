@@ -11,8 +11,12 @@ const {
   DiemDanh,
   ChuyenCan,
 } = require("../models");
-const { mapStudentClasses, mapStudents } = require("../mappers/mapperData");
-const { Op } = require("sequelize");
+const {
+  mapStudentClasses,
+  mapStudents,
+  mapAttendanceByStudent,
+} = require("../mappers/mapperData");
+const { Op, where } = require("sequelize");
 
 const getStudentById = async (studentId) => {
   try {
@@ -380,10 +384,69 @@ const getClassesByStudentId = async (studentId, semester) => {
   }
 };
 
+const getAttendanceByStudentId = async (studentId, semester) => {
+  try {
+    const student = await SinhVien.findOne({
+      where: {
+        ma_sinh_vien: studentId,
+      },
+      attributes: ["id", "ma_sinh_vien", "ten"],
+    });
+    if (!student) {
+      return {
+        status: "Err",
+        code: 404,
+        message: "Không tìm thấy sinh viên",
+      };
+    }
+    console.log(student);
+    const semesterRes = await semesterService.getCurrentSemester();
+    const currentSemester = semesterRes?.data?.ma_ky;
+    const attendance = await DiemDanh.findAll({
+      where: {
+        sinh_vien_id: student.id,
+      },
+      include: [
+        {
+          model: BuoiHoc,
+          as: "buoi_hoc",
+          attributes: ["id", "tkb_id", "ngay_hoc", "trang_thai"],
+          include: [
+            {
+              model: Tkb,
+              as: "thoi_khoa_bieu",
+              attributes: ["id", "ma_ky"],
+              where: {
+                ma_ky: semester || currentSemester,
+              },
+              required: true,
+            },
+          ],
+        },
+      ],
+    });
+    console.log(attendance);
+    const mapData = mapAttendanceByStudent(attendance);
+    return {
+      status: "Ok",
+      code: 200,
+      data: mapData,
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getStudentById,
   getClassesByStudent,
   getClassByStudentAndId,
   getAllStudents,
   getClassesByStudentId,
+  getAttendanceByStudentId,
 };

@@ -4,6 +4,11 @@ const studentController = require("../controllers/studentController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 
 router.get("/profile/:studentId", studentController.getStudentById);
+router.get(
+  "/attend",
+  authMiddleware,
+  studentController.getAttendanceByStudentId,
+);
 //Student routes
 router.get("/myClasses", authMiddleware, studentController.getClassesByStudent);
 router.get(
