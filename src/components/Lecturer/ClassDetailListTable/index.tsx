@@ -3,12 +3,15 @@ import FilterBar from "@/components/Department/FilterBar";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import Pagination from "@/components/Common/Pagination";
 import { memo, useState } from "react";
+import { useRouter } from "next/navigation";
 import getScoreColor from "@/utils/getScoreColor";
 import { formatDate } from "@/utils/formatDatt";
 import * as attendanceService from "@/services/attendanceService";
+import * as classService from "@/services/classService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutationHooks } from "@/hooks/useMutationHooks";
 import { toast } from "react-toastify";
+import { formatClassCode } from "@/utils/formatClassCode";
 
 interface Student {
   id: number;
@@ -20,6 +23,7 @@ interface Student {
 
 interface ListStudent {
   classCode: string;
+  setSelectClassCode: (classCode: string) => void;
   listStudents?: {
     id: number;
     maSinhVien: string;
@@ -40,7 +44,9 @@ const ClassDetailListTable = ({
   listStudents,
   classSession,
   classCode,
+  setSelectClassCode,
 }: ListStudent) => {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [openStudentDetail, setOpenStudentDetail] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -48,6 +54,15 @@ const ClassDetailListTable = ({
     attendanceData: [],
   });
   const [noteUpdates, setNoteUpdates] = useState<{ [key: number]: string }>({});
+  const [searchText, setSearchText] = useState<string>("");
+
+  // Remove accents from Vietnamese text
+  const removeAccents = (str: string) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  };
 
   const handleUpdateStudentScore = (scoreId: number, newScore: number) => {
     const note = noteUpdates[scoreId] || "";
@@ -100,6 +115,15 @@ const ClassDetailListTable = ({
   const updateAttendance = useMutationHooks((data: any) =>
     attendanceService.updateAttendanceByClassService(data),
   );
+
+  const filteredAttendanceData =
+    attendanceData?.data?.attendance?.filter((student: any) => {
+      const searchNormalized = removeAccents(searchText);
+      return (
+        removeAccents(student.ten || "").includes(searchNormalized) ||
+        removeAccents(student.maSinhVien || "").includes(searchNormalized)
+      );
+    }) || [];
 
   const handleSaveAttendance = async () => {
     let updatedRecords: any[] = [];
@@ -163,6 +187,19 @@ const ClassDetailListTable = ({
     "attendanceData?.data?.attendance?",
     attendanceData?.data?.attendance,
   );
+
+  const getClassesByLecturerService = async () => {
+    const res = await classService.getClassesByLecturerService();
+    return res;
+  };
+
+  const { data: classes } = useQuery({
+    queryKey: ["lecturer-classes"],
+    queryFn: getClassesByLecturerService,
+  });
+
+  console.log("classes", classes);
+
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
@@ -184,6 +221,8 @@ const ClassDetailListTable = ({
             <input
               type="text"
               placeholder="Tìm kiếm theo khoa, lớp, hoặc sinh viên"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
               className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
             />
           </div>
@@ -192,14 +231,19 @@ const ClassDetailListTable = ({
           <div className="text-[13px] text-[#475569] flex items-center gap-2">
             <span className="">Lớp: </span>
             <select
-              name=""
-              id=""
+              value={classCode}
+              onChange={(e) => {
+                const newClassCode = e.target.value;
+                router.push(`/lecturer/classes/${newClassCode}`);
+              }}
               className="bg-white border border-gray-300 rounded-md py-2 px-2 focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer"
             >
-              <option value="">Công nghệ Blockchain (243IS430.02)</option>
-              <option value="">Công nghệ Blockchain (243IS430.03)</option>
-              <option value="">Công nghệ phần mềm (243IS430.03)</option>
-              <option value="">Công nghệ Blockchain (243IS430.03)</option>
+              {classes?.data?.map((item: any) => (
+                <option key={item.maLopHocPhan} value={item.maLopHocPhan}>
+                  {item.hocPhan?.tenHocPhan || "Không tên"} (
+                  {formatClassCode(item.maLopHocPhan, item.tenLop || "")})
+                </option>
+              ))}
             </select>
           </div>
           <button
@@ -260,66 +304,64 @@ const ClassDetailListTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {attendanceData?.data?.attendance?.map(
-                (student: any, index: number) => (
-                  <tr
-                    key={student.id}
-                    className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                  >
-                    <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
-                      {index + 1}
-                    </td>
-                    <td className="px-4 py-3 font-semibold border-r border-gray-200">
-                      {student.maSinhVien}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="cursor-pointer hover:underline text-gray-800"
-                          onClick={() => {
-                            setSelectedStudent(student.maSinhVien);
-                            setOpenStudentDetail(true);
-                          }}
+              {filteredAttendanceData?.map((student: any, index: number) => (
+                <tr
+                  key={student.id}
+                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                >
+                  <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
+                    {index + 1}
+                  </td>
+                  <td className="px-4 py-3 font-semibold border-r border-gray-200">
+                    {student.maSinhVien}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="cursor-pointer hover:underline text-gray-800"
+                        onClick={() => {
+                          setSelectedStudent(student.maSinhVien);
+                          setOpenStudentDetail(true);
+                        }}
+                      >
+                        {student.ten}
+                      </button>
+
+                      <div className="relative group flex items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 48 48"
+                          className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
                         >
-                          {student.ten}
-                        </button>
-
-                        <div className="relative group flex items-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 48 48"
-                            className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                          <g
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="4"
                           >
-                            <g
-                              fill="none"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="4"
-                            >
-                              <path d="M44 24V9H24H4V24V39H24" />
-                              <path d="M44 34L30 34" />
-                              <path d="M39 29L44 34L39 39" />
-                              <path d="M4 9L24 24L44 9" />
-                            </g>
-                          </svg>
+                            <path d="M44 24V9H24H4V24V39H24" />
+                            <path d="M44 34L30 34" />
+                            <path d="M39 29L44 34L39 39" />
+                            <path d="M4 9L24 24L44 9" />
+                          </g>
+                        </svg>
 
-                          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
-                            <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
-                              Gửi email cảnh báo tới sinh viên
-                            </div>
+                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
+                          <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
+                            Gửi email cảnh báo tới sinh viên
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
-                      {student?.diemTrungBinh || "-"}
-                    </td>
-                  </tr>
-                ),
-              )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
+                    {student?.diemTrungBinh || "-"}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -350,7 +392,7 @@ const ClassDetailListTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {attendanceData?.data?.attendance?.map((attendance: any) => (
+              {filteredAttendanceData?.map((attendance: any) => (
                 <tr
                   key={attendance.id}
                   className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"

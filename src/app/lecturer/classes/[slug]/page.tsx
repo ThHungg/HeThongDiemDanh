@@ -1,6 +1,6 @@
 "use client";
 import ContentHeader from "@/components/Common/ContentHeader";
-import { memo } from "react";
+import { memo, useState } from "react";
 import ClassDetailListTable from "@/components/Lecturer/ClassDetailListTable";
 import * as classService from "@/services/classService";
 import { useParams } from "next/navigation";
@@ -8,7 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 
 const DetailClassPage = () => {
   const classCode = useParams().slug as string;
-
+  const [selectClassCode, setSelectClassCode] = useState<string>(classCode);
+  console.log(classCode);
   const getDetailClass = async (classCode: string) => {
     const res = await classService.getDetailClassByLecturerService(classCode);
     return res;
@@ -88,6 +89,7 @@ const DetailClassPage = () => {
       </div> */}
       <ClassDetailListTable
         classCode={classCode}
+        setSelectClassCode={setSelectClassCode}
         listStudents={
           detailClass?.data?.danhSachDangKy?.map((student: any) => ({
             id: student.id,
