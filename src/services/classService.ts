@@ -21,7 +21,6 @@ export const getClassesByLecturerService = async () => {
         semester: semester,
       },
     });
-    console.log(res);
     return res.data;
   } catch (e) {
     throw e;
@@ -49,7 +48,6 @@ export const getAllClassesService = async () => {
         semester: semester,
       },
     });
-    console.log(res);
     return res.data;
   } catch (e) {
     throw e;

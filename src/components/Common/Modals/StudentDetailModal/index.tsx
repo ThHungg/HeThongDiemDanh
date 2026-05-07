@@ -12,10 +12,10 @@ const StudentDetailModal = ({
   const getStudentDetail = async (studentId: string) => {
     try {
       const res = await studentService.getStudentByIdService(studentId);
-      console.log(res);
+
       return res;
     } catch (e) {
-      console.error(e);
+      throw e;
     }
   };
 

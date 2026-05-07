@@ -5,8 +5,17 @@ import AttendanceDetailModal from "@/components/Common/Modals/AttendanceDetailMo
 import { memo, useState } from "react";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
+import { isStudentRole } from "@/utils/isStudent";
 
 const StudentPage = () => {
+  const [selectedClassCode, setSelectedClassCode] = useState<string>("");
+  const [selectedDetailClass, setSelectedDetailClass] = useState<any>(null);
+  const [openAttendanceDetailModal, setOpenAttendanceDetailModal] =
+    useState(false);
+
+  const isStudent = isStudentRole();
+  console.log("isStudent", isStudent);
+
   const getClasses = async () => {
     const res = await studentService.getClassesByStudentService();
     return res;
@@ -21,10 +30,13 @@ const StudentPage = () => {
     queryFn: getClasses,
   });
 
-  console.log(classes);
+  const handleClassCardClick = (classItem: any, classCode: string) => {
+    setSelectedDetailClass(classItem);
+    setSelectedClassCode(classCode);
+    setOpenAttendanceDetailModal(true);
+  };
 
-  const [openAttendanceDetailModal, setOpenAttendanceDetailModal] =
-    useState(false);
+  console.log(classes);
 
   return (
     <div className="p-8">
@@ -54,21 +66,27 @@ const StudentPage = () => {
             key={index}
             classCode={item.hocPhan?.maHocPhan}
             className={item.hocPhan?.tenHocPhan}
+            classNumber={item.hocPhan?.tenLop}
             subjectClass={item?.maLopHocPhan}
             classSchedule={item.thoiKhoaBieuChiTiet}
-            // room={item.room}
-            // classSchedule={item.schedule}
             lecturer={item.giangVien?.ten}
-            // averageAttendance={item.averageAttendance}
-            // attendanceProgress={item.attendanceProgress}
-            onClick={() => setOpenAttendanceDetailModal(true)}
+            onClick={() => handleClassCardClick(item, item.maLopHocPhan)}
           />
         ))}
       </div>
-      {openAttendanceDetailModal && (
+
+      {openAttendanceDetailModal && selectedDetailClass && (
         <AttendanceDetailModal
-          onClose={() => setOpenAttendanceDetailModal(false)}
-          isStudent={true}
+          detailClass={selectedDetailClass}
+          onClose={() => {
+            setOpenAttendanceDetailModal(false);
+            setSelectedDetailClass(null);
+            setSelectedClassCode("");
+          }}
+          isStudent={isStudent}
+          studentId={classes?.data?.maSinhVien}
+          avgChuyenCan={classes?.data?.avgChuyenCan}
+          classCode={selectedClassCode}
         />
       )}
     </div>

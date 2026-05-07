@@ -157,8 +157,6 @@ const ClassDetailListTable = ({
       });
     }
 
-    console.log("updatedRecords final", updatedRecords);
-
     if (updatedRecords.length === 0) {
       toast.warning("Không có dữ liệu thay đổi");
       return;
@@ -176,17 +174,11 @@ const ClassDetailListTable = ({
           setNoteUpdates({});
         },
         onError: (error: any) => {
-          console.error("Update error", error);
           toast.error(error?.response?.data?.message || "Cập nhật thất bại");
         },
       },
     );
   };
-  console.log("Length", classSession?.length);
-  console.log(
-    "attendanceData?.data?.attendance?",
-    attendanceData?.data?.attendance,
-  );
 
   const getClassesByLecturerService = async () => {
     const res = await classService.getClassesByLecturerService();
@@ -197,8 +189,6 @@ const ClassDetailListTable = ({
     queryKey: ["lecturer-classes"],
     queryFn: getClassesByLecturerService,
   });
-
-  console.log("classes", classes);
 
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">

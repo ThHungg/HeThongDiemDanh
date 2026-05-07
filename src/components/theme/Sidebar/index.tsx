@@ -289,7 +289,7 @@ const Sidebar = () => {
                 />
               </svg>
             </div>
-            <div>
+            <div className="whitespace-nowrap">
               <p className="!text-[14px] !font-bold">
                 {profile?.ten || "User"}
               </p>
@@ -304,7 +304,7 @@ const Sidebar = () => {
               ) : null}
             </div>
           </div>
-          <div className="p-2 hover:bg-[#EBF0FD] rounded-full cursor-pointer">
+          <div className="p-2 hover:bg-[#EBF0FD] flex items-center rounded-full cursor-pointer">
             <button onClick={() => handleLogout()}>
               {" "}
               <svg

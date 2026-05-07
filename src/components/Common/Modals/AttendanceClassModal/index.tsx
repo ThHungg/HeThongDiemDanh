@@ -37,7 +37,6 @@ const AttendanceClassModal = ({
   const [openDetailScore, setOpenDetailScore] = useState(false);
   const [selectedStudentScores, setSelectedStudentScores] = useState<any>(null);
 
-
   const getAttendance = async (classCode: string) => {
     const res = await attendanceService.getAttendanceByClassService(classCode);
     return res;

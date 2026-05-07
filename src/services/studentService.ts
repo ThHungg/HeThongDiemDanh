@@ -33,14 +33,13 @@ export const getAllStudentsService = async (page: number = 1 , limit: number = 1
         search,
       },
     });
-    console.log(res);
     return res.data;
   } catch (e) {
     throw e;
   }
 };
 
-export const getClassesByStudentId = async (studentId: string, semester?: string) => {
+export const getClassesByStudentId = async (studentId: string) => {
     try {
          const semesterData = localStorage.getItem("semester-data");
     const semester = semesterData
@@ -51,7 +50,43 @@ export const getClassesByStudentId = async (studentId: string, semester?: string
         semester: semester,
       },
     });
-    console.log(res);
+    return res.data;
+    } catch (e) {
+        throw e;
+    }
+}
+
+
+export const getAttendanceByStudentId = async (classCode: string) => {
+    try {
+         const semesterData = localStorage.getItem("semester-data");
+    const semester = semesterData
+      ? JSON.parse(semesterData).state.selectedSemester
+      : "";
+    const res = await axiosInstance.get(`/students/attend/${classCode}`, {
+      params: {
+        semester: semester,
+      
+      },
+    });
+    return res.data;
+    } catch (e) {
+        throw e;
+    }
+}
+
+export const getSpecificStudentAttendance = async (classCode: string, studentId: string) => {
+    try {
+         const semesterData = localStorage.getItem("semester-data");
+    const semester = semesterData
+      ? JSON.parse(semesterData).state.selectedSemester
+      : "";
+    const res = await axiosInstance.get(`/students/attend/${classCode}/${studentId}`, {
+      params: {
+        semester: semester,
+      
+      },
+    });
     return res.data;
     } catch (e) {
         throw e;

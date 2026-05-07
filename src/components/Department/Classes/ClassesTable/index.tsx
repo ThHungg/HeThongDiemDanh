@@ -14,8 +14,6 @@ const ClassesTable = () => {
     return res;
   };
 
-  console.log(isSelectedClasscode);
-
   const {
     data: allClasses,
     isLoading,

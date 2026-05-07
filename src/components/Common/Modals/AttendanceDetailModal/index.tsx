@@ -1,27 +1,34 @@
 "use client";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import avatar from "../../../../../public/assets/Images/Avatar.png";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
 import { formatClassCode } from "@/utils/formatClassCode";
+import { formatDate } from "@/utils/formatDatt";
 
 const AttendanceDetailModal = ({
+  detailClass,
   onClose,
   isStudent,
   studentId,
   avgChuyenCan,
+  classCode,
 }: {
+  detailClass?: any;
   onClose: () => void;
   isStudent: boolean;
   studentId: string;
   avgChuyenCan: number | null;
+  classCode?: string;
 }) => {
   const [isSelected, setIsSelected] = useState<Number | null>(0);
-  console.log(isStudent);
-  console.log("studentId", studentId);
+  const [attendanceDetail, setAttendanceDetail] = useState<any>(null);
+
+  console.log("Modal Props:", { isStudent, studentId, classCode });
+  console.log("isSelected:", isSelected);
+
   const getClassesByStudentId = async (studentId: string) => {
     const res = await studentService.getClassesByStudentId(studentId);
-    console.log(res);
     return res;
   };
   const {
@@ -33,11 +40,64 @@ const AttendanceDetailModal = ({
     queryFn: () => getClassesByStudentId(studentId),
   });
 
-  console.log("classes", classes);
+  const getAttendanceByStudentId = async (classCode: string) => {
+    const res = await studentService.getAttendanceByStudentId(classCode);
+    return res;
+  };
+
+  const getSpecificStudentAttendance = async (
+    classCode: string,
+    studentId: string,
+  ) => {
+    const res = await studentService.getSpecificStudentAttendance(
+      classCode,
+      studentId,
+    );
+    return res;
+  };
+  const attendanceCode = isStudent ? classCode : String(isSelected);
+  const {
+    data: attendance,
+    isLoading: isLoadingAttendance,
+    error: errorAttendance,
+  } = useQuery({
+    queryKey: ["attendance", classCode, isSelected, isStudent, studentId],
+    queryFn: () => {
+      if (isStudent) {
+        return getAttendanceByStudentId(attendanceCode || "");
+      } else {
+        return getSpecificStudentAttendance(attendanceCode || "", studentId);
+      }
+    },
+    enabled: !!(classCode || isSelected) && !!studentId,
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+  useEffect(() => {
+    if (classes?.data?.dangKy && classes.data.dangKy.length > 0) {
+      const selectedClass = classes.data.dangKy.find(
+        (item: any) => item.maLopHocPhan === classCode,
+      );
+      if (selectedClass) {
+        setIsSelected(selectedClass.maLopHocPhan);
+      } else {
+        setIsSelected(classes.data.dangKy[0].maLopHocPhan);
+      }
+    }
+  }, [classes, classCode]);
+
+  useEffect(() => {
+    if (attendance) {
+      setAttendanceDetail(attendance);
+    }
+  }, [attendance]);
+
+  console.log(attendanceDetail);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="max-w-[1000px] w-full bg-white rounded-lg ">
+      <div className="max-w-[800px] h-[80vh] w-full bg-white rounded-lg flex flex-col">
         {/* Header */}
         <div className="px-[24px] py-[12px]  flex justify-between">
           <div className="flex items-center gap-2">
@@ -72,12 +132,15 @@ const AttendanceDetailModal = ({
               </div>
             </div>
           </div>
+
           <div className="flex items-center">
             <div className="text-center">
               <h6 className="font-semibold text-[#737373] whitespace-nowrap">
                 Điểm TB
               </h6>
-              <p>{avgChuyenCan || "-"}</p>
+              <p className="text-lg font-semibold text-[#15803D]">
+                {avgChuyenCan || attendanceDetail?.data?.diemTrungBinh || "-"}
+              </p>
             </div>
 
             {!isStudent && (
@@ -105,14 +168,57 @@ const AttendanceDetailModal = ({
             )}
           </div>
         </div>
+
         {/* Body */}
-        <div className="grid grid-cols-12 border-t border-[#8B0000]/10">
+        {detailClass && (
+          <div className="mb-2 mx-2 p-3 bg-[#FDF2F0] rounded-lg border border-[#FCEAE8] shrink-0">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[11px] text-[#737373] font-semibold">
+                  MÔN HỌC
+                </p>
+                <p className="text-[13px] font-bold text-[#8B0000]">
+                  {detailClass.hocPhan?.tenHocPhan}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#737373] font-semibold">
+                  GIẢNG VIÊN
+                </p>
+                <p className="text-[13px] font-bold">
+                  {detailClass.giangVien?.ten}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#737373] font-semibold">
+                  LỊCH HỌC
+                </p>
+                <p className="text-[12px] font-semibold text-[#94A3B8]">
+                  {detailClass.thoiKhoaBieuChiTiet
+                    ?.map((s: any) => `T${s.thu} ${s.tiet} (${s.phong})`)
+                    ?.join(" / ")}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-[#737373] font-semibold">
+                  SỨC CHỨA
+                </p>
+                <p className="text-[13px] font-bold">
+                  {detailClass.hocPhan?.soLuongDangKy} /{" "}
+                  {detailClass.hocPhan?.sucChua}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="grid grid-cols-12 border-t border-[#8B0000]/10 flex-1 overflow-auto">
           {!isStudent && (
             <div className="col-span-4 border-r border-[#8B0000]/10 px-4 py-3">
               <h6 className="font-semibold text-[#737373] mb-[12px]">
                 Danh sách môn học
               </h6>
-              <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px]">
+
+              <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] overflow-auto">
                 {/* {listClass.map((item) => (
                   <div
                     key={item.id}
@@ -146,9 +252,9 @@ const AttendanceDetailModal = ({
                 {classes?.data?.dangKy?.map((item: any, index: number) => (
                   <div
                     key={item.index}
-                    onClick={() => setIsSelected(index)}
+                    onClick={() => setIsSelected(item.maLopHocPhan)}
                     className={
-                      isSelected === index
+                      isSelected === item.maLopHocPhan
                         ? "border border-[#8B0000] rounded-lg p-2 bg-[#FFF0EE]"
                         : "border border-[#8B0000]/10 rounded-lg p-2"
                     }
@@ -188,24 +294,27 @@ const AttendanceDetailModal = ({
             </div>
           )}
           <div
-            className={`${isStudent ? "col-span-12" : "col-span-8"} px-4 py-3`}
+            className={`${isStudent ? "col-span-12" : "col-span-8"} px-4 py-3 flex flex-col min-h-0`}
           >
-            <h4 className="mb-[12px]">Chi tiết môn học</h4>
-            <div className="mb-[12px] border border-[#FCEAE8] rounded-2xl overflow-hidden bg-white w-full">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-[#FDF2F0]">
+            <h4 className="mb-2 shrink-0">Chi tiết môn học</h4>
+            <div className="flex-1 border border-[#FCEAE8] rounded-2xl overflow-y-auto bg-white w-full min-h-0">
+              <table className="w-full text-left border-collapse h-full">
+                <thead className="bg-[#FDF2F0] sticky top-0 z-10">
                   <tr>
-                    <th className="px-6 py-3 text-[12px] font-semibold text-[#737373]">
-                      BUỔI HỌC / NGÀY
+                    <th className="px-4 py-3 text-[12px] font-semibold text-[#737373]">
+                      NGÀY
                     </th>
-                    <th className="px-6 py-3 text-[12px] font-semibold text-[#737373]">
+                    <th className="px-4 py-3 text-[12px] font-semibold text-[#737373]">
+                      TIẾT
+                    </th>
+                    <th className="px-4 py-3 text-[12px] font-semibold text-[#737373] whitespace-nowrap w-20">
                       ĐIỂM SỐ
                     </th>
                   </tr>
                 </thead>
 
-                <tbody>
-                  {Array(6)
+                <tbody className="">
+                  {/* {Array(6)
                     .fill(0)
                     .map((_, index) => (
                       <tr key={index} className="border-b border-[#8B0000]/10">
@@ -224,14 +333,38 @@ const AttendanceDetailModal = ({
                           <span className="text-[16px] font-black ">9,5</span>
                         </td>
                       </tr>
-                    ))}
+                    ))} */}
+                  {attendanceDetail?.data?.buoiHoc.map(
+                    (item: any, index: number) => (
+                      <tr key={index} className="border-b border-[#8B0000]/10">
+                        <td className="px-4 py-2">
+                          <span className="text-[13px] font-semibold">
+                            {formatDate(item.ngayHoc)}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-2">
+                          <span className="text-[13px] font-semibold">
+                            Tiết {item.thoiGianChiTiet.batDau}-
+                            {item.thoiGianChiTiet.ketThuc}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-2 text-right w-20">
+                          <span className="text-[14px] font-bold">
+                            {item.diemSo}
+                          </span>
+                        </td>
+                      </tr>
+                    ),
+                  )}
                 </tbody>
               </table>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2 mt-3 shrink-0">
               <button
                 onClick={() => onClose()}
-                className="px-3 py-2 bg-[#8B0000] text-white rounded-lg hover:bg-[#8B0000]/90 transition-colors"
+                className="px-4 py-2 bg-[#8B0000] text-white rounded-lg hover:bg-[#8B0000]/90 transition-colors font-semibold"
               >
                 Đóng
               </button>

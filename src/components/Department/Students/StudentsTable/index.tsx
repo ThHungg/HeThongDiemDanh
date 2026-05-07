@@ -4,6 +4,7 @@ import Pagination from "@/components/Common/Pagination";
 import { memo, useState, useMemo } from "react";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
+import isStudentRole from "@/utils/isStudent";
 
 interface StudentsTableProps {
   searchValue?: string;
@@ -16,6 +17,8 @@ const StudentsTable = ({ searchValue = "" }: StudentsTableProps) => {
   const [limit, setLimit] = useState(10);
   const [avgChuyenCan, setAvgChuyenCan] = useState<number | null>(null);
 
+  const isStudent = isStudentRole();
+  console.log("isStudent", isStudent);
   const getAllStudents = async () => {
     const res = await studentService.getAllStudentsService(
       page,
@@ -37,7 +40,6 @@ const StudentsTable = ({ searchValue = "" }: StudentsTableProps) => {
   const students = allStudents?.data || [];
   const pagination = allStudents?.pagination || {};
 
-  console.log(allStudents);
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       <table className="w-full border-collapse border border-gray-200">
@@ -135,7 +137,7 @@ const StudentsTable = ({ searchValue = "" }: StudentsTableProps) => {
       />
       {openAttendanceDetail && (
         <AttendanceDetailModal
-          isStudent={false}
+          isStudent={isStudent}
           onClose={() => setOpenAttendanceDetail(false)}
           studentId={isSelectedStudentId}
           avgChuyenCan={avgChuyenCan}

@@ -5,7 +5,7 @@ import StudentsTable from "@/components/Department/Students/StudentsTable";
 import { memo, useState } from "react";
 
 const StudentManagementPage = () => {
-  const [searchValue, setSearchValue] = useState("A46588");
+  const [searchValue, setSearchValue] = useState("");
 
   return (
     <div className="p-[24px]">

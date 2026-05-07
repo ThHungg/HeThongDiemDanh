@@ -2,10 +2,12 @@ import getScoreColor from "@/utils/getScoreColor";
 import Link from "next/link";
 import { memo } from "react";
 import ProgressBar from "../../ProgressBar";
+import { formatClassCode } from "@/utils/formatClassCode";
 
 interface ClassCardProps {
   classCode?: string;
   className?: string;
+  classNumber?: string;
   subjectClass?: string;
   room?: string;
   lecturer?: string;
@@ -23,10 +25,12 @@ interface ClassCardProps {
   };
   href?: string;
   onClick?: () => void;
+  setSelectedClassCode?: (classCode: string) => void;
 }
 const ClassCard = ({
   classCode,
   className,
+  classNumber,
   subjectClass,
   room,
   lecturer,
@@ -35,6 +39,7 @@ const ClassCard = ({
   attendanceProgress,
   href,
   onClick,
+  setSelectedClassCode,
 }: ClassCardProps) => {
   const percentage = attendanceProgress
     ? Math.round((attendanceProgress.attended / attendanceProgress.total) * 100)
@@ -64,7 +69,9 @@ const ClassCard = ({
             <span className="text-gray-500 text-[13px] font-semibold">
               Mã lớp:
             </span>
-            <p className="text-[14px] font-bold">{subjectClass}</p>
+            <p className="text-[14px] font-bold">
+              {formatClassCode(subjectClass || "", classNumber || "")}
+            </p>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500 text-[13px] font-semibold">
@@ -115,7 +122,10 @@ const ClassCard = ({
           </Link>
         ) : (
           <button
-            onClick={onClick}
+            onClick={() => {
+              onClick?.();
+              setSelectedClassCode?.(subjectClass || "");
+            }}
             className="py-1.5 bg-[#0F172A] text-white font-semibold w-full rounded-2xl flex items-center justify-center gap-2 hover:bg-[#1E293B] transition-colors"
           >
             <span> Xem chi tiết</span>

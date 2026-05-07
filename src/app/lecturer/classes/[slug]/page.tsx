@@ -9,7 +9,6 @@ import { useQuery } from "@tanstack/react-query";
 const DetailClassPage = () => {
   const classCode = useParams().slug as string;
   const [selectClassCode, setSelectClassCode] = useState<string>(classCode);
-  console.log(classCode);
   const getDetailClass = async (classCode: string) => {
     const res = await classService.getDetailClassByLecturerService(classCode);
     return res;
