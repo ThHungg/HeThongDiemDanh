@@ -5,7 +5,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 router.get("/profile/:studentId", studentController.getStudentById);
 router.get(
-  "/attend",
+  "/attend/:classCode",
   authMiddleware,
   studentController.getAttendanceByStudentId,
 );
@@ -21,5 +21,10 @@ router.get(
 //Get All
 router.get("/", studentController.getAllStudents);
 router.get("/:studentId/classes", studentController.getClassesByStudentId);
+router.get(
+  "/attend/:classCode/:studentId",
+  authMiddleware,
+  studentController.getSpecificStudentAttendance,
+);
 
 module.exports = router;

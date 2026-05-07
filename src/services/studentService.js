@@ -384,8 +384,9 @@ const getClassesByStudentId = async (studentId, semester) => {
   }
 };
 
-const getAttendanceByStudentId = async (studentId, semester) => {
+const getAttendanceByStudentId = async (studentId, semester, classCode) => {
   try {
+    console.log(studentId, semester, classCode);
     const student = await SinhVien.findOne({
       where: {
         ma_sinh_vien: studentId,
@@ -399,9 +400,17 @@ const getAttendanceByStudentId = async (studentId, semester) => {
         message: "Không tìm thấy sinh viên",
       };
     }
-    console.log(student);
+
     const semesterRes = await semesterService.getCurrentSemester();
     const currentSemester = semesterRes?.data?.ma_ky;
+
+    const tkbWhere = {
+      ma_ky: semester || currentSemester,
+    };
+    if (classCode) {
+      tkbWhere.ma_lop_hoc_phan = classCode;
+    }
+
     const attendance = await DiemDanh.findAll({
       where: {
         sinh_vien_id: student.id,
@@ -415,17 +424,22 @@ const getAttendanceByStudentId = async (studentId, semester) => {
             {
               model: Tkb,
               as: "thoi_khoa_bieu",
-              attributes: ["id", "ma_ky"],
-              where: {
-                ma_ky: semester || currentSemester,
-              },
+              attributes: ["id", "ma_ky", "ma_lop_hoc_phan"],
+              where: tkbWhere,
               required: true,
             },
+            {
+              model: TkbChiTiet,
+              as: "chi_tiet_tiet_hoc",
+              attributes: ["id", "bat_dau", "ket_thuc", "thu", "phong"],
+            },
           ],
+          required: true,
         },
       ],
+      subQuery: false,
     });
-    console.log(attendance);
+
     const mapData = mapAttendanceByStudent(attendance);
     return {
       status: "Ok",

@@ -218,8 +218,17 @@ const mapAttendanceByStudent = (attendanceData) => {
         ngayHoc: record.buoi_hoc?.ngay_hoc,
         diemSo: record.diem_so !== null ? parseFloat(record.diem_so) : null,
         thoiGianDiemDanh: record.thoi_gian_diem_danh,
-        ghiChu: record.ghi_chu,
-        maGiangVien: record.ma_giang_vien,
+        thoiGianChiTiet: record.buoi_hoc?.chi_tiet_tiet_hoc
+          ? {
+              id: record.buoi_hoc.chi_tiet_tiet_hoc.id,
+              batDau: record.buoi_hoc.chi_tiet_tiet_hoc.bat_dau,
+              ketThuc: record.buoi_hoc.chi_tiet_tiet_hoc.ket_thuc,
+              thu: record.buoi_hoc.chi_tiet_tiet_hoc.thu,
+              phong: record.buoi_hoc.chi_tiet_tiet_hoc.phong,
+            }
+          : null,
+        // ghiChu: record.ghi_chu,
+        // maGiangVien: record.ma_giang_vien,
       })),
       tongDiem: records.reduce((sum, r) => {
         return sum + (r.diem_so !== null ? parseFloat(r.diem_so) : 0);
@@ -237,7 +246,7 @@ const mapAttendanceByStudent = (attendanceData) => {
     };
   });
 
-  return result;
+  return result.length === 1 ? result[0] : result;
 };
 
 module.exports = {
