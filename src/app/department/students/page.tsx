@@ -6,6 +6,12 @@ import { memo, useState } from "react";
 
 const StudentManagementPage = () => {
   const [searchValue, setSearchValue] = useState("");
+  const [filters, setFilters] = useState<{
+    startDate?: string;
+    endDate?: string;
+    minScore?: string;
+    maxScore?: string;
+  }>({});
 
   return (
     <div className="p-[24px]">
@@ -13,12 +19,9 @@ const StudentManagementPage = () => {
         title="Quản lý sinh viên"
         showExport={true}
         onExport={() => {}}
-        addLabel="Thêm lớp học"
-        showAdd={false}
-        onAdd={() => {}}
       />
-      <FilterBar onSearchChange={setSearchValue} />
-      <StudentsTable searchValue={searchValue} />
+      <FilterBar onSearchChange={setSearchValue} onFilterChange={setFilters} />
+      <StudentsTable searchValue={searchValue} filters={filters} />
     </div>
   );
 };

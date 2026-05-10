@@ -1,6 +1,7 @@
 import { jwtDecode } from "jwt-decode";
 
 export const isStudentRole = (): boolean => {
+  if (typeof window === "undefined") return false;
   try {
      const token = localStorage.getItem("accessToken");
     console.log("token", token);

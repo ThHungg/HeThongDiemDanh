@@ -1,12 +1,24 @@
 "use client";
 import { memo, useState, useCallback } from "react";
 
-interface FilterBarProps {
-  onSearchChange?: (search: string) => void;
+interface FilterOptions {
+  startDate?: string;
+  endDate?: string;
+  minScore?: string;
+  maxScore?: string;
 }
 
-const FilterBar = ({ onSearchChange }: FilterBarProps) => {
+interface FilterBarProps {
+  onSearchChange?: (search: string) => void;
+  onFilterChange?: (filters: FilterOptions) => void;
+}
+
+const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   const [searchInput, setSearchInput] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [minScore, setMinScore] = useState("");
+  const [maxScore, setMaxScore] = useState("");
 
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -15,6 +27,15 @@ const FilterBar = ({ onSearchChange }: FilterBarProps) => {
     },
     [onSearchChange],
   );
+
+  const handleFilterSubmit = () => {
+    onFilterChange?.({
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+      minScore: minScore || undefined,
+      maxScore: maxScore || undefined,
+    });
+  };
 
   return (
     <div className="bg-white p-5 mb-[12px] rounded-xl shadow-sm">
@@ -48,63 +69,69 @@ const FilterBar = ({ onSearchChange }: FilterBarProps) => {
         </div>
       </div>
       {/* Bộ lọc thường */}
-      <div className="border-t border-gray-200 flex items-end justify-between gap-2">
-        <div className="grid grid-cols-5 mt-3 gap-2 w-full">
-          {/* Khóa học */}
+      <div className="border-t border-gray-200 flex items-end justify-between gap-4">
+        <div className="grid grid-cols-4 mt-3 gap-3 w-full">
+          {/* Từ ngày */}
           <div className="flex flex-col gap-1">
             <label className="font-bold text-[13px] text-[#737373]">
-              Khóa học
+              Từ ngày
             </label>
-            <select className="bg-[#F8FAFC] p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80">
-              <option value="">Tất cả khóa</option>
-              <option value="">K35</option>
-              <option value="">K36</option>
-            </select>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
+            />
           </div>
-          {/* Chuyên ngành */}
+          {/* Đến ngày */}
           <div className="flex flex-col gap-1">
             <label className="font-bold text-[13px] text-[#737373]">
-              Ngành
+              Đến ngày
             </label>
-            <select className="bg-[#F8FAFC] p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80">
-              <option value="">Tất cả ngành</option>
-              <option value="">Công nghệ thông tin</option>
-              <option value="">Khoa học máy tính</option>
-            </select>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
+            />
           </div>
-          {/* Lớp */}
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-[13px] text-[#737373]">Lớp</label>
-            <select className="bg-[#F8FAFC] p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80">
-              <option value="">Tất cả lớp</option>
-              <option value="">TT35CL07</option>
-              <option value="">TT36CL01</option>
-            </select>
-          </div>
-          {/* Điểm trung bình */}
+          {/* Điểm tối thiểu */}
           <div className="flex flex-col gap-1">
             <label className="font-bold text-[13px] text-[#737373]">
-              Điểm trung bình
+              Điểm tối thiểu
             </label>
-            <select className="bg-[#F8FAFC] p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80">
-              <option value="">Tất cả điểm</option>
-              <option value="">{">= 5"}</option>
-              <option value="">{"< 5"}</option>
-            </select>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              value={minScore}
+              onChange={(e) => setMinScore(e.target.value)}
+              placeholder="VD: 5"
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
+            />
           </div>
-          {/* Số buổi nghỉ */}
+          {/* Điểm tối đa */}
           <div className="flex flex-col gap-1">
             <label className="font-bold text-[13px] text-[#737373]">
-              Số buổi nghỉ
+              Điểm tối đa
             </label>
-            <select className="bg-[#F8FAFC] p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80">
-              <option value="">Tất cả</option>
-              <option value="">5 buổi</option>
-              <option value="">{"< 5 buổi"}</option>
-            </select>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              value={maxScore}
+              onChange={(e) => setMaxScore(e.target.value)}
+              placeholder="VD: 8"
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
+            />
           </div>
         </div>
-        <button className="w-fit h-fit flex justify-center p-2 bg-[#8B0000] text-white rounded-lg hover:bg-[#660000] transition-all shadow-sm active:scale-95">
+        <button 
+          onClick={handleFilterSubmit}
+          className="w-fit h-fit flex justify-center p-2 bg-[#8B0000] text-white rounded-lg hover:bg-[#660000] transition-all shadow-sm active:scale-95"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"

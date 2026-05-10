@@ -28,13 +28,15 @@ export const getClassesByLecturerService = async () => {
 };
 
 export const getDetailClassByLecturerService = async (classCode: string) => {
-    try {
-        const res = await axiosInstance.get(`/classes/lecturer/myClasses/${classCode}`);
-        return res.data;
-    } catch (e) {
-         throw e;
-    }
-}
+  try {
+    const res = await axiosInstance.get(
+      `/classes/lecturer/myClasses/${classCode}`,
+    );
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+};
 
 export const getAllClassesService = async () => {
   try {
@@ -54,13 +56,32 @@ export const getAllClassesService = async () => {
   }
 };
 
+export const sendEmailToStudentsService = async (
+  emailStudent: string,
+  classCode: string,
+  subject: string,
+  content: string,
+) => {
+  try {
+    const res = await axiosInstance.post("/classes/sendEmailToStudents", {
+      emailStudent,
+      subject,
+      content,
+      classCode,
+    });
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+};
+
 //Student
 
 export const getClassesByStudentService = async () => {
-    try {
-        const res = await axiosInstance.get("/classes/student/myClasses?");
-        return res.data;
-    } catch (e) {
-        throw e;
-    }
-}
+  try {
+    const res = await axiosInstance.get("/classes/student/myClasses?");
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+};

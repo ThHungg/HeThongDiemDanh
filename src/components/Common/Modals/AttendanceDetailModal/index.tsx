@@ -336,7 +336,10 @@ const AttendanceDetailModal = ({
                     ))} */}
                   {attendanceDetail?.data?.buoiHoc.map(
                     (item: any, index: number) => (
-                      <tr key={index} className="border-b border-[#8B0000]/10">
+                      <tr
+                        key={index}
+                        className="border-b flex-1 border-[#8B0000]/10 max-h-[60px]"
+                      >
                         <td className="px-4 py-2">
                           <span className="text-[13px] font-semibold">
                             {formatDate(item.ngayHoc)}

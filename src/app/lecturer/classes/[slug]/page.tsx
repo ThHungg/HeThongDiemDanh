@@ -22,6 +22,7 @@ const DetailClassPage = () => {
     queryKey: ["lecturer-classes", classCode],
     queryFn: () => getDetailClass(classCode),
   });
+  console.log("detailClass", detailClass);
   return (
     <div className="p-[24px]">
       <ContentHeader
@@ -93,6 +94,8 @@ const DetailClassPage = () => {
           detailClass?.data?.danhSachDangKy?.map((student: any) => ({
             id: student.id,
             maSinhVien: student.maSinhVien,
+            email1: student.email1,
+            email2: student.email2,
             ten: student.ten,
             lopChuyenNganh: student.lopChuyenNganh,
             diemChuyenCan: student.diemChuyenCan,

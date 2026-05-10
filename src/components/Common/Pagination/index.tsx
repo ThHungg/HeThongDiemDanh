@@ -64,8 +64,7 @@ const Pagination = ({
         <button
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className="min-w-[32px] h-8 px-2 rounded-md border border-gray-300 bg-white text-[#64748B]
-          hover:bg-[#8B0000] hover:text-white transition disabled:opacity-40"
+          className="min-w-[32px] h-8 px-2 rounded-md border border-gray-300 bg-white text-[#64748B] hover:bg-[#8B0000] hover:text-white transition disabled:opacity-40"
         >
           &lt;
         </button>
@@ -110,8 +109,7 @@ const Pagination = ({
         <button
           disabled={currentPage === totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className="min-w-[32px] h-8 px-2 rounded-md border border-gray-300 bg-white text-[#64748B]
-          hover:bg-[#8B0000] hover:text-white transition disabled:opacity-40"
+          className="min-w-[32px] h-8 px-2 rounded-md border border-gray-300 bg-white text-[#64748B] hover:bg-[#8B0000] hover:text-white transition disabled:opacity-40"
         >
           &gt;
         </button>

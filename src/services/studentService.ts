@@ -19,7 +19,15 @@ export const getClassesByStudentService = async () => {
 };
 
 //Department
-export const getAllStudentsService = async (page: number = 1 , limit: number = 10, search?: string) => {
+export const getAllStudentsService = async (
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+  startDate?: string,
+  endDate?: string,
+  minScore?: string,
+  maxScore?: string
+) => {
   try {
     const semesterData = localStorage.getItem("semester-data");
     const semester = semesterData
@@ -31,6 +39,10 @@ export const getAllStudentsService = async (page: number = 1 , limit: number = 1
         page,
         limit,
         search,
+        startDate,
+        endDate,
+        minScore,
+        maxScore
       },
     });
     return res.data;

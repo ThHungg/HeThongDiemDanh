@@ -12,14 +12,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMutationHooks } from "@/hooks/useMutationHooks";
 import { toast } from "react-toastify";
 import { formatClassCode } from "@/utils/formatClassCode";
-
-interface Student {
-  id: number;
-  code: string;
-  name: string;
-  scores: (number | null)[];
-  note: string;
-}
+import SendEmailModal from "@/components/Common/Modals/SendEmailModal";
 
 interface ListStudent {
   classCode: string;
@@ -28,6 +21,8 @@ interface ListStudent {
     id: number;
     maSinhVien: string;
     ten: string;
+    email1: string;
+    email2: string;
     lopChuyenNganh: string;
     diemChuyenCan: number | null;
   }[];
@@ -55,8 +50,9 @@ const ClassDetailListTable = ({
   });
   const [noteUpdates, setNoteUpdates] = useState<{ [key: number]: string }>({});
   const [searchText, setSearchText] = useState<string>("");
+  const [isOpenSendEmailModal, setIsOpenSendEmailModal] = useState(false);
+  const [detailStudent, setDetailStudent] = useState<any>(null);
 
-  // Remove accents from Vietnamese text
   const removeAccents = (str: string) => {
     return str
       .normalize("NFD")
@@ -190,6 +186,7 @@ const ClassDetailListTable = ({
     queryFn: getClassesByLecturerService,
   });
 
+  console.log(filteredAttendanceData);
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
@@ -318,26 +315,37 @@ const ClassDetailListTable = ({
                       </button>
 
                       <div className="relative group flex items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 48 48"
-                          className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                        <button
+                          onClick={() => {
+                            setDetailStudent({
+                              name: student.ten,
+                              email: student.email2 || "email@example.com",
+                              classCode: student.maLopHocPhan,
+                            });
+                            setIsOpenSendEmailModal(true);
+                          }}
                         >
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="4"
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 48 48"
+                            className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
                           >
-                            <path d="M44 24V9H24H4V24V39H24" />
-                            <path d="M44 34L30 34" />
-                            <path d="M39 29L44 34L39 39" />
-                            <path d="M4 9L24 24L44 9" />
-                          </g>
-                        </svg>
+                            <g
+                              fill="none"
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="4"
+                            >
+                              <path d="M44 24V9H24H4V24V39H24" />
+                              <path d="M44 34L30 34" />
+                              <path d="M39 29L44 34L39 39" />
+                              <path d="M4 9L24 24L44 9" />
+                            </g>
+                          </svg>
+                        </button>
 
                         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
                           <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
@@ -435,6 +443,12 @@ const ClassDetailListTable = ({
           </table>
         </div>
       </div>
+      {isOpenSendEmailModal && (
+        <SendEmailModal
+          onClose={() => setIsOpenSendEmailModal(false)}
+          studentData={detailStudent}
+        />
+      )}
       {openStudentDetail && (
         <StudentDetailModal
           onClose={() => setOpenStudentDetail(false)}

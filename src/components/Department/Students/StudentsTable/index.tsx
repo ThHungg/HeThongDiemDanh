@@ -5,25 +5,42 @@ import { memo, useState, useMemo } from "react";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
 import isStudentRole from "@/utils/isStudent";
+import { useEffect } from "react";
+
+interface FilterOptions {
+  startDate?: string;
+  endDate?: string;
+  minScore?: string;
+  maxScore?: string;
+}
 
 interface StudentsTableProps {
   searchValue?: string;
+  filters?: FilterOptions;
 }
 
-const StudentsTable = ({ searchValue = "" }: StudentsTableProps) => {
+const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) => {
   const [isSelectedStudentId, setIsSelectedStudentId] = useState("");
   const [openAttendanceDetail, setOpenAttendanceDetail] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [avgChuyenCan, setAvgChuyenCan] = useState<number | null>(null);
 
-  const isStudent = isStudentRole();
-  console.log("isStudent", isStudent);
+  const [isStudent, setIsStudent] = useState(false);
+
+  useEffect(() => {
+    setIsStudent(isStudentRole());
+  }, []);
+
   const getAllStudents = async () => {
     const res = await studentService.getAllStudentsService(
       page,
       limit,
       searchValue,
+      filters.startDate,
+      filters.endDate,
+      filters.minScore,
+      filters.maxScore
     );
     return res;
   };
@@ -33,7 +50,7 @@ const StudentsTable = ({ searchValue = "" }: StudentsTableProps) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["all-students", page, limit, searchValue],
+    queryKey: ["all-students", page, limit, searchValue, filters],
     queryFn: () => getAllStudents(),
   });
 
