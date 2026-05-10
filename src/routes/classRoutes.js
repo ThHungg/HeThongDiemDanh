@@ -20,4 +20,6 @@ router.get(
 
 router.get("/getAll", classController.getAllClasses);
 
+router.post("/sendEmailToStudents", classController.sendEmailToStudents);
+
 module.exports = router;

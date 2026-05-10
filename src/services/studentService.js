@@ -187,7 +187,16 @@ const getClassByStudentAndId = async (studentId, classCode) => {
   }
 };
 
-const getAllStudents = async (semester, page, limit, search) => {
+const getAllStudents = async (
+  semester,
+  page,
+  limit,
+  search,
+  startDate,
+  endDate,
+  minScore,
+  maxScore,
+) => {
   try {
     const pageNumber = parseInt(page) || 1;
     const limitNumber = parseInt(limit) || 10;
@@ -205,7 +214,7 @@ const getAllStudents = async (semester, page, limit, search) => {
       ];
     }
 
-    const { count, rows } = await SinhVien.findAndCountAll({
+    const queryOptions = {
       where: whereCondition,
       attributes: [
         "ma_sinh_vien",
@@ -215,64 +224,98 @@ const getAllStudents = async (semester, page, limit, search) => {
         "dien_thoai2",
         "email1",
       ],
-      include: {
-        model: DangKy,
-        as: "dang_ky",
-        required: false,
-        attributes: ["id", "ma_lop_hoc_phan"],
-        where: {
-          ma_ky: semester || currentSemester,
+      include: [
+        {
+          model: DangKy,
+          as: "dang_ky",
+          required: false,
+          attributes: ["id", "ma_lop_hoc_phan", "ma_ky"],
+          where: {
+            ma_ky: semester || currentSemester,
+          },
+          include: [
+            {
+              model: ChuyenCan,
+              as: "chuyen_can",
+              attributes: ["id", "dang_ky_id", "diem_trung_binh"],
+              required: false,
+            },
+            {
+              model: Tkb,
+              as: "thong_tin_tkb",
+              attributes: [
+                "id",
+                "ma_lop_hoc_phan",
+                "ma_hoc_phan",
+                "ten_lop",
+                "sldk",
+                "suc_chua",
+              ],
+              required: false,
+              include: [
+                {
+                  model: GiangVien,
+                  as: "giang_vien",
+                  attributes: ["ten", "ma_giang_vien"],
+                },
+                {
+                  model: HocPhan,
+                  as: "hoc_phan",
+                  attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+                },
+              ],
+            },
+          ],
         },
-        include: [
-          {
-            model: ChuyenCan,
-            as: "chuyen_can",
-            attributes: ["id", "dang_ky_id", "diem_trung_binh"],
-          },
-          {
-            model: Tkb,
-            as: "thong_tin_tkb",
-            attributes: [
-              "id",
-              "ma_lop_hoc_phan",
-              "ma_hoc_phan",
-              "ten_lop",
-              "sldk",
-              "suc_chua",
-            ],
-            include: [
-              {
-                model: GiangVien,
-                as: "giang_vien",
-                attributes: ["ten", "ma_giang_vien"],
-              },
-              {
-                model: HocPhan,
-                as: "hoc_phan",
-                attributes: ["ten_hoc_phan", "ma_hoc_phan"],
-              },
-            ],
-          },
-        ],
-      },
-      offset: offset,
-      limit: limitNumber,
+        {
+          model: DiemDanh,
+          as: "lich_su_diem_danh",
+          attributes: ["id", "buoi_hoc_id", "sinh_vien_id", "diem_so"],
+          required: false,
+          include: [
+            {
+              model: BuoiHoc,
+              as: "buoi_hoc",
+              attributes: ["id", "tkb_id", "ngay_hoc", "trang_thai"],
+              required: false,
+              where: (startDate && endDate) ? {
+                ngay_hoc: {
+                  [Op.between]: [startDate, endDate]
+                }
+              } : undefined
+            },
+          ],
+        },
+      ],
       order: [["ma_sinh_vien", "ASC"]],
-    });
+    };
 
-    const mappedStudents = mapStudents(rows);
-    const totalPages = Math.ceil(count / limitNumber);
+    const rows = await SinhVien.findAll(queryOptions);
+
+    let mappedStudents = mapStudents(
+      rows,
+      !!(startDate && endDate),
+      startDate,
+      endDate,
+      minScore,
+      maxScore,
+    );
+
+    const totalRecords = mappedStudents.length;
+    mappedStudents = mappedStudents.slice(offset, offset + limitNumber);
+
+    const totalPages = Math.ceil(totalRecords / limitNumber);
     return {
       status: "Ok",
       code: 200,
       data: mappedStudents,
       pagination: {
-        currentPage: page,
-        limit,
-        totalRecords: count,
+        currentPage: pageNumber,
+        limit: limitNumber,
+        totalRecords: totalRecords,
         totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
+        hasNextPage: pageNumber < totalPages,
+        hasPrevPage: pageNumber > 1,
       },
     };
   } catch (e) {

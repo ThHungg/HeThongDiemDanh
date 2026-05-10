@@ -18,8 +18,10 @@ const {
   ChuyenCan,
 } = require("../models");
 const { getAttendanceDates } = require("../utils/dateHelper");
+const { sendEmailToStudent, sendEmail } = require("../utils/sendEmail");
 
 const semesterService = require("./semesterService");
+const { emailQueue } = require("./mailQueueService");
 
 const getClassesByLecturer = async (lecturerId, semester) => {
   try {
@@ -113,7 +115,13 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
               model: SinhVien,
               as: "sinh_vien",
               orders: [["id", "DESC"]],
-              attributes: ["ma_sinh_vien", "ten", "lop_chuyen_nganh"],
+              attributes: [
+                "ma_sinh_vien",
+                "ten",
+                "lop_chuyen_nganh",
+                "email1",
+                "email2",
+              ],
             },
             {
               model: ChuyenCan,
@@ -278,8 +286,64 @@ const getAllClasses = async (semester) => {
   }
 };
 
+const sendEmailToStudents = async (
+  emailStudent,
+  subject,
+  content,
+  classCode,
+) => {
+  try {
+    if (!emailStudent || !subject || !content || !classCode) {
+      return {
+        status: "Err",
+        code: 400,
+        message: "Vui lòng nhập đầy đủ thông tin để gửi email",
+      };
+    }
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #333; max-width: 500px;">
+          <h2 style="color: #8B0000;  padding-bottom: 10px;">
+            ${subject}
+          </h2>
+
+          <p>Xin chào em,</p>
+
+          <div style="white-space: pre-wrap;">
+            ${content}
+          </div>
+
+          <p style="font-size: 13px; color: #666;">
+            <strong>Lớp học phần:</strong> ${classCode}
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+
+          <p style="margin: 0;">Trân trọng,</p>
+          <p style="margin: 0; font-weight: bold;">Khoa Công nghệ Thông tin - Trường Đại học Thăng Long</p>
+        </div>`;
+    await emailQueue.add("sendEmail", {
+      to: emailStudent,
+      subject: subject,
+      html: html,
+    });
+
+    return {
+      status: "Ok",
+      code: 200,
+      message: "Email đã được gửi thành công",
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
+  sendEmailToStudents,
 };

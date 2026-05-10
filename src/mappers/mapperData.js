@@ -62,6 +62,8 @@ const mapClassInfo = (classInfo) => {
     danhSachDangKy: classInfo.danh_sach_dang_ky.map((dk) => ({
       id: dk.id,
       maSinhVien: dk.sinh_vien?.ma_sinh_vien,
+      email1: dk.sinh_vien?.email1,
+      email2: dk.sinh_vien?.email2,
       ten: dk.sinh_vien?.ten,
       lopChuyenNganh: dk.sinh_vien?.lop_chuyen_nganh,
       diemChuyenCan: dk.chuyen_can?.diem_trung_binh,
@@ -94,14 +96,16 @@ const mapStudentClasses = (studentData) => {
   return {
     maSinhVien: studentData.ma_sinh_vien,
     ten: studentData.ten,
+    // lopChuyenNganh: studentData.lop_chuyen_nganh,
+    // dienThoai1: studentData.dien_thoai1,
+    // dienThoai2: studentData.dien_thoai2,
+    // email1: studentData.email1,
+    // email2: studentData.email2,
     lopChuyenNganh: studentData.lop_chuyen_nganh,
     dienThoai1: studentData.dien_thoai1,
     dienThoai2: studentData.dien_thoai2,
     email1: studentData.email1,
-    lopChuyenNganh: studentData.lop_chuyen_nganh,
-    dienThoai1: studentData.dien_thoai1,
-    dienThoai2: studentData.dien_thoai2,
-    email1: studentData.email1,
+    email2: studentData.email2,
     dangKy: studentData.dang_ky
       .filter((dk) => dk.thong_tin_tkb !== null)
       .map((dk) => ({
@@ -139,9 +143,10 @@ const mapStudentClasses = (studentData) => {
 //Attendance
 const mapAttendanceByClass = (sessions) => {
   return sessions.map((dk) => ({
-    // Giữ nguyên các field cũ để không làm gãy UI Frontend
     id: dk.id,
     maSinhVien: dk.sinh_vien?.ma_sinh_vien,
+    email1: dk.sinh_vien?.email1,
+    email2: dk.sinh_vien?.email2,
     ten: dk.sinh_vien?.ten,
     lopChuyenNganh: dk.sinh_vien?.lop_chuyen_nganh,
     maLopHocPhan: dk.ma_lop_hoc_phan,
@@ -149,32 +154,63 @@ const mapAttendanceByClass = (sessions) => {
       ? parseFloat(dk.chuyen_can.diem_trung_binh).toFixed(2)
       : null,
 
-    // Giữ nguyên logic map cũ, chỉ fix logic parseFloat
     lichSuDiemDanh: dk.sinh_vien?.lich_su_diem_danh
-      ? dk.sinh_vien.lich_su_diem_danh.map((diem) => ({
-          id: diem.id,
-          buoiHocId: diem.buoi_hoc_id,
-          // Cách fix an toàn cho điểm 0:
-          // Nếu diem_so là null/undefined thì trả về null (để frontend hiện "-")
-          // Nếu có giá trị thì dùng parseFloat
-          diemSo: diem.diem_so !== null ? parseFloat(diem.diem_so) : null,
-          thoiGianDiemDanh: diem.thoi_gian_diem_danh,
-          ghiChu: diem.ghi_chu,
-          maGiangVien: diem.ma_giang_vien,
-        }))
+      ? dk.sinh_vien.lich_su_diem_danh
+          .sort((a, b) => a.buoi_hoc_id - b.buoi_hoc_id)
+          .map((diem) => ({
+            id: diem.id,
+            buoiHocId: diem.buoi_hoc_id,
+            diemSo: diem.diem_so !== null ? parseFloat(diem.diem_so) : null,
+            thoiGianDiemDanh: diem.thoi_gian_diem_danh,
+            ghiChu: diem.ghi_chu,
+            maGiangVien: diem.ma_giang_vien,
+          }))
       : [],
   }));
 };
 
-const mapStudents = (students) => {
-  return students.map((student) => {
-    const dangKy = student.dang_ky.map((dk) => ({
-      id: dk.id,
-      maLopHocPhan: dk.ma_lop_hoc_phan,
-      diemChuyenCan: dk.chuyen_can
-        ? parseFloat(dk.chuyen_can.diem_trung_binh).toFixed(2)
-        : null,
-    }));
+const mapStudents = (students, isFilterDate = false, startDate, endDate, minScore, maxScore) => {
+  const result = [];
+  
+  for (let student of students) {
+    const raw = student.get ? student.get({ plain: true }) : student;
+
+    // Group lich_su_diem_danh by tkb_id
+    const diemDanhByTkb = {};
+    if (raw.lich_su_diem_danh) {
+      for (const dd of raw.lich_su_diem_danh) {
+        if (dd.buoi_hoc && dd.buoi_hoc.tkb_id) {
+          const tkbId = dd.buoi_hoc.tkb_id;
+          if (!diemDanhByTkb[tkbId]) diemDanhByTkb[tkbId] = [];
+          diemDanhByTkb[tkbId].push(dd);
+        }
+      }
+    }
+
+    const dangKy = (raw.dang_ky || []).map((dk) => {
+      let diemHienTai = null;
+
+      if (isFilterDate) {
+        const tkbId = dk.thong_tin_tkb?.id;
+        const list = diemDanhByTkb[tkbId] || [];
+        if (list.length > 0) {
+          const tong = list.reduce(
+            (sum, dd) => sum + parseFloat(dd.diem_so !== null ? dd.diem_so : 0),
+            0,
+          );
+          diemHienTai = (tong / list.length).toFixed(2);
+        }
+      } else {
+        diemHienTai = dk.chuyen_can?.diem_trung_binh || null;
+      }
+
+      return {
+        id: dk.id,
+        maLopHocPhan: dk.ma_lop_hoc_phan,
+        tenHocPhan: dk.thong_tin_tkb?.hoc_phan?.ten_hoc_phan,
+        diemChuyenCan: diemHienTai,
+      };
+    });
 
     const diemArr = dangKy
       .map((dk) => parseFloat(dk.diemChuyenCan))
@@ -185,17 +221,37 @@ const mapStudents = (students) => {
         ? (diemArr.reduce((a, b) => a + b) / diemArr.length).toFixed(2)
         : null;
 
-    return {
-      maSinhVien: student.ma_sinh_vien,
-      ten: student.ten,
-      lopChuyenNganh: student.lop_chuyen_nganh,
-      dienThoai1: student.dien_thoai1,
-      dienThoai2: student.dien_thoai2,
-      email1: student.email1,
-      dangKy,
-      diemTrungBinhChuyenCan,
-    };
-  });
+    let isValid = true;
+    
+    const hasMinScore = minScore !== undefined && minScore !== "";
+    const hasMaxScore = maxScore !== undefined && maxScore !== "";
+    const isFilterScore = hasMinScore || hasMaxScore;
+
+    if (isFilterDate || isFilterScore) {
+       if (diemTrungBinhChuyenCan === null) {
+          isValid = false; // Filter out if no score calculated
+       } else {
+          const avg = parseFloat(diemTrungBinhChuyenCan);
+          if (hasMinScore && avg < parseFloat(minScore)) isValid = false;
+          if (hasMaxScore && avg > parseFloat(maxScore)) isValid = false;
+       }
+    }
+
+    if (isValid) {
+      result.push({
+        maSinhVien: raw.ma_sinh_vien,
+        ten: raw.ten,
+        lopChuyenNganh: raw.lop_chuyen_nganh,
+        dienThoai1: raw.dien_thoai1,
+        dienThoai2: raw.dien_thoai2,
+        email1: raw.email1,
+        dangKy,
+        diemTrungBinhChuyenCan,
+      });
+    }
+  }
+
+  return result;
 };
 
 const mapAttendanceByStudent = (attendanceData) => {

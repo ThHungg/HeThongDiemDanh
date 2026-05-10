@@ -1,6 +1,6 @@
 const SinhVien = require("../models/SinhVien");
 const GiangVien = require("../models/GiangVien");
-const sendEmail = require("../utils/sendEmail");
+const { sendEmail } = require("../utils/sendEmail");
 const jwtService = require("./jwtService");
 const { emailQueue } = require("./mailQueueService");
 const redis = require("../config/redis");

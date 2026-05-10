@@ -1,6 +1,6 @@
 const { Queue, Worker } = require("bullmq");
 const redis = require("../config/redis");
-const sendEmail = require("../utils/sendEmail");
+const { sendEmail } = require("../utils/sendEmail");
 
 const emailQueue = new Queue("emailQueue", {
   connection: redis,
@@ -10,8 +10,8 @@ const emailWorker = new Worker(
   "emailQueue",
   async (job) => {
     const { to, subject, html } = job.data;
-    console.log("Đang gửi email tới ", to);
     await sendEmail(to, subject, html);
+    console.log(`Email sent to ${to} with subject "${subject}"`);
   },
   {
     connection: redis,

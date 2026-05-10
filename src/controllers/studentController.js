@@ -87,13 +87,26 @@ const getClassByStudentAndId = async (req, res) => {
 
 const getAllStudents = async (req, res) => {
   try {
-    const { semester, page = 1, limit = 10, search } = req.query;
+    const {
+      semester,
+      page = 1,
+      limit = 10,
+      search,
+      startDate,
+      endDate,
+      minScore,
+      maxScore
+    } = req.query;
 
     const response = await studentService.getAllStudents(
       semester,
       page,
       limit,
       search,
+      startDate,
+      endDate,
+      minScore,
+      maxScore
     );
     if (response.status === "Err") {
       return res.status(response.code || 400).json(response);

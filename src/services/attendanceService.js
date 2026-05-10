@@ -137,16 +137,22 @@ const getAttendanceByClass = async (classCode) => {
         {
           model: SinhVien,
           as: "sinh_vien",
-          attributes: ["ma_sinh_vien", "ten", "lop_chuyen_nganh"],
+          attributes: [
+            "ma_sinh_vien",
+            "ten",
+            "lop_chuyen_nganh",
+            "email1",
+            "email2",
+          ],
           include: {
             model: DiemDanh,
             as: "lich_su_diem_danh",
-
             where:
               sessionIds.length > 0
                 ? { buoi_hoc_id: sessionIds }
                 : { buoi_hoc_id: -1 },
             required: false,
+            order: [["buoi_hoc_id", "ASC"]],
           },
         },
         {
