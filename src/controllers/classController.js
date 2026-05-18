@@ -102,9 +102,34 @@ const sendEmailToStudents = async (req, res) => {
   }
 };
 
+const getCurrentClasses = async (req, res) => {
+  try {
+    const lecturerId = req.user.code;
+    if (!lecturerId) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "Vui lòng cung cấp mã giảng viên",
+      });
+    }
+    const response = await classService.getCurrentClasses(lecturerId);
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
   sendEmailToStudents,
+  getCurrentClasses,
 };

@@ -8,6 +8,7 @@ const DangKy = require("./DangKy");
 const BuoiHoc = require("./BuoiHoc");
 const DiemDanh = require("./DiemDanh");
 const ChuyenCan = require("./ChuyenCan"); // Đảm bảo bạn đã tạo file này
+const CaHoc = require("./CaHoc");
 
 /**
  * 1. QUẢN LÝ THỜI KHÓA BIỂU (TKB) TỔNG QUAN
@@ -134,6 +135,18 @@ ChuyenCan.belongsTo(DangKy, {
   foreignKey: "dang_ky_id",
   as: "dang_ky",
 });
+
+TkbChiTiet.belongsTo(CaHoc, {
+  foreignKey: "bat_dau",
+  as: "ca_bat_dau",
+});
+
+// Tiết kết thúc liên kết với ca học
+TkbChiTiet.belongsTo(CaHoc, {
+  foreignKey: "ket_thuc",
+  as: "ca_ket_thuc",
+});
+
 module.exports = {
   SinhVien,
   GiangVien,
@@ -144,5 +157,6 @@ module.exports = {
   DangKy,
   BuoiHoc,
   DiemDanh,
-  ChuyenCan, 
+  ChuyenCan,
+  CaHoc,
 };

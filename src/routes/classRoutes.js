@@ -22,4 +22,10 @@ router.get("/getAll", classController.getAllClasses);
 
 router.post("/sendEmailToStudents", classController.sendEmailToStudents);
 
+router.get(
+  "/getCurrentClasses",
+  authMiddleware,
+  classController.getCurrentClasses,
+);
+
 module.exports = router;
