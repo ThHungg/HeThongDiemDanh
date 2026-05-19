@@ -9,6 +9,9 @@ const {
 const { mapAttendanceByClass } = require("../mappers/mapperData");
 const { sequelize } = require("../config/db");
 const { where, Op } = require("sequelize");
+const ExcelJS = require("exceljs");
+const path = require("path");
+const fs = require("fs");
 
 const calculateAndUpdateChuyenCan = async (classCode, transaction = null) => {
   try {
@@ -170,7 +173,14 @@ const getAttendanceByClass = async (classCode) => {
     return {
       status: "Ok",
       code: 200,
-      data: { attendance },
+      data: {
+        attendance,
+        pastSessions: pastSessions.map((s) => ({
+          id: s.id,
+          ngay_hoc: s.ngay_hoc,
+        })),
+        sessionIds,
+      },
     };
   } catch (e) {
     console.log("e :", e);
@@ -319,10 +329,143 @@ const updateAttendanceByClass = async (attendanceData) => {
   }
 };
 
+// ============ EXPORT EXCEL ============
+const exportAttendanceToExcel = async (classCode) => {
+  try {
+    // Lấy dữ liệu sinh viên và điểm danh
+    const response = await getAttendanceByClass(classCode);
+
+    if (response.status !== "Ok") {
+      return response;
+    }
+
+    const attendance = response.data.attendance;
+    const pastSessions = response.data.pastSessions || [];
+
+    // Tạo workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Điểm danh");
+
+    // Tạo header với dynamic columns cho mỗi buổi học
+    const columns = [
+      { header: "STT", key: "stt", width: 5 },
+      { header: "Mã SV", key: "ma_sinh_vien", width: 12 },
+      { header: "Họ tên", key: "ten", width: 25 },
+      { header: "Lớp", key: "lop_chuyen_nganh", width: 15 },
+      ...pastSessions.map((session) => ({
+        header: new Date(session.ngay_hoc).toLocaleDateString("vi-VN"),
+        key: `session_${session.id}`,
+        width: 8,
+      })),
+      { header: "ĐTB", key: "diem_trung_binh", width: 8 },
+    ];
+
+    worksheet.columns = columns;
+
+    // Style header
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF0070C0" },
+    };
+    headerRow.alignment = { horizontal: "center", vertical: "center" };
+
+    // Thêm dữ liệu
+    let rowNumber = 2;
+    attendance.forEach((item, index) => {
+      // Tạo map để quick lookup điểm theo buoiHocId
+      const diemMap = {};
+      if (item.lichSuDiemDanh) {
+        item.lichSuDiemDanh.forEach((d) => {
+          diemMap[d.buoiHocId] = d.diemSo;
+        });
+      }
+
+      const rowData = {
+        stt: index + 1,
+        ma_sinh_vien: item.maSinhVien,
+        ten: item.ten,
+        lop_chuyen_nganh: item.lopChuyenNganh,
+      };
+
+      // Thêm điểm cho mỗi buổi học
+      pastSessions.forEach((session) => {
+        const diem = diemMap[session.id];
+        rowData[`session_${session.id}`] = diem !== undefined ? diem : "";
+      });
+
+      rowData.diem_trung_binh = item.diemTrungBinh || 0;
+
+      const row = worksheet.addRow(rowData);
+
+      // Style dữ liệu
+      row.getCell("stt").alignment = { horizontal: "center" };
+
+      // Style điểm theo từng buổi - màu xanh nếu 10, đỏ nếu < 10
+      pastSessions.forEach((session) => {
+        const cell = row.getCell(`session_${session.id}`);
+        cell.alignment = { horizontal: "center" };
+        const diem = diemMap[session.id];
+        if (diem !== undefined) {
+          if (diem === 10) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFC6EFCE" },
+            };
+          } else if (diem < 10) {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: "FFFFC7CE" },
+            };
+          }
+        }
+      });
+
+      row.getCell("diem_trung_binh").alignment = { horizontal: "center" };
+      rowNumber++;
+    });
+
+    // Tạo folder exports nếu chưa có
+    const exportsDir = path.join(process.cwd(), "exports");
+    if (!fs.existsSync(exportsDir)) {
+      fs.mkdirSync(exportsDir, { recursive: true });
+    }
+
+    // Lưu file
+    const fileName = `DiemDanh_${classCode}_${Date.now()}.xlsx`;
+    const filePath = path.join(exportsDir, fileName);
+    await workbook.xlsx.writeFile(filePath);
+
+    console.log("✅ Export thành công:", filePath);
+
+    return {
+      status: "Ok",
+      code: 200,
+      message: "Xuất file thành công",
+      data: {
+        fileName: fileName,
+        filePath: filePath,
+      },
+    };
+  } catch (e) {
+    console.log("❌ Export error:", e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi xuất file",
+    };
+  }
+};
+
 module.exports = {
   getAttendanceByClass,
   updateAttendanceByClass,
   calculateAndUpdateChuyenCan,
+  exportAttendanceToExcel,
 };
 
 // const tkb = await Tkb.findOne({

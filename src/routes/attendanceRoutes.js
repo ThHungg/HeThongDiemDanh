@@ -4,5 +4,7 @@ const attendanceController = require("../controllers/attendanceController");
 
 router.get("/:classCode", attendanceController.getAttendanceByClass);
 router.post("/update", attendanceController.updateAttendanceByClass);
+router.get("/export/:classCode", attendanceController.exportAttendanceByClass);
+router.get("/download/:fileName", attendanceController.downloadAttendanceFile);
 
 module.exports = router;
