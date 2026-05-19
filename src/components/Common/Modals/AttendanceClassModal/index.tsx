@@ -6,6 +6,7 @@ import * as attendanceService from "@/services/attendanceService";
 import getScoreColor from "@/utils/getScoreColor";
 import { formatDate } from "@/utils/formatDatt";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
+import SendEmailModal from "../SendEmailModal";
 
 interface ListStudent {
   classCode: string;
@@ -36,6 +37,8 @@ const AttendanceClassModal = ({
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [openDetailScore, setOpenDetailScore] = useState(false);
   const [selectedStudentScores, setSelectedStudentScores] = useState<any>(null);
+  const [isOpenSendEmailModal, setIsOpenSendEmailModal] = useState(false);
+  const [detailStudent, setDetailStudent] = useState<any>(null);
 
   const getAttendance = async (classCode: string) => {
     const res = await attendanceService.getAttendanceByClassService(classCode);
@@ -247,7 +250,13 @@ const AttendanceClassModal = ({
                                 {student.ten}
                               </button>
 
-                              <div className="relative group flex items-center">
+                              <button
+                                onClick={() => {
+                                  setDetailStudent(student);
+                                  setIsOpenSendEmailModal(true);
+                                }}
+                                className="relative group flex items-center"
+                              >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   width="18"
@@ -274,7 +283,7 @@ const AttendanceClassModal = ({
                                     Gửi email cảnh báo tới sinh viên
                                   </div>
                                 </div>
-                              </div>
+                              </button>
                             </div>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
@@ -483,6 +492,12 @@ const AttendanceClassModal = ({
           )}
         </div>
       </div>
+      {isOpenSendEmailModal && (
+        <SendEmailModal
+          onClose={() => setIsOpenSendEmailModal(false)}
+          studentData={detailStudent}
+        />
+      )}
     </>
   );
 };

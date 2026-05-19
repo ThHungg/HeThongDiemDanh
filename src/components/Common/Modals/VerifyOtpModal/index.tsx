@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
 import Loading from "../../Loading";
+import * as classService from "@/services/classService";
 
 const VerifyOtpModal = ({
   onClose,
@@ -79,7 +80,7 @@ const VerifyOtpModal = ({
 
   const handleVerify = async (data: { userCode: string; otp: string }) => {
     verifyOtp.mutate(data, {
-      onSuccess: (res: any) => {
+      onSuccess: async (res: any) => {
         toast.success(res.message || "Xác thực OTP thành công!");
         localStorage.setItem("accessToken", res.accessToken);
         setProfile(res.filteredInfo);
@@ -93,7 +94,15 @@ const VerifyOtpModal = ({
           res.filteredInfo.role === "Giang_vien" ||
           res.filteredInfo.role === "Thinh_giang"
         ) {
-          router.push("/lecturer/classes");
+          const currentClassesRes = await classService.getCurrentClass();
+          console.log("Current classes:", currentClassesRes);
+          if (currentClassesRes?.data.length > 0) {
+            router.push(
+              `/lecturer/classes/${currentClassesRes.data[0].maLopHocPhan}`,
+            );
+          } else {
+            router.push("/lecturer/classes");
+          }
         }
         if (res.filteredInfo.role === "Sinh_vien") {
           router.push("/student");

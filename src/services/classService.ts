@@ -75,6 +75,15 @@ export const sendEmailToStudentsService = async (
   }
 };
 
+export const getCurrentClass = async () => {
+  try {
+    const res = await axiosInstance.get("/classes/getCurrentClasses")
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}
+
 //Student
 
 export const getClassesByStudentService = async () => {
