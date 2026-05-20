@@ -14,6 +14,7 @@ const MasterLayout = ({
   if (
     pathname === "/login" ||
     pathname === "/student" ||
+    // pathname.startsWith("/lecturer") ||
     pathname === "/403" ||
     pathname === "/404"
   ) {

@@ -5,28 +5,55 @@ import { memo, useState } from "react";
 import * as classService from "@/services/classService";
 import { useQuery } from "@tanstack/react-query";
 import { formatClassCode } from "@/utils/formatClassCode";
+import { useSemesterStore } from "@/store/useSemesterStore";
 
 const ClassesTable = () => {
+  const selectedSemester = useSemesterStore((state) => state.selectedSemester);
   const [isSelectedClasscode, setIsSelectedClasscode] = useState("242IT38002");
   const [openAttendanceClass, setOpenAttendanceClass] = useState(false);
+  const [page, setPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const [selectedLecturer, setSelectedLecturer] = useState("");
+  const ITEMS_PER_PAGE = 10;
+
   const getAllClasses = async () => {
-    const res = await classService.getAllClassesService();
+    const res = await classService.getAllClassesService({
+      page,
+      limit: ITEMS_PER_PAGE,
+      searchText,
+      lecturerId: selectedLecturer || undefined,
+      semester: selectedSemester,
+    });
+    return res;
+  };
+  const getAllLecturer = async () => {
+    const res = await classService.getAllLecturerService();
     return res;
   };
 
+  const { data: allLecturers } = useQuery({
+    queryKey: ["all-lecturers"],
+    queryFn: getAllLecturer,
+  });
   const {
     data: allClasses,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["all-classes"],
+    queryKey: [
+      "all-classes",
+      page,
+      searchText,
+      selectedLecturer,
+      selectedSemester,
+    ],
     queryFn: () => getAllClasses(),
   });
 
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mr-4 py-2">
         <div className="flex items-center justify-center py-2 w-full max-w-[300px] px-4">
           <div className="relative w-full max-w-md">
             <svg
@@ -43,7 +70,12 @@ const ClassesTable = () => {
             </svg>
             <input
               type="text"
-              placeholder="Tìm kiếm lớp học"
+              placeholder="Tìm kiếm lớp học, giảng viên, môn học"
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setPage(1);
+              }}
               className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
             />
           </div>
@@ -51,14 +83,24 @@ const ClassesTable = () => {
         <div className="text-[13px] text-[#475569] flex items-center gap-2">
           <span className="">Bộ lọc: </span>
           <select
-            name=""
-            id=""
+            value={selectedLecturer}
+            onChange={(e) => {
+              setSelectedLecturer(e.target.value);
+              setPage(1);
+            }}
             className="bg-white border border-gray-300 rounded-md py-2 px-2 focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer"
           >
             <option value="">Tất cả giảng viên</option>
-            <option value="1`">Dr. Nguyen Van An</option>
-            <option value="">MSc. Le Thi Binh</option>
-            <option value="">TS. Tran Duc Cuong</option>
+            {Array.isArray(allLecturers?.data)
+              ? allLecturers.data.map((lecturer: any) => (
+                  <option
+                    key={lecturer.id}
+                    value={lecturer.ma_giang_vien || lecturer.id}
+                  >
+                    {lecturer.ten}
+                  </option>
+                ))
+              : null}
           </select>
         </div>
       </div>
@@ -90,7 +132,9 @@ const ClassesTable = () => {
                   <p className="text-[12px] text-gray-500 font-normal mt-0.5">
                     {classItem.thoi_khoa_bieu_chi_tiet?.map(
                       (schedule: any, index: number) => (
-                        <span key={index}>
+                        <span
+                          key={`${schedule.thu}-${schedule.bat_dau}-${schedule.ket_thuc}`}
+                        >
                           Thứ {schedule.thu}, Tiết {schedule.bat_dau}-
                           {schedule.ket_thuc}
                           {index !==
@@ -137,11 +181,11 @@ const ClassesTable = () => {
         </tbody>
       </table>
       <Pagination
-        currentPage={2}
-        totalPages={3}
-        totalItems={124}
-        itemsPerPage={14}
-        onPageChange={(page) => page}
+        currentPage={page}
+        totalPages={allClasses?.pagination?.totalPages || 1}
+        totalItems={allClasses?.pagination?.total || 0}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={(newPage) => setPage(newPage)}
       />
       {openAttendanceClass && (
         <AttendanceClassModal

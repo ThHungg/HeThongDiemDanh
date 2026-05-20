@@ -1,3 +1,4 @@
+"use client";
 import ContentHeader from "@/components/Common/ContentHeader";
 import ClassesTable from "@/components/Department/Classes/ClassesTable";
 import FilterBar from "@/components/Department/FilterBar";

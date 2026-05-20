@@ -44,6 +44,8 @@ const ClassCard = ({
   const percentage = attendanceProgress
     ? Math.round((attendanceProgress.attended / attendanceProgress.total) * 100)
     : 0;
+
+  console.log("classNumber", className);
   return (
     <div className="w-full h-full flex flex-col border border-gray-200 rounded-xl overflow-hidden">
       <div className="bg-[#8B0000]/5 p-4 flex-1">

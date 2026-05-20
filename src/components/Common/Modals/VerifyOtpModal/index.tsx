@@ -108,6 +108,9 @@ const VerifyOtpModal = ({
           router.push("/student");
         }
       },
+      onError: (err: any) => {
+        setOtp(Array(6).fill(""));
+      },
     });
   };
 

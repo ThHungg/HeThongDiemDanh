@@ -1,12 +1,12 @@
 "use client";
 import { memo, useEffect, useState } from "react";
 import * as classService from "@/services/classService";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSemesterStore } from "@/store/useSemesterStore";
 
 const Header = () => {
   const { selectedSemester, setSelectedSemester } = useSemesterStore();
-
+  const queryClient = useQueryClient();
   const getSemesters = async () => {
     const res = await classService.getAllSemestersService();
     return res;
@@ -21,7 +21,16 @@ const Header = () => {
     if (Semesters?.data?.length > 0 && !selectedSemester) {
       setSelectedSemester(Semesters.data[0].ma_ky);
     }
-  }, [Semesters, selectedSemester, setSelectedSemester]);
+  }, [Semesters, selectedSemester, setSelectedSemester, queryClient]);
+
+  // Invalidate all class queries when semester changes
+  useEffect(() => {
+    if (selectedSemester) {
+      queryClient.invalidateQueries({ queryKey: ["lecturer-classes"] });
+      queryClient.invalidateQueries({ queryKey: ["all-classes"] });
+      queryClient.invalidateQueries({ queryKey: ["student-classes"] });
+    }
+  }, [selectedSemester, queryClient]);
 
   return (
     <div className="w-full py-2 bg-white border-b border-[#E2E8F0] relative flex items-center justify-between px-4">
@@ -44,7 +53,7 @@ const Header = () => {
 
         <div className="border-l-[1px] border-[#E2E8F0] h-6"></div>
 
-        <div className="relative cursor-pointer hover:bg-gray-100 p-2 rounded-full transition-colors">
+        {/* <div className="relative cursor-pointer hover:bg-gray-100 p-2 rounded-full transition-colors">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -96,7 +105,7 @@ const Header = () => {
             </g>
           </svg>
           <div className="absolute top-2 right-2 w-2 h-2 bg-red-600 rounded-full border-2 border-white"></div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

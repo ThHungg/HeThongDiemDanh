@@ -38,13 +38,14 @@ const LecturerClassesPage = () => {
           <p className="text-gray-500 text-[16px]">Không có lớp học nào.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 ">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 ">
           {classes?.data?.map((item: any, index: number) => (
             <ClassCard
               key={index}
               classCode={item.hocPhan?.maHocPhan}
               className={item.hocPhan?.tenHocPhan}
               subjectClass={item.maLopHocPhan}
+              classNumber={item.tenLop}
               room={item.room || "A701"}
               classSchedule={item.thoiKhoaBieuChiTiet.map((schedule: any) => {
                 return {

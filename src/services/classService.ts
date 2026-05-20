@@ -38,18 +38,24 @@ export const getDetailClassByLecturerService = async (classCode: string) => {
   }
 };
 
-export const getAllClassesService = async () => {
+export const getAllClassesService = async (options: any = {}) => {
   try {
     const semesterData = localStorage.getItem("semester-data");
 
-    const semester = semesterData
+    const semester = options.semester || (semesterData
       ? JSON.parse(semesterData).state.selectedSemester
-      : "";
-    const res = await axiosInstance.get("/classes/getAll", {
-      params: {
-        semester: semester,
-      },
-    });
+      : "");
+
+    const params: any = {
+      semester,
+      page: options.page || 1,
+      limit: options.limit || 10,
+      searchText: options.searchText || "",
+    };
+
+    if (options.lecturerId) params.lecturerId = options.lecturerId;
+
+    const res = await axiosInstance.get("/classes/getAll", { params });
     return res.data;
   } catch (e) {
     throw e;
@@ -94,3 +100,14 @@ export const getClassesByStudentService = async () => {
     throw e;
   }
 };
+
+
+// Lecturer
+export const getAllLecturerService = async () => {
+  try {
+    const res = await axiosInstance.get("/classes/getAllLecturer");
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}

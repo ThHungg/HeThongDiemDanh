@@ -1,10 +1,10 @@
+"use client";
 import { memo } from "react";
 
 interface ContentHeaderProps {
   title?: string;
   courseCode?: string;
   room?: string;
- 
 
   showExport?: boolean;
   onExport?: () => void;
@@ -36,7 +36,10 @@ const ContentHeader = ({
       </div>
       <div className="flex gap-2">
         {showExport && (
-          <button className="px-4 py-2 bg-white border-gray-300 border rounded-lg text-[14px] font-semibold items-center flex gap-1 hover:scale-105 transition-all duration-300">
+          <button
+            onClick={onExport}
+            className="px-4 py-2 bg-white border-gray-300 border rounded-lg text-[14px] font-semibold items-center flex gap-1 hover:scale-105 transition-all duration-300"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"

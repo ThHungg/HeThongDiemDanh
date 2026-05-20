@@ -2,7 +2,7 @@
 import FilterBar from "@/components/Department/FilterBar";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import Pagination from "@/components/Common/Pagination";
-import { memo, useState } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import getScoreColor from "@/utils/getScoreColor";
 import { formatDate } from "@/utils/formatDatt";
@@ -52,6 +52,7 @@ const ClassDetailListTable = ({
   const [searchText, setSearchText] = useState<string>("");
   const [isOpenSendEmailModal, setIsOpenSendEmailModal] = useState(false);
   const [detailStudent, setDetailStudent] = useState<any>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const removeAccents = (str: string) => {
     return str
@@ -59,6 +60,35 @@ const ClassDetailListTable = ({
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
   };
+
+  const isToday = (dateString: string) => {
+    const sessionDate = new Date(dateString);
+    // const today = new Date();
+    const today = new Date("2026-04-25");
+    return (
+      sessionDate.getDate() === today.getDate() &&
+      sessionDate.getMonth() === today.getMonth() &&
+      sessionDate.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // Auto scroll to today's column
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const todayColumn = scrollContainerRef.current.querySelector(
+        'th[data-is-today="true"]',
+      ) as HTMLElement;
+      if (todayColumn) {
+        // Scroll to column with smooth behavior
+        const scrollLeft =
+          todayColumn.offsetLeft - scrollContainerRef.current.clientWidth / 2;
+        scrollContainerRef.current.scrollTo({
+          left: Math.max(0, scrollLeft),
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [classSession]);
 
   const handleUpdateStudentScore = (scoreId: number, newScore: number) => {
     const note = noteUpdates[scoreId] || "";
@@ -188,9 +218,9 @@ const ClassDetailListTable = ({
 
   console.log(filteredAttendanceData);
   return (
-    <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
+    <div className="overflow-y-autorounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
-      <div className="flex justify-between items-center p-4">
+      <div className="flex justify-between items-center p-4 sticky top-[-24px] z-50">
         <div className="flex items-center justify-center w-full max-w-[300px] px-4">
           <div className="relative w-full max-w-md">
             <svg
@@ -207,7 +237,7 @@ const ClassDetailListTable = ({
             </svg>
             <input
               type="text"
-              placeholder="Tìm kiếm theo khoa, lớp, hoặc sinh viên"
+              placeholder="Tìm kiếm theo tên hoặc mã sinh viên"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
@@ -365,14 +395,19 @@ const ClassDetailListTable = ({
         </div>
 
         {/* BẢNG 2: CÓ THỂ CUỘN NGANG */}
-        <div className="flex-1 overflow-x-auto">
+        <div ref={scrollContainerRef} className="flex-1 overflow-x-auto">
           <table className="w-full border-collapse">
             <thead className="border-b border-gray-200">
               <tr className="bg-[#F8FAFC] text-[#64748B] h-[52px] divide-x divide-gray-200">
                 {classSession?.map((item, index) => (
                   <th
                     key={index}
-                    className="text-center px-2 py-3 font-semibold text-[11px] min-w-[100px] border-r border-gray-200"
+                    data-is-today={isToday(item.ngayHoc)}
+                    className={`text-center px-2 py-3 font-semibold text-[11px] min-w-[100px] border-r border-gray-200 ${
+                      isToday(item.ngayHoc)
+                        ? "bg-gray-200 text-gray-900 font-bold"
+                        : ""
+                    }`}
                   >
                     <div className="leading-tight">
                       <div className="font-bold">
@@ -399,20 +434,26 @@ const ClassDetailListTable = ({
                     .fill(null)
                     .map((_, scoreIndex) => {
                       const score = attendance.lichSuDiemDanh?.[scoreIndex];
+                      const sessionDate = classSession?.[scoreIndex]?.ngayHoc;
+                      const isTodayColumn = isToday(sessionDate);
                       return (
                         <td
                           key={scoreIndex}
-                          className={`p-0 border-r border-gray-200 ${getScoreColor(score?.diemSo)}`}
+                          className={`p-0 border-r border-gray-200 ${
+                            isTodayColumn ? "bg-gray-100 border" : ""
+                          } ${getScoreColor(score?.diemSo)}`}
                         >
                           <input
                             type="number"
                             defaultValue={score?.diemSo || ""}
-                            onChange={(e) =>
-                              handleUpdateStudentScore(
-                                score.id,
-                                parseFloat(e.target.value),
-                              )
-                            }
+                            onChange={(e) => {
+                              if (score?.id) {
+                                handleUpdateStudentScore(
+                                  score.id,
+                                  parseFloat(e.target.value),
+                                );
+                              }
+                            }}
                             placeholder="-"
                             className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
                           />

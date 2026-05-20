@@ -12,7 +12,7 @@ const Sidebar = () => {
   const pathname = usePathname();
   const { role } = useUserHooks();
   const router = useRouter();
-  const profile = useUserStore((state) => state.profile);
+  const { profile, clearProfile } = useUserStore();
 
   // const [isSelected, setIsSelected] = useState("/");
 
@@ -21,6 +21,7 @@ const Sidebar = () => {
   const handleLogout = () => {
     logout.mutate(null, {
       onSuccess: (res) => {
+        clearProfile();
         toast.success(res.message || "Đăng xuất thành công!");
         router.push("/login");
       },
@@ -201,15 +202,17 @@ const Sidebar = () => {
     <div className="flex flex-col h-full justify-between w-full h-screen sticky top-0 bg-white border-r border-[#E2E8F0] sm:max-w-[270px]">
       <div className="p-2 ">
         {/* logo */}
-        <div className="flex items-center justify-center gap-2 mb-4 p-[12px]">
+        <div className="flex flex-col items-center justify-center gap-2 mb-4 p-[12px]">
           <img
-            src="https://yt3.googleusercontent.com/bGfunjaNdyEf-iUzAbmY7zFHrDbd5toOKmaUk0ld2ehCx4bPWUKfAibz4yY693vY7oyRHZPy=s900-c-k-c0x00ffffff-no-rj"
+            src="https://cdn.haitrieu.com/wp-content/uploads/2021/12/Logo-DH-Thang-Long-TLU-V.png"
             alt=""
-            className="h-[40px] w-[40px]"
+            className="h-[50px] w-full object-contain"
           />
           <div>
-            <h6 className="!font-bold">Phòng đào tạo</h6>
-            <p className="!text-[12px] text-[#E2E8F0]">Hệ thống quản lý</p>
+            {/* <h6 className="!font-bold">Phòng đào tạo</h6> */}
+            <p className="!text-[12px] text-center font-semibold">
+              Hệ thống chấm điểm danh
+            </p>
           </div>
         </div>
         {/* Menu Sidebar */}

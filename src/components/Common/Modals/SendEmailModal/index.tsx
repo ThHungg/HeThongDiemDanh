@@ -54,9 +54,9 @@ const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden">
+      <div className="bg-white w-full max-h-[90vh] max-w-2xl rounded-xl shadow-2xl overflow-y-auto">
         {/* Header - Màu đỏ sẫm chủ đạo */}
-        <div className="bg-[#8B0000] px-6 py-4 flex justify-between items-center text-white">
+        <div className="bg-[#8B0000] px-6 py-4 flex justify-between items-center text-white overflow-y-auto">
           <div className="flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +76,7 @@ const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
           </div>
           <button
             onClick={onClose}
-            className="hover:rotate-90 transition-transform duration-200"
+            className="transition-transform duration-200"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
