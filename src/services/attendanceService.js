@@ -72,7 +72,7 @@ const calculateAndUpdateChuyenCan = async (classCode, transaction = null) => {
 const getAttendanceByClass = async (classCode) => {
   try {
     // const today = new Date().toLocaleDateString("en-CA");
-    const today = "2026-02-04";
+    const today = "2026-04-25";
     const tkb = await Tkb.findOne({
       where: {
         ma_lop_hoc_phan: classCode,

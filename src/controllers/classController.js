@@ -63,8 +63,20 @@ const getClassByLecturerAndId = async (req, res) => {
 
 const getAllClasses = async (req, res) => {
   try {
-    const { semester } = req.query;
-    const response = await classService.getAllClasses(semester);
+    const {
+      semester,
+      page = 1,
+      limit = 10,
+      lecturerId,
+      searchText,
+    } = req.query;
+    const response = await classService.getAllClasses({
+      semester,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      lecturerId,
+      searchText,
+    });
     if (response.status === "Err") {
       return res.status(response.code || 400).json(response);
     }
@@ -126,10 +138,28 @@ const getCurrentClasses = async (req, res) => {
     });
   }
 };
+
+const getAllLecturer = async (req, res) => {
+  try {
+    const response = await classService.getAllLecturer();
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
   sendEmailToStudents,
   getCurrentClasses,
+  getAllLecturer,
 };

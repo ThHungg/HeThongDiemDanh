@@ -1,4 +1,4 @@
-const { or } = require("sequelize");
+const { or, Op, where, col, Sequelize } = require("sequelize");
 const {
   mapClasses,
   mapClassInfo,
@@ -233,8 +233,16 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
   }
 };
 
-const getAllClasses = async (semester) => {
+const getAllClasses = async (options = {}) => {
   try {
+    const { semester, page = 1, limit = 10, lecturerId, searchText } = options;
+    console.log("getAllClasses options:", {
+      semester,
+      page,
+      limit,
+      lecturerId,
+      searchText,
+    });
     let currentSemester;
     if (semester) {
       currentSemester = semester;
@@ -243,8 +251,47 @@ const getAllClasses = async (semester) => {
       currentSemester = semesterRes?.data?.ma_ky;
     }
 
-    const classes = await Tkb.findAll({
-      where: currentSemester ? { ma_ky: currentSemester } : {},
+    const whereConditions = [];
+
+    // Add semester condition
+    if (currentSemester) {
+      whereConditions.push({ ma_ky: currentSemester });
+    }
+
+    // Add lecturer filter
+    if (lecturerId) {
+      whereConditions.push({ ma_giang_vien: lecturerId });
+    }
+
+    // Add search conditions
+    if (searchText) {
+      whereConditions.push({
+        [Op.or]: [
+          { ma_lop_hoc_phan: { [Op.like]: `%${searchText}%` } },
+          { ten_lop: { [Op.like]: `%${searchText}%` } },
+          Sequelize.where(
+            Sequelize.col("giang_vien.ten"),
+            Op.like,
+            `%${searchText}%`,
+          ),
+          Sequelize.where(
+            Sequelize.col("hoc_phan.ten_hoc_phan"),
+            Op.like,
+            `%${searchText}%`,
+          ),
+        ],
+      });
+    }
+
+    const where =
+      whereConditions.length > 0 ? { [Op.and]: whereConditions } : {};
+
+    console.log("Final where clause:", JSON.stringify(where));
+
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Tkb.findAndCountAll({
+      where,
       attributes: [
         "id",
         "ma_lop_hoc_phan",
@@ -257,7 +304,7 @@ const getAllClasses = async (semester) => {
         {
           model: GiangVien,
           as: "giang_vien",
-          attributes: ["ten", "ma_giang_vien"],
+          attributes: ["id", "ten", "ma_giang_vien"],
         },
         {
           model: HocPhan,
@@ -271,11 +318,21 @@ const getAllClasses = async (semester) => {
         },
       ],
       order: [["id", "DESC"]],
+      limit,
+      offset,
+      subQuery: false,
     });
+
     return {
       status: "Ok",
       code: 200,
-      data: classes,
+      data: rows,
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+      },
     };
   } catch (e) {
     console.log(e);
@@ -502,10 +559,32 @@ const getCurrentClasses = async (lecturerId) => {
   }
 };
 
+const getAllLecturer = async () => {
+  try {
+    const lecturers = await GiangVien.findAll({
+      attributes: ["ma_giang_vien", "ten"],
+      order: [["ten", "ASC"]],
+    });
+
+    return {
+      status: "Ok",
+      code: 200,
+      data: lecturers,
+    };
+  } catch (e) {
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
   sendEmailToStudents,
   getCurrentClasses,
+  getAllLecturer,
 };

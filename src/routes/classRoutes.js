@@ -18,7 +18,12 @@ router.get(
   classController.getClassByLecturerAndId,
 );
 
-router.get("/getAll", classController.getAllClasses);
+router.get(
+  "/getAll",
+  authMiddleware,
+  roleMiddleware(["Quan_tri", "Thu_ky"]),
+  classController.getAllClasses,
+);
 
 router.post("/sendEmailToStudents", classController.sendEmailToStudents);
 
@@ -28,4 +33,5 @@ router.get(
   classController.getCurrentClasses,
 );
 
+router.get("/getAllLecturer", authMiddleware, classController.getAllLecturer);
 module.exports = router;
