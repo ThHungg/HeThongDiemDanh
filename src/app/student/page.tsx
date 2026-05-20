@@ -14,7 +14,6 @@ const StudentPage = () => {
     useState(false);
 
   const isStudent = isStudentRole();
-  console.log("isStudent", isStudent);
 
   const getClasses = async () => {
     const res = await studentService.getClassesByStudentService();

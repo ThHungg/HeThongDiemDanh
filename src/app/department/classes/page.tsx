@@ -10,7 +10,7 @@ const ClassManagementPage = () => {
     <div className="p-[24px]">
       <ContentHeader
         title="Quản lý lớp học"
-        showExport={true}
+        showExport={false}
         onExport={() => {}}
         addLabel="Thêm lớp học"
         showAdd={false}

@@ -33,7 +33,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <MasterLayout>{children}</MasterLayout>
-          <ToastContainer />
+          <ToastContainer position="top-center" />
         </QueryProvider>
       </body>
     </html>

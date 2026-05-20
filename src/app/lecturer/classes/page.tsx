@@ -27,7 +27,7 @@ const LecturerClassesPage = () => {
     <div className="p-[24px]">
       <ContentHeader
         title="Quản lý danh sách lớp học"
-        showExport={true}
+        showExport={false}
         onExport={() => {}}
         addLabel="Thêm lớp học"
         showAdd={false}

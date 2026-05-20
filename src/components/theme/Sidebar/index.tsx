@@ -204,7 +204,7 @@ const Sidebar = () => {
         {/* logo */}
         <div className="flex flex-col items-center justify-center gap-2 mb-4 p-[12px]">
           <img
-            src="https://cdn.haitrieu.com/wp-content/uploads/2021/12/Logo-DH-Thang-Long-TLU-V.png"
+            src="https://thanglong.edu.vn/themes/md_tlu/img/logo.svg"
             alt=""
             className="h-[50px] w-full object-contain"
           />

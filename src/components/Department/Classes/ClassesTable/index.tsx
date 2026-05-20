@@ -9,7 +9,7 @@ import { useSemesterStore } from "@/store/useSemesterStore";
 
 const ClassesTable = () => {
   const selectedSemester = useSemesterStore((state) => state.selectedSemester);
-  const [isSelectedClasscode, setIsSelectedClasscode] = useState("242IT38002");
+  const [selectedClass, setSelectedClass] = useState<any>(null);
   const [openAttendanceClass, setOpenAttendanceClass] = useState(false);
   const [page, setPage] = useState(1);
   const [searchText, setSearchText] = useState("");
@@ -49,6 +49,8 @@ const ClassesTable = () => {
     ],
     queryFn: () => getAllClasses(),
   });
+
+  console.log("allClasses", allClasses);
 
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
@@ -169,7 +171,7 @@ const ClassesTable = () => {
                 <button
                   onClick={() => {
                     setOpenAttendanceClass(true);
-                    setIsSelectedClasscode(classItem?.ma_lop_hoc_phan);
+                    setSelectedClass(classItem);
                   }}
                   className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-semibold hover:bg-gray-100 transition-colors"
                 >
@@ -187,10 +189,13 @@ const ClassesTable = () => {
         itemsPerPage={ITEMS_PER_PAGE}
         onPageChange={(newPage) => setPage(newPage)}
       />
-      {openAttendanceClass && (
+      {openAttendanceClass && selectedClass && (
         <AttendanceClassModal
-          isSelectedClasscode={isSelectedClasscode}
-          onClose={() => setOpenAttendanceClass(false)}
+          classData={selectedClass}
+          onClose={() => {
+            setOpenAttendanceClass(false);
+            setSelectedClass(null);
+          }}
         />
       )}
     </div>

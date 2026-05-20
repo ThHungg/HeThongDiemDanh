@@ -7,6 +7,8 @@ import getScoreColor from "@/utils/getScoreColor";
 import { formatDate } from "@/utils/formatDatt";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import SendEmailModal from "../SendEmailModal";
+import { formatClassCode } from "@/utils/formatClassCode";
+import { useMutationHooks } from "@/hooks/useMutationHooks";
 
 interface ListStudent {
   classCode: string;
@@ -26,12 +28,30 @@ interface ListStudent {
   }[];
 }
 
+interface ClassData {
+  id: number;
+  ma_lop_hoc_phan: string;
+  ten_lop: string;
+  sldk: number;
+  suc_chua: number;
+  giang_vien: {
+    id: number;
+    ten: string;
+    ma_giang_vien: string;
+  };
+  hoc_phan: {
+    ten_hoc_phan: string;
+    ma_hoc_phan: string;
+  };
+  thoi_khoa_bieu_chi_tiet: Array<any>;
+}
+
 const AttendanceClassModal = ({
   onClose,
-  isSelectedClasscode,
+  classData,
 }: {
   onClose: () => void;
-  isSelectedClasscode: string;
+  classData: ClassData;
 }) => {
   const [openStudentDetail, setOpenStudentDetail] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -46,8 +66,8 @@ const AttendanceClassModal = ({
   };
 
   const { data: attendanceData, isLoading } = useQuery({
-    queryKey: ["attendance", isSelectedClasscode],
-    queryFn: () => getAttendance(isSelectedClasscode),
+    queryKey: ["attendance", classData.ma_lop_hoc_phan],
+    queryFn: () => getAttendance(classData.ma_lop_hoc_phan),
   });
 
   const getDetailClass = async (classCode: string) => {
@@ -56,8 +76,8 @@ const AttendanceClassModal = ({
   };
 
   const { data: detailClass } = useQuery({
-    queryKey: ["lecturer-classes", isSelectedClasscode],
-    queryFn: () => getDetailClass(isSelectedClasscode),
+    queryKey: ["lecturer-classes", classData.ma_lop_hoc_phan],
+    queryFn: () => getDetailClass(classData.ma_lop_hoc_phan),
   });
 
   const classSession = detailClass?.data?.buoi_hoc || [];
@@ -65,6 +85,23 @@ const AttendanceClassModal = ({
   const handleViewScoreDetail = (student: any) => {
     setSelectedStudentScores(student);
     setOpenDetailScore(true);
+  };
+
+  const exportAttendance = useMutationHooks((data: { classCode: string }) =>
+    attendanceService.exportAttendanceByClassService(data.classCode),
+  );
+
+  const handleExport = async (data: { classCode: string }) => {
+    exportAttendance.mutate(data, {
+      onSuccess: async (res: any) => {
+        console.log(res);
+        if (res.data && res.data.fileName) {
+          await attendanceService.downloadAttendanceTemplateService(
+            res.data.fileName,
+          );
+        }
+      },
+    });
   };
   return (
     <>
@@ -76,9 +113,12 @@ const AttendanceClassModal = ({
               <p className="font-semibold w-fit px-2 py-1 rounded-lg text-white text-[11px] bg-[#8B0000]">
                 Thông tin lớp học
               </p>
-              <h4 className="!font-bold text-[#8B0000]">
-                Lập trình hướng đối tượng
-              </h4>
+
+              <div className="flex gap-2">
+                <h4 className="!font-bold text-[#8B0000]">
+                  {classData.hoc_phan.ten_hoc_phan}
+                </h4>
+              </div>
               <div className="flex items-center gap-2">
                 <p className="text-[12px] flex items-center gap-1">
                   <svg
@@ -100,7 +140,13 @@ const AttendanceClassModal = ({
                       <path d="M10 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zm4 12h2m-2-4h4" />
                     </g>
                   </svg>
-                  Mã lớp: <span>243IS332.02</span>
+                  Mã lớp:{" "}
+                  <span>
+                    {formatClassCode(
+                      classData.ma_lop_hoc_phan,
+                      classData.ten_lop,
+                    )}
+                  </span>
                 </p>
                 <p className="text-[12px] flex items-center gap-1">
                   <svg
@@ -119,7 +165,7 @@ const AttendanceClassModal = ({
                       d="M15 7.5a3 3 0 1 1-6 0a3 3 0 0 1 6 0m4.5 13c-.475-9.333-14.525-9.333-15 0"
                     />
                   </svg>
-                  Giảng viên: <span>ThS. Nguyen Van An</span>
+                  Giảng viên: <span>{classData.giang_vien.ten}</span>
                 </p>
               </div>
             </div>
@@ -142,8 +188,8 @@ const AttendanceClassModal = ({
           <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
             {/* Filter */}
             <div className="flex justify-between items-center p-4">
-              <div className="flex items-center justify-center w-full max-w-75 px-4">
-                <div className="relative w-full max-w-md">
+              <div className="flex items-center justify-between w-full px-4">
+                <div className="relative w-full max-w-md max-w-75">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -162,8 +208,27 @@ const AttendanceClassModal = ({
                     className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
                   />
                 </div>
+                <button
+                  onClick={() =>
+                    handleExport({ classCode: classData.ma_lop_hoc_phan })
+                  }
+                  className="px-4 py-2 bg-white border-gray-300 border rounded-lg text-[14px] font-semibold items-center flex gap-1 hover:scale-105 transition-all duration-300"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M12 4v12.25L17.25 11l.75.66l-6.5 6.5l-6.5-6.5l.75-.66L11 16.25V4zM3 19h1v2h15v-2h1v3H3z"
+                    />
+                  </svg>
+                  <span className="text-[12px]">Xuất báo báo</span>
+                </button>
               </div>
-              <div className="text-[13px] text-[#475569] flex items-center gap-2">
+              {/* <div className="text-[13px] text-[#475569] flex items-center gap-2">
                 <span className="">Lớp: </span>
                 <select
                   name=""
@@ -175,7 +240,7 @@ const AttendanceClassModal = ({
                   <option value="">Công nghệ phần mềm (243IS430.03)</option>
                   <option value="">Công nghệ Blockchain (243IS430.03)</option>
                 </select>
-              </div>
+              </div> */}
             </div>
             <div className="bg-[#F8FAFC] py-2 px-4">
               <div className="flex justify-between items-center w-3/5">
