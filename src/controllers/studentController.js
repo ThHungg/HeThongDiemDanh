@@ -95,7 +95,7 @@ const getAllStudents = async (req, res) => {
       startDate,
       endDate,
       minScore,
-      maxScore
+      maxScore,
     } = req.query;
 
     const response = await studentService.getAllStudents(
@@ -106,14 +106,14 @@ const getAllStudents = async (req, res) => {
       startDate,
       endDate,
       minScore,
-      maxScore
+      maxScore,
     );
     if (response.status === "Err") {
       return res.status(response.code || 400).json(response);
     }
     return res.status(200).json(response);
   } catch (e) {
-    console.log(e);
+    console.error("getAllStudents error:", e);
     return res.status(500).json({
       status: "Err",
       code: 500,

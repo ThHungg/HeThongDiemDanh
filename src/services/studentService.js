@@ -207,11 +207,21 @@ const getAllStudents = async (
     const whereCondition = {};
 
     if (search) {
-      whereCondition[Op.or] = [
-        { ma_sinh_vien: { [Op.like]: `%${search}%` } },
-        { ten: { [Op.like]: `%${search}%` } },
-        { lop_chuyen_nganh: { [Op.like]: `%${search}%` } },
-      ];
+      // Check if search contains multiple student IDs (format: A46588 A46615 A46623)
+      const studentIdRegex = /A\d{5}/g;
+      const studentIds = search.match(studentIdRegex);
+
+      if (studentIds && studentIds.length > 0) {
+        // Multiple student IDs found - use IN condition
+        whereCondition[Op.or] = [{ ma_sinh_vien: { [Op.in]: studentIds } }];
+      } else {
+        // Single search term - search in multiple fields
+        whereCondition[Op.or] = [
+          { ma_sinh_vien: { [Op.like]: `%${search}%` } },
+          { ten: { [Op.like]: `%${search}%` } },
+          { lop_chuyen_nganh: { [Op.like]: `%${search}%` } },
+        ];
+      }
     }
 
     const queryOptions = {
@@ -323,7 +333,7 @@ const getAllStudents = async (
       },
     };
   } catch (e) {
-    console.log(e);
+    console.error("getAllStudents error:", e);
     return {
       status: "Err",
       code: 500,

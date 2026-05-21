@@ -82,7 +82,7 @@ const getAllClasses = async (req, res) => {
     }
     return res.status(200).json(response);
   } catch (e) {
-    console.log(e);
+    console.error("getAllClasses controller error:", e);
     return res.status(500).json({
       status: "Err",
       code: 500,

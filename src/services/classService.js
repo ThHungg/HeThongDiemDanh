@@ -253,24 +253,13 @@ const getAllClasses = async (options = {}) => {
       whereConditions.push({ ma_giang_vien: lecturerId });
     }
 
-    // Add search conditions
+    // Build search conditions
+    const searchConditions = [];
     if (searchText) {
-      whereConditions.push({
-        [Op.or]: [
-          { ma_lop_hoc_phan: { [Op.like]: `%${searchText}%` } },
-          { ten_lop: { [Op.like]: `%${searchText}%` } },
-          Sequelize.where(
-            Sequelize.col("giang_vien.ten"),
-            Op.like,
-            `%${searchText}%`,
-          ),
-          Sequelize.where(
-            Sequelize.col("hoc_phan.ten_hoc_phan"),
-            Op.like,
-            `%${searchText}%`,
-          ),
-        ],
+      searchConditions.push({
+        ma_lop_hoc_phan: { [Op.like]: `%${searchText}%` },
       });
+      searchConditions.push({ ten_lop: { [Op.like]: `%${searchText}%` } });
     }
 
     const where =
@@ -336,8 +325,27 @@ const getAllClasses = async (options = {}) => {
         uniqueClassesMap.set(row.id, row);
       }
     });
-    const uniqueRows = Array.from(uniqueClassesMap.values());
+    let uniqueRows = Array.from(uniqueClassesMap.values());
 
+    // Apply search filter on client side for associated table searches
+    if (searchText) {
+      uniqueRows = uniqueRows.filter((row) => {
+        const searchLower = searchText.toLowerCase();
+        const classCode = row.ma_lop_hoc_phan?.toLowerCase() || "";
+        const className = row.ten_lop?.toLowerCase() || "";
+        const lecturerName = row.giang_vien?.ten?.toLowerCase() || "";
+        const subjectName = row.hoc_phan?.ten_hoc_phan?.toLowerCase() || "";
+
+        return (
+          classCode.includes(searchLower) ||
+          className.includes(searchLower) ||
+          lecturerName.includes(searchLower) ||
+          subjectName.includes(searchLower)
+        );
+      });
+    }
+
+    const totalCount = uniqueRows.length;
     const rows = uniqueRows.slice(offset, offset + limit);
 
     const dataWithClassAverage = rows.map((classData) => {
@@ -377,13 +385,14 @@ const getAllClasses = async (options = {}) => {
       code: 200,
       data: dataWithClassAverage,
       pagination: {
-        total: count,
+        total: totalCount,
         page,
         limit,
-        totalPages: Math.ceil(count / limit),
+        totalPages: Math.ceil(totalCount / limit),
       },
     };
   } catch (e) {
+    console.error("getAllClasses error:", e);
     return {
       status: "Err",
       code: 500,
