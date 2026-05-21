@@ -34,7 +34,6 @@ const getClassesByLecturer = async (lecturerId, semester) => {
       currentSemester = semesterRes?.data?.ma_ky;
     }
 
-    console.log(currentSemester);
     const classes = await Tkb.findAll({
       where: {
         ma_ky: currentSemester,
@@ -67,7 +66,6 @@ const getClassesByLecturer = async (lecturerId, semester) => {
       ],
       order: [["id", "DESC"]],
     });
-    console.log(classes);
     const transformedClasses = mapClasses(classes);
 
     return {
@@ -76,7 +74,6 @@ const getClassesByLecturer = async (lecturerId, semester) => {
       data: transformedClasses,
     };
   } catch (e) {
-    console.log("e :", e);
     return {
       status: "Err",
       code: 500,
@@ -111,6 +108,7 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
           model: DangKy,
           as: "danh_sach_dang_ky",
           attributes: ["id", "sinh_vien_id"],
+          required: false, // LEFT JOIN
           include: [
             {
               model: SinhVien,
@@ -139,7 +137,7 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
         {
           model: TkbChiTiet,
           as: "thoi_khoa_bieu_chi_tiet",
-          attributes: ["id", "bat_dau", "ket_thuc", "thu"],
+          attributes: ["id", "bat_dau", "ket_thuc", "thu", "phong"],
         },
         {
           model: Ky,
@@ -224,7 +222,6 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
       },
     };
   } catch (e) {
-    console.log(e);
     return {
       status: "Err",
       code: 500,
@@ -236,13 +233,6 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
 const getAllClasses = async (options = {}) => {
   try {
     const { semester, page = 1, limit = 10, lecturerId, searchText } = options;
-    console.log("getAllClasses options:", {
-      semester,
-      page,
-      limit,
-      lecturerId,
-      searchText,
-    });
     let currentSemester;
     if (semester) {
       currentSemester = semester;
@@ -286,11 +276,16 @@ const getAllClasses = async (options = {}) => {
     const where =
       whereConditions.length > 0 ? { [Op.and]: whereConditions } : {};
 
-    console.log("Final where clause:", JSON.stringify(where));
-
     const offset = (page - 1) * limit;
 
-    const { count, rows } = await Tkb.findAndCountAll({
+    // Query 1: Count total distinct classes
+    const count = await Tkb.count({
+      where,
+      distinct: true,
+    });
+
+    // Query 2: Fetch all rows (no limit here, need to dedupe manually)
+    const allRows = await Tkb.findAll({
       where,
       attributes: [
         "id",
@@ -316,17 +311,71 @@ const getAllClasses = async (options = {}) => {
           as: "thoi_khoa_bieu_chi_tiet",
           attributes: ["bat_dau", "ket_thuc", "thu", "phong"],
         },
+        {
+          model: DangKy,
+          as: "danh_sach_dang_ky",
+          attributes: ["id", "sinh_vien_id"],
+          required: false,
+          include: [
+            {
+              model: ChuyenCan,
+              as: "chuyen_can",
+              attributes: ["diem_trung_binh"],
+            },
+          ],
+        },
       ],
       order: [["id", "DESC"]],
-      limit,
-      offset,
       subQuery: false,
+      raw: false,
     });
 
+    const uniqueClassesMap = new Map();
+    allRows.forEach((row) => {
+      if (!uniqueClassesMap.has(row.id)) {
+        uniqueClassesMap.set(row.id, row);
+      }
+    });
+    const uniqueRows = Array.from(uniqueClassesMap.values());
+
+    const rows = uniqueRows.slice(offset, offset + limit);
+
+    const dataWithClassAverage = rows.map((classData) => {
+      const classObj = classData.toJSON ? classData.toJSON() : classData;
+
+      const validScores = classObj.danh_sach_dang_ky
+        .map((reg) => reg.chuyen_can?.diem_trung_binh)
+        .filter((score) => score !== null && score !== undefined);
+
+      let diem_trung_binh_lop = null;
+      if (validScores.length > 0) {
+        const totalScore = validScores.reduce(
+          (sum, score) => sum + parseFloat(score),
+          0,
+        );
+        diem_trung_binh_lop = parseFloat(
+          (totalScore / validScores.length).toFixed(2),
+        );
+      }
+
+      return {
+        id: classObj.id,
+        ma_lop_hoc_phan: classObj.ma_lop_hoc_phan,
+        ma_hoc_phan: classObj.ma_hoc_phan,
+        ten_lop: classObj.ten_lop,
+        sldk: classObj.sldk,
+        suc_chua: classObj.suc_chua,
+        giang_vien: classObj.giang_vien,
+        hoc_phan: classObj.hoc_phan,
+        thoi_khoa_bieu_chi_tiet: classObj.thoi_khoa_bieu_chi_tiet,
+        diem_trung_binh_lop,
+        tong_sinh_vien_co_diem: validScores.length,
+      };
+    });
     return {
       status: "Ok",
       code: 200,
-      data: rows,
+      data: dataWithClassAverage,
       pagination: {
         total: count,
         page,
@@ -335,7 +384,6 @@ const getAllClasses = async (options = {}) => {
       },
     };
   } catch (e) {
-    console.log(e);
     return {
       status: "Err",
       code: 500,
@@ -391,7 +439,6 @@ const sendEmailToStudents = async (
       message: "Email đã được gửi thành công",
     };
   } catch (e) {
-    console.log(e);
     return {
       status: "Err",
       code: 500,
@@ -550,7 +597,6 @@ const getCurrentClasses = async (lecturerId) => {
       data: classesWithCurrentSession,
     };
   } catch (e) {
-    console.log("e :", e);
     return {
       status: "Err",
       code: 500,

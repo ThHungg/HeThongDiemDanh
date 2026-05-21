@@ -169,9 +169,16 @@ const mapAttendanceByClass = (sessions) => {
   }));
 };
 
-const mapStudents = (students, isFilterDate = false, startDate, endDate, minScore, maxScore) => {
+const mapStudents = (
+  students,
+  isFilterDate = false,
+  startDate,
+  endDate,
+  minScore,
+  maxScore,
+) => {
   const result = [];
-  
+
   for (let student of students) {
     const raw = student.get ? student.get({ plain: true }) : student;
 
@@ -222,19 +229,19 @@ const mapStudents = (students, isFilterDate = false, startDate, endDate, minScor
         : null;
 
     let isValid = true;
-    
+
     const hasMinScore = minScore !== undefined && minScore !== "";
     const hasMaxScore = maxScore !== undefined && maxScore !== "";
     const isFilterScore = hasMinScore || hasMaxScore;
 
     if (isFilterDate || isFilterScore) {
-       if (diemTrungBinhChuyenCan === null) {
-          isValid = false; // Filter out if no score calculated
-       } else {
-          const avg = parseFloat(diemTrungBinhChuyenCan);
-          if (hasMinScore && avg < parseFloat(minScore)) isValid = false;
-          if (hasMaxScore && avg > parseFloat(maxScore)) isValid = false;
-       }
+      if (diemTrungBinhChuyenCan === null) {
+        isValid = false; // Filter out if no score calculated
+      } else {
+        const avg = parseFloat(diemTrungBinhChuyenCan);
+        if (hasMinScore && avg < parseFloat(minScore)) isValid = false;
+        if (hasMaxScore && avg > parseFloat(maxScore)) isValid = false;
+      }
     }
 
     if (isValid) {
@@ -245,6 +252,7 @@ const mapStudents = (students, isFilterDate = false, startDate, endDate, minScor
         dienThoai1: raw.dien_thoai1,
         dienThoai2: raw.dien_thoai2,
         email1: raw.email1,
+        email2: raw.email2,
         dangKy,
         diemTrungBinhChuyenCan,
       });

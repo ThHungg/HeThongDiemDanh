@@ -223,6 +223,7 @@ const getAllStudents = async (
         "dien_thoai1",
         "dien_thoai2",
         "email1",
+        "email2",
       ],
       include: [
         {
@@ -278,11 +279,14 @@ const getAllStudents = async (
               as: "buoi_hoc",
               attributes: ["id", "tkb_id", "ngay_hoc", "trang_thai"],
               required: false,
-              where: (startDate && endDate) ? {
-                ngay_hoc: {
-                  [Op.between]: [startDate, endDate]
-                }
-              } : undefined
+              where:
+                startDate && endDate
+                  ? {
+                      ngay_hoc: {
+                        [Op.between]: [startDate, endDate],
+                      },
+                    }
+                  : undefined,
             },
           ],
         },
