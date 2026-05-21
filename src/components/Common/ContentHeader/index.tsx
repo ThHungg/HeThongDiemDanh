@@ -1,10 +1,18 @@
 "use client";
+import { formatClassCode } from "@/utils/formatClassCode";
 import { memo } from "react";
 
 interface ContentHeaderProps {
   title?: string;
   courseCode?: string;
-  room?: string;
+  detail?: any;
+  schedule?: Array<{
+    tkbId?: number;
+    tiet?: string;
+    thu?: number;
+    phong?: string;
+  }>;
+  codeClass?: string;
 
   showExport?: boolean;
   onExport?: () => void;
@@ -17,21 +25,38 @@ interface ContentHeaderProps {
 const ContentHeader = ({
   title,
   courseCode,
-  room,
+  detail,
+  schedule,
+  codeClass,
   showExport = false,
   onExport,
   addLabel,
   showAdd = false,
   onAdd,
 }: ContentHeaderProps) => {
+  console.log("detail", detail);
   return (
     <div className="flex justify-between items-center mb-4">
       <div>
-        <h2>{title}</h2>
-        {courseCode && room && (
-          <p className="!text-[14px] text-[#64748B]">
-            <span>{courseCode}</span> - <span>Phòng: {room}</span>
-          </p>
+        <h2>
+          {title}{" "}
+          <span>
+            {" "}
+            <span className="font-semibold text-[14px] text-[#64748B] items-center">
+              ( {formatClassCode(courseCode || "", codeClass || "")})
+            </span>
+          </span>
+        </h2>
+        {schedule && schedule.length > 0 && (
+          <div className="!text-[14px] text-[#64748B]">
+            <div className="mt-1 space-y-1">
+              {schedule.map((item, index) => (
+                <p key={index} className="text-[13px]">
+                  Thứ {item.thu}, Tiết {item.tiet}, Phòng: {item.phong}
+                </p>
+              ))}
+            </div>
+          </div>
         )}
       </div>
       <div className="flex gap-2">

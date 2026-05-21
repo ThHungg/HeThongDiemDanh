@@ -157,13 +157,26 @@ const ClassesTable = () => {
                 {classItem?.sldk} / {classItem?.suc_chua}
               </td>
 
-              <td className="text-left px-4 py-2 font-bold space-y-1 whitespace-nowrap">
-                {classItem.attendanceRate >= 9 ? (
-                  <span className="text-green-600">1</span>
-                ) : classItem.attendanceRate >= 7 ? (
-                  <span className="text-yellow-600">2</span>
+              <td className="text-left px-4 py-2 font-bold space-y-1 whitespace-nowrap text-[14px]">
+                {classItem.diem_trung_binh_lop !== undefined &&
+                classItem.diem_trung_binh_lop !== null ? (
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={
+                        classItem.diem_trung_binh_lop >= 8.5
+                          ? "text-green-600"
+                          : classItem.diem_trung_binh_lop >= 5.0
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      }
+                    >
+                      {Number(classItem.diem_trung_binh_lop).toFixed(2)}
+                    </span>
+                  </div>
                 ) : (
-                  <span className="text-red-600">3</span>
+                  <span className="text-slate-400 font-normal">
+                    Chưa có dữ liệu
+                  </span>
                 )}
               </td>
 

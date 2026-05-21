@@ -6,6 +6,7 @@ interface PaginationProps {
   totalItems: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
 }
 
 const Pagination = ({
@@ -14,7 +15,9 @@ const Pagination = ({
   totalItems,
   itemsPerPage,
   onPageChange,
+  onItemsPerPageChange,
 }: PaginationProps) => {
+  const itemsPerPageOptions = [10, 20, 30, 50, 100];
   const pages = useMemo(() => {
     const result: (number | string)[] = [];
 
@@ -50,12 +53,27 @@ const Pagination = ({
   }, [currentPage, totalPages]);
 
   return (
-    <div className="flex flex-wrap items-center px-6 justify-between py-4 bg-[#F8FAFC] border-t border-gray-200">
+    <div className="flex flex-wrap items-center px-6 justify-between py-4 bg-[#F8FAFC] border-t border-gray-200 gap-4">
       {/* Info */}
-      <div className="text-[14px] text-[#64748B] font-medium mb-2 md:mb-0">
-        Hiển thị{" "}
-        <span className="font-bold text-[#8B0000]">{itemsPerPage}</span> trên
-        tổng số <span className="font-bold">{totalItems}</span> kết quả
+      <div className="flex items-center gap-3">
+        <div className="text-[14px] text-[#64748B] font-medium">Hiển thị</div>
+        <select
+          value={itemsPerPage}
+          onChange={(e) => {
+            const newLimit = parseInt(e.target.value);
+            onItemsPerPageChange?.(newLimit);
+          }}
+          className="px-3 py-1.5 border border-gray-300 rounded-md bg-white text-[14px] font-semibold text-[#333] hover:border-[#8B0000] transition-colors focus:outline-none focus:border-[#8B0000]"
+        >
+          {itemsPerPageOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <div className="text-[14px] text-[#64748B] font-medium">
+          trên tổng số <span className="font-bold">{totalItems}</span> kết quả
+        </div>
       </div>
 
       {/* Pagination */}

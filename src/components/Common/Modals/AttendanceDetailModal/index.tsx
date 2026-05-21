@@ -5,10 +5,13 @@ import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
 import { formatClassCode } from "@/utils/formatClassCode";
 import { formatDate } from "@/utils/formatDatt";
+import { styles } from "next/dist/client/components/styles/access-error-styles";
+import SendEmailModal from "../SendEmailModal";
 
 const AttendanceDetailModal = ({
   detailClass,
   onClose,
+  studentInfo,
   isStudent,
   studentId,
   avgChuyenCan,
@@ -18,14 +21,16 @@ const AttendanceDetailModal = ({
   onClose: () => void;
   isStudent: boolean;
   studentId: string;
+  studentInfo?: any;
   avgChuyenCan: number | null;
   classCode?: string;
 }) => {
   const [isSelected, setIsSelected] = useState<Number | null>(0);
   const [attendanceDetail, setAttendanceDetail] = useState<any>(null);
+  const [isOpenSendEmail, setIsOpenSendEmail] = useState(false);
+  const [studentData, setStudentData] = useState<any>(null);
 
-  console.log("Modal Props:", { isStudent, studentId, classCode });
-  console.log("isSelected:", isSelected);
+  console.log("studentInfo", detailClass);
 
   const getClassesByStudentId = async (studentId: string) => {
     const res = await studentService.getClassesByStudentId(studentId);
@@ -93,8 +98,6 @@ const AttendanceDetailModal = ({
     }
   }, [attendance]);
 
-  console.log(attendanceDetail);
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="max-w-[800px] h-[80vh] w-full bg-white rounded-lg flex flex-col">
@@ -110,24 +113,34 @@ const AttendanceDetailModal = ({
               />
             </div>
             <div className="space-y-0.5">
-              <h4 className="!font-bold text-[#8B0000]">Nguyễn Văn An</h4>
+              <h4 className="!font-bold text-[#8B0000]">{studentInfo?.ten}</h4>
               <p className="text-[11px] whitespace-nowrap">
-                Lớp: <span className="font-semibold">TT35CL07</span> MSV:{" "}
-                <span className="font-semibold">A46588</span>
-                <span>
+                Lớp:{" "}
+                <span className="font-semibold">
+                  {studentInfo?.lopChuyenNganh}
+                </span>{" "}
+                MSV:{" "}
+                <span className="font-semibold">{studentInfo?.maSinhVien}</span>
+                {/* <span>
                   {" "}
                   Ngành:{" "}
                   <span className="font-semibold">Công nghệ thông tin</span>
-                </span>
+                </span> */}
+                <span className="text-[11px] ml-2">
+                  Số điện thoại:{" "}
+                  <span className="font-semibold">
+                    {studentInfo?.dienThoai1}
+                  </span>
+                </span>{" "}
               </p>
               <div className="flex gap-1">
                 <p className="text-[11px]">
-                  Số điện thoại:{" "}
-                  <span className="font-semibold">0123456789</span>
-                </p>{" "}
+                  Email1:{" "}
+                  <span className="font-semibold">{studentInfo?.email1}</span>
+                </p>
                 <p className="text-[11px]">
-                  Email:{" "}
-                  <span className="font-semibold">a46588@thanglong.edu.vn</span>
+                  Email2:{" "}
+                  <span className="font-semibold">{studentInfo?.email2}</span>
                 </p>
               </div>
             </div>
@@ -146,7 +159,17 @@ const AttendanceDetailModal = ({
             {!isStudent && (
               <>
                 <div className="h-3/4 mx-4 border-l-1 rounded-2xl border-[#8B0000]/10"></div>
-                <button className="text-[14px] flex items-center gap-2 text-white bg-[#8B0000] whitespace-nowrap font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors">
+                <button
+                  onClick={() => {
+                    setIsOpenSendEmail(true);
+                    setStudentData({
+                      name: studentInfo?.ten,
+                      email: studentInfo?.email1,
+                      classCode: isSelected,
+                    });
+                  }}
+                  className="text-[14px] flex items-center gap-2 text-white bg-[#8B0000] whitespace-nowrap font-semibold px-3 py-2 rounded-xl hover:bg-[#8B0000]/80 transition-colors"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -375,6 +398,12 @@ const AttendanceDetailModal = ({
           </div>
         </div>
       </div>
+      {isOpenSendEmail && (
+        <SendEmailModal
+          onClose={() => setIsOpenSendEmail(false)}
+          studentData={studentData}
+        />
+      )}
     </div>
   );
 };

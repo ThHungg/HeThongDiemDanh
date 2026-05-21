@@ -67,7 +67,8 @@ const DetailClassPage = () => {
       <ContentHeader
         title={detailClass?.data?.hocPhan?.tenHocPhan}
         courseCode={detailClass?.data?.maLopHocPhan}
-        room="A704"
+        codeClass={detailClass?.data?.tenLop}
+        schedule={detailClass?.data?.thoiKhoaBieuChiTiet}
         showExport={true}
         onExport={() => handleExport({ classCode })}
         addLabel="Thêm lớp học"

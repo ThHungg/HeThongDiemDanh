@@ -1,6 +1,17 @@
 import { memo } from "react";
-
+import * as authenService from "@/services/authenService";
+import { useQuery } from "@tanstack/react-query";
 const StudentInfoCard = () => {
+  const getProfile = async () => {
+    const res = await authenService.getProfileService();
+    return res;
+  };
+
+  const { data: profile } = useQuery({
+    queryKey: ["studentProfile"],
+    queryFn: getProfile,
+  });
+  console.log("profile", profile);
   return (
     <div className="w-full mb-[24px] bg-white border border-[#E2E8F0] shadow-xs px-8 py-4 rounded-lg flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -11,10 +22,12 @@ const StudentInfoCard = () => {
           className="h-[90px] w-[90px]"
         />
         <div className="space-y-0.5">
-          <h6 className="font-bold">Đặng Thành Hưng</h6>
-          <p className="text-[14px] font-semibold">A46588</p>
+          <h6 className="font-bold">{profile?.data?.ten}</h6>
+          <p className="text-[14px] font-semibold">
+            {profile?.data?.ma_sinh_vien}
+          </p>
           <p className="px-2 py-1 bg-[#8B0000]/10 font-semibold w-fit rounded-2xl text-[12px] text-[#8B0000]">
-            TT35CL07
+            {profile?.data?.lop_chuyen_nganh}
           </p>
         </div>
       </div>

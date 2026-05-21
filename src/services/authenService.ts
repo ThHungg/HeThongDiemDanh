@@ -34,3 +34,12 @@ export const logoutService = async () => {
     throw e;
   }
 }
+
+export const getProfileService = async () => {
+  try {
+    const res = await axiosInstance.get("/auth/me");
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}

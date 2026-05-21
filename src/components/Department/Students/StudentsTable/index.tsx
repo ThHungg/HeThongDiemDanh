@@ -19,12 +19,16 @@ interface StudentsTableProps {
   filters?: FilterOptions;
 }
 
-const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) => {
+const StudentsTable = ({
+  searchValue = "",
+  filters = {},
+}: StudentsTableProps) => {
   const [isSelectedStudentId, setIsSelectedStudentId] = useState("");
   const [openAttendanceDetail, setOpenAttendanceDetail] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [avgChuyenCan, setAvgChuyenCan] = useState<number | null>(null);
+  const [selectStudent, setSelectStudent] = useState<any>(null);
 
   const [isStudent, setIsStudent] = useState(false);
 
@@ -40,7 +44,7 @@ const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) =
       filters.startDate,
       filters.endDate,
       filters.minScore,
-      filters.maxScore
+      filters.maxScore,
     );
     return res;
   };
@@ -55,7 +59,13 @@ const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) =
   });
 
   const students = allStudents?.data || [];
+
   const pagination = allStudents?.pagination || {};
+
+  const handleItemsPerPageChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1); // Reset to page 1 when changing items per page
+  };
 
   return (
     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
@@ -128,6 +138,7 @@ const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) =
                       setOpenAttendanceDetail(true);
                       setIsSelectedStudentId(student.maSinhVien);
                       setAvgChuyenCan(student.diemTrungBinhChuyenCan);
+                      setSelectStudent(student);
                     }}
                     className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-semibold hover:bg-gray-100 transition-colors"
                   >
@@ -151,6 +162,7 @@ const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) =
         totalItems={pagination.totalRecords || 0}
         itemsPerPage={pagination.limit || 10}
         onPageChange={(page) => setPage(page)}
+        onItemsPerPageChange={handleItemsPerPageChange}
       />
       {openAttendanceDetail && (
         <AttendanceDetailModal
@@ -158,6 +170,7 @@ const StudentsTable = ({ searchValue = "", filters = {} }: StudentsTableProps) =
           onClose={() => setOpenAttendanceDetail(false)}
           studentId={isSelectedStudentId}
           avgChuyenCan={avgChuyenCan}
+          studentInfo={selectStudent}
         />
       )}
     </div>
