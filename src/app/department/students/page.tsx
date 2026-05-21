@@ -17,7 +17,7 @@ const StudentManagementPage = () => {
     <div className="p-[24px]">
       <ContentHeader
         title="Quản lý sinh viên"
-        showExport={true}
+        showExport={false}
         onExport={() => {}}
       />
       <FilterBar onSearchChange={setSearchValue} onFilterChange={setFilters} />

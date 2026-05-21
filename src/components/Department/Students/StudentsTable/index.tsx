@@ -5,7 +5,7 @@ import { memo, useState, useMemo } from "react";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
 import isStudentRole from "@/utils/isStudent";
-import { useEffect } from "react";
+import Loading from "@/components/Common/Loading";
 
 interface FilterOptions {
   startDate?: string;
@@ -30,11 +30,7 @@ const StudentsTable = ({
   const [avgChuyenCan, setAvgChuyenCan] = useState<number | null>(null);
   const [selectStudent, setSelectStudent] = useState<any>(null);
 
-  const [isStudent, setIsStudent] = useState(false);
-
-  useEffect(() => {
-    setIsStudent(isStudentRole());
-  }, []);
+  const isStudent = useMemo(() => isStudentRole(), []);
 
   const getAllStudents = async () => {
     const res = await studentService.getAllStudentsService(
@@ -64,11 +60,16 @@ const StudentsTable = ({
 
   const handleItemsPerPageChange = (newLimit: number) => {
     setLimit(newLimit);
-    setPage(1); // Reset to page 1 when changing items per page
+    setPage(1);
   };
 
   return (
-    <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
+    <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden relative">
+      {isLoading && (
+        <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded-xl">
+          <Loading text="Đang tải dữ liệu..." />
+        </div>
+      )}
       <table className="w-full border-collapse border border-gray-200">
         <thead className="bg-[#F8FAFC] text-[14px] text-[#64748B] border-b border-gray-200">
           <tr>

@@ -225,7 +225,7 @@ const AttendanceClassModal = ({
                       d="M12 4v12.25L17.25 11l.75.66l-6.5 6.5l-6.5-6.5l.75-.66L11 16.25V4zM3 19h1v2h15v-2h1v3H3z"
                     />
                   </svg>
-                  <span className="text-[12px]">Xuất báo báo</span>
+                  <span className="text-[12px]">Xuất báo cáo</span>
                 </button>
               </div>
               {/* <div className="text-[13px] text-[#475569] flex items-center gap-2">

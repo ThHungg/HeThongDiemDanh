@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useEffect } from "react";
 
 interface FilterOptions {
   startDate?: string;
@@ -20,13 +20,19 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   const [minScore, setMinScore] = useState("");
   const [maxScore, setMaxScore] = useState("");
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setSearchInput(value);
-      onSearchChange?.(value);
-    },
-    [onSearchChange],
-  );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const studentIdRegex = /A\d{5}/g;
+      const matches = searchInput.match(studentIdRegex);
+
+      const parsedSearch =
+        matches && matches.length > 0 ? matches.join(" ") : searchInput;
+
+      onSearchChange?.(parsedSearch);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, onSearchChange]);
 
   const handleFilterSubmit = () => {
     onFilterChange?.({
@@ -61,9 +67,9 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         <div className="flex items-center gap-2">
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên hoặc MSV..."
+            placeholder="Tìm kiếm theo tên hoặc MSV"
             value={searchInput}
-            onChange={(e) => handleSearchChange(e.target.value)}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="px-3 py-2 bg-[#F8FAFC] w-full text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
           />
         </div>
@@ -128,7 +134,7 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
             />
           </div>
         </div>
-        <button 
+        <button
           onClick={handleFilterSubmit}
           className="w-fit h-fit flex justify-center p-2 bg-[#8B0000] text-white rounded-lg hover:bg-[#660000] transition-all shadow-sm active:scale-95"
         >

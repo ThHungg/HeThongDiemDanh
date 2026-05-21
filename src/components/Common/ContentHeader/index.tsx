@@ -40,12 +40,14 @@ const ContentHeader = ({
       <div>
         <h2>
           {title}{" "}
-          <span>
-            {" "}
-            <span className="font-semibold text-[14px] text-[#64748B] items-center">
-              ( {formatClassCode(courseCode || "", codeClass || "")})
+          {courseCode && (
+            <span>
+              {" "}
+              <span className="font-semibold text-[14px] text-[#64748B] items-center">
+                ( {formatClassCode(courseCode || "", codeClass || "")})
+              </span>
             </span>
-          </span>
+          )}
         </h2>
         {schedule && schedule.length > 0 && (
           <div className="!text-[14px] text-[#64748B]">
@@ -76,7 +78,7 @@ const ContentHeader = ({
                 d="M12 4v12.25L17.25 11l.75.66l-6.5 6.5l-6.5-6.5l.75-.66L11 16.25V4zM3 19h1v2h15v-2h1v3H3z"
               />
             </svg>
-            Xuất báo báo
+            Xuất báo cáo
           </button>
         )}
         {showAdd && (

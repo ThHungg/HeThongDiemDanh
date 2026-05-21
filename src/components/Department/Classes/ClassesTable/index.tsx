@@ -1,20 +1,31 @@
 "use client";
 import AttendanceClassModal from "@/components/Common/Modals/AttendanceClassModal";
 import Pagination from "@/components/Common/Pagination";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import * as classService from "@/services/classService";
 import { useQuery } from "@tanstack/react-query";
 import { formatClassCode } from "@/utils/formatClassCode";
 import { useSemesterStore } from "@/store/useSemesterStore";
+import Loading from "@/components/Common/Loading";
 
 const ClassesTable = () => {
   const selectedSemester = useSemesterStore((state) => state.selectedSemester);
   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [openAttendanceClass, setOpenAttendanceClass] = useState(false);
   const [page, setPage] = useState(1);
+  const [inputValue, setInputValue] = useState("");
   const [searchText, setSearchText] = useState("");
   const [selectedLecturer, setSelectedLecturer] = useState("");
   const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchText(inputValue);
+      setPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [inputValue]);
 
   const getAllClasses = async () => {
     const res = await classService.getAllClassesService({
@@ -53,7 +64,7 @@ const ClassesTable = () => {
   console.log("allClasses", allClasses);
 
   return (
-    <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
+    <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden ">
       {/* Filter */}
       <div className="flex justify-between items-center mr-4 py-2">
         <div className="flex items-center justify-center py-2 w-full max-w-[300px] px-4">
@@ -73,10 +84,9 @@ const ClassesTable = () => {
             <input
               type="text"
               placeholder="Tìm kiếm lớp học, giảng viên, môn học"
-              value={searchText}
+              value={inputValue}
               onChange={(e) => {
-                setSearchText(e.target.value);
-                setPage(1);
+                setInputValue(e.target.value);
               }}
               className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
             />
@@ -107,94 +117,105 @@ const ClassesTable = () => {
         </div>
       </div>
       {/* Table */}
-      <table className="w-full border-collapse border border-gray-200">
-        <thead className="bg-[#F8FAFC] text-[14px] text-[#64748B] border-b border-gray-200">
-          <tr>
-            <th className="text-left px-4 py-3 font-semibold">Mã lớp</th>
-            <th className="text-left px-4 py-3 font-semibold">Tên môn học</th>
-            <th className="text-left px-4 py-3 font-semibold">Giảng viên</th>
-            <th className="text-left px-4 py-3 font-semibold">Sĩ số</th>
-            <th className="text-left px-4 py-3 font-semibold">Chuyên cần tb</th>
-            <th className="text-left px-4 py-3 font-semibold">Hành động</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white text-[14px] text-[#475569]">
-          {allClasses?.data?.map((classItem: any) => (
-            <tr
-              key={classItem.id}
-              className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <td className="text-left px-4 py-2 font-bold text-[#111827]">
-                {formatClassCode(classItem.ma_lop_hoc_phan, classItem.ten_lop)}
-              </td>
-
-              <td className="text-left px-4 py-2 font-semibold ">
-                <p> {classItem?.hoc_phan?.ten_hoc_phan}</p>
-                {classItem.thoi_khoa_bieu_chi_tiet && (
-                  <p className="text-[12px] text-gray-500 font-normal mt-0.5">
-                    {classItem.thoi_khoa_bieu_chi_tiet?.map(
-                      (schedule: any, index: number) => (
-                        <span
-                          key={`${schedule.thu}-${schedule.bat_dau}-${schedule.ket_thuc}`}
-                        >
-                          Thứ {schedule.thu}, Tiết {schedule.bat_dau}-
-                          {schedule.ket_thuc}
-                          {index !==
-                            classItem.thoi_khoa_bieu_chi_tiet.length - 1 &&
-                            " / "}
-                        </span>
-                      ),
-                    )}
-                  </p>
-                )}
-              </td>
-
-              <td className="text-left px-4 py-2 font-semibold text-gray-600">
-                {classItem.giang_vien?.ten}
-              </td>
-
-              <td className="text-left px-4 py-2 font-semibold text-gray-600">
-                {classItem?.sldk} / {classItem?.suc_chua}
-              </td>
-
-              <td className="text-left px-4 py-2 font-bold space-y-1 whitespace-nowrap text-[14px]">
-                {classItem.diem_trung_binh_lop !== undefined &&
-                classItem.diem_trung_binh_lop !== null ? (
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={
-                        classItem.diem_trung_binh_lop >= 8.5
-                          ? "text-green-600"
-                          : classItem.diem_trung_binh_lop >= 5.0
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }
-                    >
-                      {Number(classItem.diem_trung_binh_lop).toFixed(2)}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-slate-400 font-normal">
-                    Chưa có dữ liệu
-                  </span>
-                )}
-              </td>
-
-              <td className="text-left px-4 py-2">
-                <button
-                  onClick={() => {
-                    setOpenAttendanceClass(true);
-                    setSelectedClass(classItem);
-                  }}
-                  className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-semibold hover:bg-gray-100 transition-colors"
-                >
-                  Chi tiết
-                </button>
-              </td>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-10">
+          <Loading text="Đang tải dữ liệu..." />
+        </div>
+      ) : (
+        <table className="w-full border-collapse border border-gray-200">
+          <thead className="bg-[#F8FAFC] text-[14px] text-[#64748B] border-b border-gray-200">
+            <tr>
+              <th className="text-left px-4 py-3 font-semibold">Mã lớp</th>
+              <th className="text-left px-4 py-3 font-semibold">Tên môn học</th>
+              <th className="text-left px-4 py-3 font-semibold">Giảng viên</th>
+              <th className="text-left px-4 py-3 font-semibold">Sĩ số</th>
+              <th className="text-left px-4 py-3 font-semibold">
+                Chuyên cần tb
+              </th>
+              <th className="text-left px-4 py-3 font-semibold">Hành động</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white text-[14px] text-[#475569]">
+            {allClasses?.data?.map((classItem: any) => (
+              <tr
+                key={classItem.id}
+                className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              >
+                <td className="text-left px-4 py-2 font-bold text-[#111827]">
+                  {formatClassCode(
+                    classItem.ma_lop_hoc_phan,
+                    classItem.ten_lop,
+                  )}
+                </td>
+
+                <td className="text-left px-4 py-2 font-semibold ">
+                  <p> {classItem?.hoc_phan?.ten_hoc_phan}</p>
+                  {classItem.thoi_khoa_bieu_chi_tiet && (
+                    <p className="text-[12px] text-gray-500 font-normal mt-0.5">
+                      {classItem.thoi_khoa_bieu_chi_tiet?.map(
+                        (schedule: any, index: number) => (
+                          <span
+                            key={`${schedule.thu}-${schedule.bat_dau}-${schedule.ket_thuc}`}
+                          >
+                            Thứ {schedule.thu}, Tiết {schedule.bat_dau}-
+                            {schedule.ket_thuc}
+                            {index !==
+                              classItem.thoi_khoa_bieu_chi_tiet.length - 1 &&
+                              " / "}
+                          </span>
+                        ),
+                      )}
+                    </p>
+                  )}
+                </td>
+
+                <td className="text-left px-4 py-2 font-semibold text-gray-600">
+                  {classItem.giang_vien?.ten}
+                </td>
+
+                <td className="text-left px-4 py-2 font-semibold text-gray-600">
+                  {classItem?.sldk} / {classItem?.suc_chua}
+                </td>
+
+                <td className="text-left px-4 py-2 font-bold space-y-1 whitespace-nowrap text-[14px]">
+                  {classItem.diem_trung_binh_lop !== undefined &&
+                  classItem.diem_trung_binh_lop !== null ? (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          classItem.diem_trung_binh_lop >= 8.5
+                            ? "text-green-600"
+                            : classItem.diem_trung_binh_lop >= 5.0
+                              ? "text-yellow-600"
+                              : "text-red-600"
+                        }
+                      >
+                        {Number(classItem.diem_trung_binh_lop).toFixed(2)}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-slate-400 font-normal">
+                      Chưa có dữ liệu
+                    </span>
+                  )}
+                </td>
+
+                <td className="text-left px-4 py-2">
+                  <button
+                    onClick={() => {
+                      setOpenAttendanceClass(true);
+                      setSelectedClass(classItem);
+                    }}
+                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-semibold hover:bg-gray-100 transition-colors"
+                  >
+                    Chi tiết
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       <Pagination
         currentPage={page}
         totalPages={allClasses?.pagination?.totalPages || 1}
