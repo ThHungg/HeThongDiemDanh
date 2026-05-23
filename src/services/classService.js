@@ -424,7 +424,7 @@ const getCurrentClasses = async (lecturerId) => {
     let currentDay = dayOfWeek === 0 ? 8 : dayOfWeek + 1;
 
     // ============ HARD CODE FOR TESTING ============
-    currentTime = "21:30"; // Uncomment để test - Sẽ match tiết 3-6
+    currentTime = "12:30"; // Uncomment để test - Sẽ match tiết 3-6
     currentDay = 4; // Uncomment để test vào Thứ 2
 
     // currentTime = "14:30"; // Uncomment để test - Sẽ match tiết 6-8
