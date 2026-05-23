@@ -25,8 +25,6 @@ router.get(
   classController.getAllClasses,
 );
 
-router.post("/sendEmailToStudents", classController.sendEmailToStudents);
-
 router.get(
   "/getCurrentClasses",
   authMiddleware,

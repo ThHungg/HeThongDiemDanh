@@ -91,28 +91,7 @@ const getAllClasses = async (req, res) => {
   }
 };
 
-const sendEmailToStudents = async (req, res) => {
-  try {
-    const { emailStudent, subject, content, classCode } = req.body;
-    const response = await classService.sendEmailToStudents(
-      emailStudent,
-      subject,
-      content,
-      classCode,
-    );
-    if (response.status === "Err") {
-      return res.status(response.code || 400).json(response);
-    }
-    return res.status(200).json(response);
-  } catch (e) {
-    console.log(e);
-    return res.status(500).json({
-      status: "Err",
-      code: 500,
-      message: "Lỗi hệ thống vui lòng thử lại sau",
-    });
-  }
-};
+
 
 const getCurrentClasses = async (req, res) => {
   try {
@@ -159,7 +138,6 @@ module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
-  sendEmailToStudents,
   getCurrentClasses,
   getAllLecturer,
 };
