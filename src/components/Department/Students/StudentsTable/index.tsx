@@ -104,7 +104,6 @@ const StudentsTable = ({
     }
   };
 
-  // Get selected students with email info
   const selectedStudentList = Array.from(selectedStudents)
     .map((msv) => {
       const cached = studentDataCache[msv] || {
@@ -113,7 +112,6 @@ const StudentsTable = ({
         email1: "",
         email2: "",
       };
-      // Find full student data from current page or cache
       const fullStudent = students.find((s: any) => s.maSinhVien === msv);
       return {
         msv: cached.msv,
@@ -148,7 +146,7 @@ const StudentsTable = ({
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="22,6 12,13 2,6" />
             </svg>
-            Gửi Email Hàng Loạt
+            Gửi Email
           </button>
         </div>
       )}
@@ -297,6 +295,7 @@ const StudentsTable = ({
       {openBulkEmailModal && (
         <SendEmailModal
           onClose={() => setOpenBulkEmailModal(false)}
+          onSuccess={() => setSelectedStudents(new Set())}
           bulkMode={selectedStudentList.length > 0}
           studentList={selectedStudentList}
           classCode={selectStudent?.maLopHocPhan || ""}

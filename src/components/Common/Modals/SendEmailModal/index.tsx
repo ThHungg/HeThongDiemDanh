@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 
 interface SendEmailModalProps {
   onClose: () => void;
+  onSuccess?: () => void;
   studentData?: {
     name: string;
     msv: string;
@@ -22,6 +23,7 @@ interface SendEmailModalProps {
 }
 const SendEmailModal = ({
   onClose,
+  onSuccess,
   studentData,
   bulkMode = false,
   studentList = [],
@@ -76,7 +78,10 @@ const SendEmailModal = ({
           toast.success(res?.message || "Email đã được gửi thành công!");
           setTitle("");
           setContent("");
-          setTimeout(() => onClose(), 1500);
+          setTimeout(() => {
+            onSuccess?.();
+            onClose();
+          }, 1500);
         },
       },
     );
@@ -101,7 +106,10 @@ const SendEmailModal = ({
           toast.success(res?.message || "Email đã được gửi thành công!");
           setTitle("");
           setContent("");
-          setTimeout(() => onClose(), 1500);
+          setTimeout(() => {
+            onSuccess?.();
+            onClose();
+          }, 1500);
         },
       },
     );
@@ -370,7 +378,7 @@ const SendEmailModal = ({
                   <line x1="22" y1="2" x2="11" y2="13" />
                   <polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
-                {bulkMode ? "Gửi Email Hàng Loạt" : "Gửi Email"}
+                {bulkMode ? "Gửi Email" : "Gửi Email"}
               </>
             )}
           </button>
