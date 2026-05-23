@@ -1,6 +1,6 @@
 "use client";
 import { memo, useState } from "react";
-import * as classService from "@/services/classService";
+import * as notifications from "@/services/notificationsService";
 import { useMutationHooks } from "@/hooks/useMutationHooks";
 import { toast } from "react-toastify";
 
@@ -8,23 +8,53 @@ interface SendEmailModalProps {
   onClose: () => void;
   studentData?: {
     name: string;
-    email: string;
+    msv: string;
     classCode: string;
   };
+  bulkMode?: boolean;
+  studentList?: Array<{
+    name: string;
+    msv: string;
+    email1?: string;
+    email2?: string;
+  }>;
+  classCode?: string;
 }
-const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
+const SendEmailModal = ({
+  onClose,
+  studentData,
+  bulkMode = false,
+  studentList = [],
+  classCode = "",
+}: SendEmailModalProps) => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  console.log("studentData", studentData);
 
   const sendMailToStudent = useMutationHooks(
     (data: {
-      email: string;
+      msv: string;
       classCode: string;
       subject: string;
       content: string;
     }) =>
-      classService.sendEmailToStudentsService(
-        data.email,
+      notifications.sendEmailToStudentsService(
+        data.msv,
+        data.classCode,
+        data.subject,
+        data.content,
+      ),
+  );
+
+  const sendBulkMail = useMutationHooks(
+    (data: {
+      listMsv: string[];
+      classCode: string;
+      subject: string;
+      content: string;
+    }) =>
+      notifications.sendBulkEmailToStudentsService(
+        data.listMsv,
         data.classCode,
         data.subject,
         data.content,
@@ -32,17 +62,42 @@ const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
   );
 
   const handleSendEmail = async (
-    email: string,
+    msv: string,
     classCode: string,
     subject: string,
     content: string,
   ) => {
     sendMailToStudent.mutate(
-      { email, classCode, subject, content },
+      { msv, classCode, subject, content },
       {
         onSuccess: (res: any) => {
           console.log("res", res);
 
+          toast.success(res?.message || "Email đã được gửi thành công!");
+          setTitle("");
+          setContent("");
+          setTimeout(() => onClose(), 1500);
+        },
+      },
+    );
+  };
+
+  const handleSendBulkEmail = async (
+    listMsv: string[],
+    classCode: string,
+    subject: string,
+    content: string,
+  ) => {
+    if (listMsv.length === 0) {
+      toast.error("Chưa chọn sinh viên nào để gửi email!");
+      return;
+    }
+
+    sendBulkMail.mutate(
+      { listMsv, classCode, subject, content },
+      {
+        onSuccess: (res: any) => {
+          console.log("res", res);
           toast.success(res?.message || "Email đã được gửi thành công!");
           setTitle("");
           setContent("");
@@ -98,32 +153,81 @@ const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
         {/* Body - Các trường nhập liệu */}
         <div className="p-6 space-y-5">
           {/* Thông tin sinh viên (Read-only view) */}
-          <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-            <div className="w-12 h-12 bg-[#8B0000]/10 flex items-center justify-center rounded-full text-[#8B0000]">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[14px] font-bold text-slate-800">
-                {studentData?.name || "Chưa chọn sinh viên"}
+          {bulkMode && studentList.length > 0 ? (
+            <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <p className="text-[12px] font-bold text-slate-600 uppercase mb-3 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Danh sách sinh viên ({studentList.length})
               </p>
-              <p className="text-[12px] text-slate-500 font-medium">
-                {studentData?.email || "email@example.com"}
-              </p>
+              <div className="max-h-[150px] overflow-y-auto space-y-2">
+                {studentList.map((student, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 p-2 bg-white rounded border border-slate-100"
+                  >
+                    <div className="w-8 h-8 bg-[#8B0000]/10 flex items-center justify-center rounded text-[#8B0000] text-[12px] font-bold">
+                      {idx + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[13px] font-semibold text-slate-800">
+                        {student.name} - ( {student.msv})
+                      </p>
+                      {student.email1 && (
+                        <p className="text-[10px] text-slate-400 font-normal mt-1">
+                          {student.email1}
+                        </p>
+                      )}
+                      {student.email2 && (
+                        <p className="text-[10px] text-slate-400 font-normal">
+                          {student.email2}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="w-12 h-12 bg-[#8B0000]/10 flex items-center justify-center rounded-full text-[#8B0000]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[14px] font-bold text-slate-800">
+                  {studentData?.name || "Chưa chọn sinh viên"}
+                </p>
+                <p className="text-[12px] text-slate-500 font-medium">
+                  {studentData?.msv || "MSV không xác định"}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Trường Tiêu đề */}
           <div className="space-y-1.5">
@@ -192,14 +296,16 @@ const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
                 </div>
 
                 {/* Thông tin lớp học kiểu tối giản */}
-                <div className="py-3 border-y border-slate-100 my-4">
-                  <span className="text-[12px] text-slate-500">
-                    Lớp học phần:
-                  </span>
-                  <span className="text-[12px] font-semibold text-[#8B0000] ml-2">
-                    {studentData?.classCode || "Chưa có mã lớp học phần"}
-                  </span>
-                </div>
+                {classCode && (
+                  <div className="py-3 border-y border-slate-100 my-4">
+                    <span className="text-[12px] text-slate-500">
+                      Lớp học phần:
+                    </span>
+                    <span className="text-[12px] font-semibold text-[#8B0000] ml-2">
+                      {studentData?.classCode || "Chưa có mã lớp học phần"}
+                    </span>
+                  </div>
+                )}
 
                 <div className="text-[13px]">
                   <p className="m-0 font-bold text-slate-800">
@@ -223,31 +329,50 @@ const SendEmailModal = ({ onClose, studentData }: SendEmailModalProps) => {
             Đóng
           </button>
           <button
-            onClick={() =>
-              handleSendEmail(
-                studentData?.email || "",
-                studentData?.classCode || "",
-                title,
-                content,
-              )
-            }
-            className="px-6 py-2 text-[14px] font-bold text-white bg-[#8B0000] hover:bg-[#700000] rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center gap-2"
+            onClick={() => {
+              if (bulkMode) {
+                handleSendBulkEmail(
+                  studentList.map((s) => s.msv),
+                  classCode,
+                  title,
+                  content,
+                );
+              } else {
+                handleSendEmail(
+                  studentData?.msv || "",
+                  studentData?.classCode || "",
+                  title,
+                  content,
+                );
+              }
+            }}
+            disabled={sendMailToStudent.isPending || sendBulkMail.isPending}
+            className="px-6 py-2 text-[14px] font-bold text-white bg-[#8B0000] hover:bg-[#700000] disabled:bg-[#8B0000]/50 rounded-lg shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center gap-2"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-            Gửi ngay
+            {sendMailToStudent.isPending || sendBulkMail.isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Đang gửi...
+              </>
+            ) : (
+              <>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+                {bulkMode ? "Gửi Email Hàng Loạt" : "Gửi Email"}
+              </>
+            )}
           </button>
         </div>
       </div>

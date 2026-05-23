@@ -25,7 +25,7 @@ const AttendanceDetailModal = ({
   avgChuyenCan: number | null;
   classCode?: string;
 }) => {
-  const [isSelected, setIsSelected] = useState<Number | null>(0);
+  const [isSelected, setIsSelected] = useState<string | null>(0);
   const [attendanceDetail, setAttendanceDetail] = useState<any>(null);
   const [isOpenSendEmail, setIsOpenSendEmail] = useState(false);
   const [studentData, setStudentData] = useState<any>(null);
@@ -163,6 +163,7 @@ const AttendanceDetailModal = ({
                   onClick={() => {
                     setIsOpenSendEmail(true);
                     setStudentData({
+                      msv: studentInfo?.maSinhVien,
                       name: studentInfo?.ten,
                       email: studentInfo?.email1,
                       classCode: isSelected,

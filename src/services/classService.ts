@@ -62,25 +62,6 @@ export const getAllClassesService = async (options: any = {}) => {
   }
 };
 
-export const sendEmailToStudentsService = async (
-  emailStudent: string,
-  classCode: string,
-  subject: string,
-  content: string,
-) => {
-  try {
-    const res = await axiosInstance.post("/classes/sendEmailToStudents", {
-      emailStudent,
-      subject,
-      content,
-      classCode,
-    });
-    return res.data;
-  } catch (e) {
-    throw e;
-  }
-};
-
 export const getCurrentClass = async () => {
   try {
     const res = await axiosInstance.get("/classes/getCurrentClasses")

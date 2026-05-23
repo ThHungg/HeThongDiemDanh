@@ -348,8 +348,8 @@ const ClassDetailListTable = ({
                         <button
                           onClick={() => {
                             setDetailStudent({
+                              msv: student.maSinhVien,
                               name: student.ten,
-                              email: student.email2 || "email@example.com",
                               classCode: student.maLopHocPhan,
                             });
                             setIsOpenSendEmailModal(true);

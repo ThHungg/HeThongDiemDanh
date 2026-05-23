@@ -17,7 +17,7 @@ const AuthCard = () => {
 
   const handleSendOtp = async (userCode: string) => {
     if (!userCode) {
-      toast.error("Vui lòng nhập mã sinh viên!");
+      toast.error("Vui lòng nhập mã tài khoản của bạn!");
       return;
     }
     sendOtp.mutate(userCode, {
