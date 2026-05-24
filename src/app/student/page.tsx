@@ -6,6 +6,7 @@ import { memo, useState } from "react";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
 import { isStudentRole } from "@/utils/isStudent";
+import { useUserStore } from "@/store/useUserStore";
 
 const StudentPage = () => {
   const [selectedClassCode, setSelectedClassCode] = useState<string>("");
@@ -14,6 +15,7 @@ const StudentPage = () => {
     useState(false);
 
   const isStudent = isStudentRole();
+  const profile = useUserStore((state) => state.profile);
 
   const getClasses = async () => {
     const res = await studentService.getClassesByStudentService();
@@ -84,6 +86,14 @@ const StudentPage = () => {
           }}
           isStudent={isStudent}
           studentId={classes?.data?.maSinhVien}
+          studentInfo={{
+            ten: profile?.ten,
+            lopChuyenNganh: profile?.lop_chuyen_nganh,
+            maSinhVien: profile?.ma_sinh_vien,
+            dienThoai1: profile?.dien_thoai1,
+            email1: profile?.email1,
+            email2: profile?.email2,
+          }}
           avgChuyenCan={classes?.data?.avgChuyenCan}
           classCode={selectedClassCode}
         />

@@ -62,6 +62,10 @@ const VerifyOtpModal = ({
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRef.current[index - 1]?.focus();
     }
+    if (e.key === "Enter" && index === 5 && otp.join("").length === 6) {
+      e.preventDefault();
+      handleVerify({ userCode, otp: otp.join("") });
+    }
   };
 
   const handPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {

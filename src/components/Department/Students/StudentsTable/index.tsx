@@ -253,7 +253,7 @@ const StudentsTable = ({
                     >
                       Chi tiết
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         setSelectedStudents(new Set([student.maSinhVien]));
                         setOpenBulkEmailModal(true);
@@ -261,7 +261,7 @@ const StudentsTable = ({
                       className="px-3 py-1.5 border bg-[#8B0000] rounded-lg text-[13px] font-semibold text-white hover:bg-[#6B0000] transition-colors"
                     >
                       Email
-                    </button>
+                    </button> */}
                   </td>
                 </tr>
               ))

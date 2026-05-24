@@ -13,6 +13,7 @@ import { useMutationHooks } from "@/hooks/useMutationHooks";
 import { toast } from "react-toastify";
 import { formatClassCode } from "@/utils/formatClassCode";
 import SendEmailModal from "@/components/Common/Modals/SendEmailModal";
+import Loading from "@/components/Common/Loading";
 
 interface ListStudent {
   classCode: string;
@@ -72,7 +73,6 @@ const ClassDetailListTable = ({
     );
   };
 
-  // Auto scroll to today's column
   useEffect(() => {
     if (scrollContainerRef.current) {
       const todayColumn = scrollContainerRef.current.querySelector(
@@ -89,6 +89,7 @@ const ClassDetailListTable = ({
       }
     }
   }, [classSession]);
+ 
 
   const handleUpdateStudentScore = (scoreId: number, newScore: number) => {
     const note = noteUpdates[scoreId] || "";
@@ -195,6 +196,7 @@ const ClassDetailListTable = ({
           queryClient.invalidateQueries({
             queryKey: ["attendance", classCode],
           });
+          refetch();
           toast.success(res.message || "Cập nhật điểm danh thành công!");
           setAttendance({ attendanceData: [] });
           setNoteUpdates({});
@@ -218,7 +220,7 @@ const ClassDetailListTable = ({
 
   console.log(filteredAttendanceData);
   return (
-    <div className="overflow-y-autorounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
+    <div className=" overflow-y-autorounded-xl bg-[#FBFDFD] border border-gray-200 overflow-hidden">
       {/* Filter */}
       <div className="flex justify-between items-center p-4 sticky top-[-24px] z-50">
         <div className="flex items-center justify-center w-full max-w-[300px] px-4">
@@ -271,7 +273,13 @@ const ClassDetailListTable = ({
           </button>
         </div>
       </div>
-      <div className="bg-[#F8FAFC] py-2 px-4">
+
+      <div className="bg-[#F8FAFC] py-2 px-4 relative">
+        {/* {isLoading && (
+          <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded-t-lg">
+            <Loading text="Đang tải dữ liệu..." />
+          </div>
+        )} */}
         <div className="flex justify-between items-center w-3/5">
           <div className="flex gap-5 ">
             <p className="space-x-1 font-bold">
@@ -300,7 +308,12 @@ const ClassDetailListTable = ({
         </div>
       </div>
       {/* Table */}
-      <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50 rounded-lg">
+            <Loading text="Đang tải dữ..." />
+          </div>
+        )}
         {/* BẢNG 1: CỐ ĐỊNH */}
         <div className="flex-shrink-0 shadow-[4px_0_8px_rgba(0,0,0,0.05)] z-10">
           <table className="border-collapse">
@@ -321,81 +334,114 @@ const ClassDetailListTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredAttendanceData?.map((student: any, index: number) => (
-                <tr
-                  key={student.id}
-                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                >
-                  <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
-                    {index + 1}
-                  </td>
-                  <td className="px-4 py-3 font-semibold border-r border-gray-200">
-                    {student.maSinhVien}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <button
-                        className="cursor-pointer hover:underline text-gray-800"
-                        onClick={() => {
-                          setSelectedStudent(student.maSinhVien);
-                          setOpenStudentDetail(true);
-                        }}
-                      >
-                        {student.ten}
-                      </button>
-
-                      <div className="relative group flex items-center">
+              {filteredAttendanceData && filteredAttendanceData.length > 0 ? (
+                filteredAttendanceData?.map((student: any, index: number) => (
+                  <tr
+                    key={student.id}
+                    className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                  >
+                    <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
+                      {index + 1}
+                    </td>
+                    <td className="px-4 py-3 font-semibold border-r border-gray-200">
+                      {student.maSinhVien}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
+                      <div className="flex items-center gap-2">
                         <button
+                          className="cursor-pointer hover:underline text-gray-800"
                           onClick={() => {
-                            setDetailStudent({
-                              msv: student.maSinhVien,
-                              name: student.ten,
-                              classCode: student.maLopHocPhan,
-                            });
-                            setIsOpenSendEmailModal(true);
+                            setSelectedStudent(student.maSinhVien);
+                            setOpenStudentDetail(true);
                           }}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 48 48"
-                            className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
-                          >
-                            <g
-                              fill="none"
-                              stroke="currentColor"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="4"
-                            >
-                              <path d="M44 24V9H24H4V24V39H24" />
-                              <path d="M44 34L30 34" />
-                              <path d="M39 29L44 34L39 39" />
-                              <path d="M4 9L24 24L44 9" />
-                            </g>
-                          </svg>
+                          {student.ten}
                         </button>
 
-                        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
-                          <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
-                            Gửi email cảnh báo tới sinh viên
+                        <div className="relative group flex items-center">
+                          <button
+                            onClick={() => {
+                              setDetailStudent({
+                                msv: student.maSinhVien,
+                                name: student.ten,
+                                classCode: student.maLopHocPhan,
+                              });
+                              setIsOpenSendEmailModal(true);
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 48 48"
+                              className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                            >
+                              <g
+                                fill="none"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="4"
+                              >
+                                <path d="M44 24V9H24H4V24V39H24" />
+                                <path d="M44 34L30 34" />
+                                <path d="M39 29L44 34L39 39" />
+                                <path d="M4 9L24 24L44 9" />
+                              </g>
+                            </svg>
+                          </button>
+
+                          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
+                            <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
+                              Gửi email cảnh báo tới sinh viên
+                            </div>
                           </div>
                         </div>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
+                      {student?.diemTrungBinh !== undefined &&
+                      student?.diemTrungBinh !== null
+                        ? student.diemTrungBinh
+                        : "-"}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-5 text-center text-gray-500"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {/* <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="48"
+                        height="48"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        className="text-gray-300"
+                      >
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                      </svg> */}
+                      <p className="text-[14px] font-semibold text-gray-600">
+                        {searchText
+                          ? "Không tìm thấy sinh viên phù hợp"
+                          : "Không có dữ liệu"}
+                      </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
-                    {student?.diemTrungBinh || "-"}
-                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         {/* BẢNG 2: CÓ THỂ CUỘN NGANG */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-x-auto">
+        <div ref={scrollContainerRef} className="flex-1 overflow-x-auto ">
           <table className="w-full border-collapse">
             <thead className="border-b border-gray-200">
               <tr className="bg-[#F8FAFC] text-[#64748B] h-[52px] divide-x divide-gray-200">
@@ -425,61 +471,132 @@ const ClassDetailListTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredAttendanceData?.map((attendance: any) => (
-                <tr
-                  key={attendance.id}
-                  className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                >
-                  {Array(classSession?.length || 0)
-                    .fill(null)
-                    .map((_, scoreIndex) => {
-                      const score = attendance.lichSuDiemDanh?.[scoreIndex];
-                      const sessionDate = classSession?.[scoreIndex]?.ngayHoc;
-                      const isTodayColumn = isToday(sessionDate);
-                      return (
-                        <td
-                          key={scoreIndex}
-                          className={`p-0 border-r border-gray-200 ${
-                            isTodayColumn ? "bg-gray-100 border" : ""
-                          } ${getScoreColor(score?.diemSo)}`}
-                        >
-                          <input
-                            type="number"
-                            defaultValue={score?.diemSo || ""}
-                            onChange={(e) => {
-                              if (score?.id) {
-                                handleUpdateStudentScore(
-                                  score.id,
-                                  parseFloat(e.target.value),
-                                );
+              {filteredAttendanceData && filteredAttendanceData.length > 0 ? (
+                filteredAttendanceData?.map((attendance: any) => (
+                  <tr
+                    key={attendance.id}
+                    className="h-[48px] hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                  >
+                    {Array(classSession?.length || 0)
+                      .fill(null)
+                      .map((_, scoreIndex) => {
+                        const score = attendance.lichSuDiemDanh?.[scoreIndex];
+                        const sessionDate = classSession?.[scoreIndex]?.ngayHoc;
+                        const isTodayColumn = isToday(sessionDate);
+                        return (
+                          <td
+                            key={scoreIndex}
+                            className={`p-0 border-r border-gray-200 ${
+                              isTodayColumn ? "bg-gray-100 border" : ""
+                            } ${getScoreColor(score?.diemSo)}`}
+                          >
+                            <input
+                              type="number"
+                              min="0"
+                              max="10"
+                              step="0.1"
+                              data-student-id={attendance.id}
+                              data-score-index={scoreIndex}
+                              defaultValue={
+                                score?.diemSo !== undefined &&
+                                score?.diemSo !== null
+                                  ? score.diemSo
+                                  : ""
                               }
-                            }}
-                            placeholder="-"
-                            className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
-                          />
-                        </td>
-                      );
-                    })}
-                  <td className="px-4 py-1.5 min-w-[150px] border-r border-gray-200">
-                    <input
-                      type="text"
-                      value={
-                        noteUpdates[attendance.id] ??
-                        attendance.lichSuDiemDanh?.[0]?.ghiChu ??
-                        ""
-                      }
-                      onChange={(e) => {
-                        setNoteUpdates((prev) => ({
-                          ...prev,
-                          [attendance.id]: e.target.value,
-                        }));
-                      }}
-                      placeholder="Nhập ghi chú..."
-                      className="w-full px-2 py-2 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8B0000] bg-white"
-                    />
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === "") {
+                                  // Allow empty input - set to 0
+                                  if (score?.id) {
+                                    handleUpdateStudentScore(score.id, 0);
+                                  }
+                                } else {
+                                  const numValue = parseFloat(value);
+
+                                  // Validate: Check decimal places (max 1)
+                                  const decimalPlaces = value.includes(".")
+                                    ? value.split(".")[1].length
+                                    : 0;
+
+                                  if (isNaN(numValue)) {
+                                    toast.error("Vui lòng nhập số hợp lệ");
+                                    e.target.value = "";
+                                  } else if (numValue < 0 || numValue > 10) {
+                                    toast.error("Điểm phải từ 0 đến 10");
+                                    e.target.value = "";
+                                  } else if (decimalPlaces > 2) {
+                                    toast.error(
+                                      "Điểm chỉ được phép 2 chữ số thập phân",
+                                    );
+                                    e.target.value = "";
+                                  } else {
+                                    if (score?.id) {
+                                      handleUpdateStudentScore(
+                                        score.id,
+                                        numValue,
+                                      );
+                                    }
+                                  }
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  const currentRow = (e.target as HTMLElement).closest("tr");
+                                  const nextRow = currentRow?.nextElementSibling as HTMLElement;
+                                  if (nextRow) {
+                                    const nextInput = nextRow.querySelector(
+                                      `input[data-score-index="${scoreIndex}"]`,
+                                    ) as HTMLInputElement;
+                                    if (nextInput) {
+                                      nextInput.focus();
+                                      nextInput.select();
+                                    }
+                                  }
+                                }
+                              }}
+                              placeholder="-"
+                              className="w-full h-[47px] text-center font-semibold rounded transition-all outline-none focus:ring-1 focus:ring-[#8B0000] bg-transparent"
+                            />
+                          </td>
+                        );
+                      })}
+                    <td className="px-4 py-1.5 min-w-[150px] border-r border-gray-200">
+                      <input
+                        type="text"
+                        value={
+                          noteUpdates[attendance.id] ??
+                          attendance.lichSuDiemDanh?.[0]?.ghiChu ??
+                          ""
+                        }
+                        onChange={(e) => {
+                          setNoteUpdates((prev) => ({
+                            ...prev,
+                            [attendance.id]: e.target.value,
+                          }));
+                        }}
+                        placeholder="Nhập ghi chú..."
+                        className="w-full px-2 py-2 text-[12px] border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#8B0000] bg-white"
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={classSession?.length || 1 + 1}
+                    className="px-4 py-5 text-center text-gray-500"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-[14px] font-semibold text-gray-600">
+                        {searchText
+                          ? "Không tìm thấy sinh viên phù hợp"
+                          : "Không có dữ liệu"}
+                      </p>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

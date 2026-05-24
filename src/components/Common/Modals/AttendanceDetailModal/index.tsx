@@ -275,7 +275,7 @@ const AttendanceDetailModal = ({
                 ))} */}
                 {classes?.data?.dangKy?.map((item: any, index: number) => (
                   <div
-                    key={item.index}
+                    key={item.maLopHocPhan}
                     onClick={() => setIsSelected(item.maLopHocPhan)}
                     className={
                       isSelected === item.maLopHocPhan
@@ -361,7 +361,7 @@ const AttendanceDetailModal = ({
                   {attendanceDetail?.data?.buoiHoc.map(
                     (item: any, index: number) => (
                       <tr
-                        key={index}
+                        key={item.id || index}
                         className="border-b flex-1 border-[#8B0000]/10 max-h-[60px]"
                       >
                         <td className="px-4 py-2">

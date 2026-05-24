@@ -55,7 +55,11 @@ const AuthCard = () => {
           <p className="text-[11px]">Hệ thống quản lý điểm danh thông minh</p>
         </div>
       </div>
-      <LoginForm userCode={userCode} setUserCode={setUserCode} />
+      <LoginForm
+        userCode={userCode}
+        setUserCode={setUserCode}
+        onSubmit={() => handleSendOtp(userCode)}
+      />
       <button
         onClick={() => handleSendOtp(userCode)}
         disabled={sendOtp.isPending}

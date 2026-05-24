@@ -1,9 +1,16 @@
 import { memo } from "react";
 import * as authenService from "@/services/authenService";
+import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
+
 const StudentInfoCard = () => {
   const getProfile = async () => {
     const res = await authenService.getProfileService();
+    return res;
+  };
+
+  const getClasses = async () => {
+    const res = await studentService.getClassesByStudentService();
     return res;
   };
 
@@ -11,7 +18,14 @@ const StudentInfoCard = () => {
     queryKey: ["studentProfile"],
     queryFn: getProfile,
   });
+
+  const { data: classes } = useQuery({
+    queryKey: ["student-classes"],
+    queryFn: getClasses,
+  });
+
   console.log("profile", profile);
+  const totalClasses = classes?.data?.dangKy?.length || 0;
   return (
     <div className="w-full mb-[24px] bg-white border border-[#E2E8F0] shadow-xs px-8 py-4 rounded-lg flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -33,12 +47,10 @@ const StudentInfoCard = () => {
       </div>
       <div className="flex gap-2">
         <div className="py-4 px-6 rounded-3xl text-center bg-[#F7F2F2]">
-          <p className="text-[12px] font-bold tracking-wider">Chuyên cần tb</p>
-          <h6 className="font-bold text-[#8B0000] text-[14px]">9,5</h6>
-        </div>
-        <div className="py-4 px-6 rounded-3xl text-center bg-[#F7F2F2]">
           <p className="text-[12px] font-bold tracking-wider">Tổng số lớp</p>
-          <h6 className="font-bold text-[14px]">9</h6>
+          <h6 className="font-bold text-[#8B0000] text-[14px]">
+            {totalClasses}
+          </h6>
         </div>
       </div>
     </div>

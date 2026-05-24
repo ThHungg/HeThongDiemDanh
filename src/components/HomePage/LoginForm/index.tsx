@@ -4,9 +4,11 @@ import { memo, useState } from "react";
 const LoginForm = ({
   userCode,
   setUserCode,
+  onSubmit,
 }: {
   userCode: string;
   setUserCode: (code: string) => void;
+  onSubmit?: () => void;
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberPassword, setRememberPassword] = useState(false);
@@ -33,6 +35,12 @@ const LoginForm = ({
             type="text"
             id="email"
             onChange={(e) => setUserCode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && onSubmit) {
+                e.preventDefault();
+                onSubmit();
+              }
+            }}
             value={userCode}
             maxLength={10}
             placeholder="Vui lòng nhập mã tài khoản của bạn"
