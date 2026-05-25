@@ -17,6 +17,8 @@ const {
   mapAttendanceByStudent,
 } = require("../mappers/mapperData");
 const { Op, where } = require("sequelize");
+const CoVanHocTap = require("../models/CoVanHocTap");
+const { sequelize } = require("../config/db");
 
 const getStudentById = async (studentId) => {
   try {
@@ -196,6 +198,7 @@ const getAllStudents = async (
   endDate,
   minScore,
   maxScore,
+  maLop,
 ) => {
   try {
     const pageNumber = parseInt(page) || 1;
@@ -207,21 +210,22 @@ const getAllStudents = async (
     const whereCondition = {};
 
     if (search) {
-      // Check if search contains multiple student IDs (format: A46588 A46615 A46623)
       const studentIdRegex = /A\d{5}/g;
       const studentIds = search.match(studentIdRegex);
 
       if (studentIds && studentIds.length > 0) {
-        // Multiple student IDs found - use IN condition
         whereCondition[Op.or] = [{ ma_sinh_vien: { [Op.in]: studentIds } }];
       } else {
-        // Single search term - search in multiple fields
         whereCondition[Op.or] = [
           { ma_sinh_vien: { [Op.like]: `%${search}%` } },
           { ten: { [Op.like]: `%${search}%` } },
           { lop_chuyen_nganh: { [Op.like]: `%${search}%` } },
         ];
       }
+    }
+
+    if (maLop) {
+      whereCondition.lop_chuyen_nganh = maLop;
     }
 
     const queryOptions = {
@@ -513,6 +517,105 @@ const getAttendanceByStudentId = async (studentId, semester, classCode) => {
   }
 };
 
+const getCoVanFilterData = async (khoa, nganh, maLop) => {
+  try {
+    if (maLop) {
+      const records = await CoVanHocTap.findAll({
+        where: {
+          ma_lop: maLop.trim(),
+        },
+      });
+      return {
+        status: "Ok",
+        code: 200,
+        type: "RESULT_DATA",
+        data: records,
+      };
+    }
+
+    if (khoa && nganh) {
+      const nganhChuan = nganh.trim().toUpperCase();
+      const resultLop = await CoVanHocTap.findAll({
+        where: {
+          ma_lop: {
+            [Op.like]: `${nganhChuan}${khoa}%`,
+          },
+        },
+        attributes: [
+          [sequelize.fn("DISTINCT", sequelize.col("ma_lop")), "ma_lop"],
+        ],
+        raw: true,
+      });
+
+      return {
+        status: "Ok",
+        code: 200,
+        type: "LIST_LOP",
+        data: resultLop.map((item) => item.ma_lop),
+      };
+    }
+
+    if (khoa) {
+      const resultNganh = await CoVanHocTap.findAll({
+        where: {
+          ma_lop: {
+            [Op.like]: `__${khoa}%`,
+          },
+        },
+        attributes: [
+          [
+            sequelize.fn("SUBSTRING", sequelize.col("ma_lop"), 1, 2),
+            "nganh_hoc",
+          ],
+        ],
+        raw: true,
+      });
+
+      const uniqueNganh = [
+        ...new Set(resultNganh.map((item) => item.nganh_hoc.toUpperCase())),
+      ];
+      return {
+        status: "Ok",
+        code: 200,
+        type: "LIST_NGANH",
+        data: uniqueNganh,
+      };
+    }
+
+    const resultKhoa = await CoVanHocTap.findAll({
+      attributes: [
+        [
+          sequelize.fn(
+            "DISTINCT",
+            sequelize.fn("SUBSTRING", sequelize.col("ma_lop"), 3, 2),
+          ),
+          "khoa_hoc",
+        ],
+      ],
+      raw: true,
+    });
+
+    const cleanKhoa = resultKhoa
+      .map((item) => parseInt(item.khoa_hoc))
+      .filter((k) => !isNaN(k))
+      .sort((a, b) => a - b);
+
+    return {
+      status: "Ok",
+      code: 200,
+      type: "LIST_KHOA",
+      data: cleanKhoa,
+    };
+  } catch (e) {
+    console.log(e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getStudentById,
   getClassesByStudent,
@@ -520,4 +623,5 @@ module.exports = {
   getAllStudents,
   getClassesByStudentId,
   getAttendanceByStudentId,
+  getCoVanFilterData,
 };

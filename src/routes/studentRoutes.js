@@ -27,4 +27,10 @@ router.get(
   studentController.getSpecificStudentAttendance,
 );
 
+router.get(
+  "/getFilterData",
+  authMiddleware,
+  studentController.getCoVanFilterData,
+);
+
 module.exports = router;
