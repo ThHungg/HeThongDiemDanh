@@ -26,7 +26,8 @@ export const getAllStudentsService = async (
   startDate?: string,
   endDate?: string,
   minScore?: string,
-  maxScore?: string
+  maxScore?: string,
+  maLop?: string
 ) => {
   try {
     const semesterData = localStorage.getItem("semester-data");
@@ -42,7 +43,8 @@ export const getAllStudentsService = async (
         startDate,
         endDate,
         minScore,
-        maxScore
+        maxScore,
+        maLop,
       },
     });
     return res.data;
@@ -103,4 +105,19 @@ export const getSpecificStudentAttendance = async (classCode: string, studentId:
     } catch (e) {
         throw e;
     }
+}
+
+export const getCoVanFilterDataService = async (khoa?: string, nganh?: string, maLop?: string) => {
+  try {
+    const res = await axiosInstance.get("/students/getFilterData", {
+      params: {
+        khoa,
+        nganh,
+        maLop
+      }
+    });
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
 }

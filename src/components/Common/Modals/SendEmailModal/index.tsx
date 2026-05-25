@@ -10,6 +10,7 @@ interface SendEmailModalProps {
   studentData?: {
     name: string;
     msv: string;
+    email1: string;
     classCode: string;
   };
   bulkMode?: boolean;
@@ -114,6 +115,7 @@ const SendEmailModal = ({
       },
     );
   };
+  console.log("studentData123", studentData);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -231,7 +233,9 @@ const SendEmailModal = ({
                   {studentData?.name || "Chưa chọn sinh viên"}
                 </p>
                 <p className="text-[12px] text-slate-500 font-medium">
-                  {studentData?.msv || "MSV không xác định"}
+                  {studentData?.email1 ||
+                    studentData?.msv ||
+                    "MSV không xác định"}
                 </p>
               </div>
             </div>

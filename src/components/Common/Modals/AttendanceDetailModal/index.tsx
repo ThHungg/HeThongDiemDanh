@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import avatar from "../../../../../public/assets/Images/Avatar.png";
 import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
@@ -26,9 +26,9 @@ const AttendanceDetailModal = ({
   classCode?: string;
 }) => {
   const [isSelected, setIsSelected] = useState<string | null>(0);
-  const [attendanceDetail, setAttendanceDetail] = useState<any>(null);
   const [isOpenSendEmail, setIsOpenSendEmail] = useState(false);
   const [studentData, setStudentData] = useState<any>(null);
+  const isInitializedRef = useRef(false);
 
   console.log("studentInfo", detailClass);
 
@@ -80,24 +80,21 @@ const AttendanceDetailModal = ({
   });
 
   useEffect(() => {
-    if (classes?.data?.dangKy && classes.data.dangKy.length > 0) {
+    if (
+      !isInitializedRef.current &&
+      classes?.data?.dangKy &&
+      classes.data.dangKy.length > 0
+    ) {
       const selectedClass = classes.data.dangKy.find(
         (item: any) => item.maLopHocPhan === classCode,
       );
-      if (selectedClass) {
-        setIsSelected(selectedClass.maLopHocPhan);
-      } else {
-        setIsSelected(classes.data.dangKy[0].maLopHocPhan);
-      }
+      const valueToSet =
+        selectedClass?.maLopHocPhan ?? classes.data.dangKy[0].maLopHocPhan;
+      setIsSelected(valueToSet);
+      isInitializedRef.current = true;
     }
   }, [classes, classCode]);
-
-  useEffect(() => {
-    if (attendance) {
-      setAttendanceDetail(attendance);
-    }
-  }, [attendance]);
-
+  console.log("studentData", studentData);
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="max-w-[800px] h-[80vh] w-full bg-white rounded-lg flex flex-col">
@@ -152,7 +149,7 @@ const AttendanceDetailModal = ({
                 Điểm TB
               </h6>
               <p className="text-lg font-semibold text-[#15803D]">
-                {avgChuyenCan || attendanceDetail?.data?.diemTrungBinh || "-"}
+                {avgChuyenCan || attendance?.data?.diemTrungBinh || "-"}
               </p>
             </div>
 
@@ -165,7 +162,7 @@ const AttendanceDetailModal = ({
                     setStudentData({
                       msv: studentInfo?.maSinhVien,
                       name: studentInfo?.ten,
-                      email: studentInfo?.email1,
+                      email1: studentInfo?.email1,
                       classCode: isSelected,
                     });
                   }}
@@ -358,33 +355,31 @@ const AttendanceDetailModal = ({
                         </td>
                       </tr>
                     ))} */}
-                  {attendanceDetail?.data?.buoiHoc.map(
-                    (item: any, index: number) => (
-                      <tr
-                        key={item.id || index}
-                        className="border-b flex-1 border-[#8B0000]/10 max-h-[60px]"
-                      >
-                        <td className="px-4 py-2">
-                          <span className="text-[13px] font-semibold">
-                            {formatDate(item.ngayHoc)}
-                          </span>
-                        </td>
+                  {attendance?.data?.buoiHoc.map((item: any, index: number) => (
+                    <tr
+                      key={item.id || index}
+                      className="border-b flex-1 border-[#8B0000]/10 max-h-[60px]"
+                    >
+                      <td className="px-4 py-2">
+                        <span className="text-[13px] font-semibold">
+                          {formatDate(item.ngayHoc)}
+                        </span>
+                      </td>
 
-                        <td className="px-4 py-2">
-                          <span className="text-[13px] font-semibold">
-                            Tiết {item.thoiGianChiTiet.batDau}-
-                            {item.thoiGianChiTiet.ketThuc}
-                          </span>
-                        </td>
+                      <td className="px-4 py-2">
+                        <span className="text-[13px] font-semibold">
+                          Tiết {item.thoiGianChiTiet.batDau}-
+                          {item.thoiGianChiTiet.ketThuc}
+                        </span>
+                      </td>
 
-                        <td className="px-4 py-2 text-right w-20">
-                          <span className="text-[14px] font-bold">
-                            {item.diemSo}
-                          </span>
-                        </td>
-                      </tr>
-                    ),
-                  )}
+                      <td className="px-4 py-2 text-right w-20">
+                        <span className="text-[14px] font-bold">
+                          {item.diemSo}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

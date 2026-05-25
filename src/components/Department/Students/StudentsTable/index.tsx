@@ -13,6 +13,9 @@ interface FilterOptions {
   endDate?: string;
   minScore?: string;
   maxScore?: string;
+  khoa?: string;
+  nganh?: string;
+  maLop?: string;
 }
 
 interface StudentsTableProps {
@@ -47,6 +50,7 @@ const StudentsTable = ({
       filters.endDate,
       filters.minScore,
       filters.maxScore,
+      filters.maLop,
     );
     return res;
   };

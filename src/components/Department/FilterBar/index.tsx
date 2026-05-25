@@ -1,11 +1,15 @@
 "use client";
 import { memo, useState, useEffect } from "react";
+import * as studentService from "@/services/studentService";
 
 interface FilterOptions {
   startDate?: string;
   endDate?: string;
   minScore?: string;
   maxScore?: string;
+  khoa?: string;
+  nganh?: string;
+  maLop?: string;
 }
 
 interface FilterBarProps {
@@ -19,6 +23,76 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   const [endDate, setEndDate] = useState("");
   const [minScore, setMinScore] = useState("");
   const [maxScore, setMaxScore] = useState("");
+  const [khoa, setKhoa] = useState("");
+  const [nganh, setNganh] = useState("");
+  const [maLop, setMaLop] = useState("");
+  const [khoaList, setKhoaList] = useState<string[]>([]);
+  const [nganhList, setNganhList] = useState<string[]>([]);
+  const [maLopList, setMaLopList] = useState<string[]>([]);
+  const [loadingFilters, setLoadingFilters] = useState(false);
+
+  // Fetch khoa list on mount
+  useEffect(() => {
+    const fetchKhoaList = async () => {
+      try {
+        setLoadingFilters(true);
+        const response = await studentService.getCoVanFilterDataService();
+        if (response?.data) {
+          setKhoaList(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching khoa list:", error);
+      } finally {
+        setLoadingFilters(false);
+      }
+    };
+    fetchKhoaList();
+  }, []);
+
+  // Fetch nganh list when khoa changes
+  useEffect(() => {
+    if (khoa) {
+      const fetchNganhList = async () => {
+        try {
+          const response = await studentService.getCoVanFilterDataService(khoa);
+          if (response?.data) {
+            setNganhList(response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching nganh list:", error);
+        }
+      };
+      fetchNganhList();
+      setNganh("");
+      setMaLop("");
+    } else {
+      setNganhList([]);
+      setMaLopList([]);
+    }
+  }, [khoa]);
+
+  // Fetch maLop list when khoa and nganh change
+  useEffect(() => {
+    if (khoa && nganh) {
+      const fetchMaLopList = async () => {
+        try {
+          const response = await studentService.getCoVanFilterDataService(
+            khoa,
+            nganh,
+          );
+          if (response?.data) {
+            setMaLopList(response.data);
+          }
+        } catch (error) {
+          console.error("Error fetching maLop list:", error);
+        }
+      };
+      fetchMaLopList();
+      setMaLop("");
+    } else {
+      setMaLopList([]);
+    }
+  }, [khoa, nganh]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -40,6 +114,9 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
       endDate: endDate || undefined,
       minScore: minScore || undefined,
       maxScore: maxScore || undefined,
+      khoa: khoa || undefined,
+      nganh: nganh || undefined,
+      maLop: maLop || undefined,
     });
   };
 
@@ -76,7 +153,62 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
       </div>
       {/* Bộ lọc thường */}
       <div className="border-t border-gray-200 flex items-end justify-between gap-4">
-        <div className="grid grid-cols-4 mt-3 gap-3 w-full">
+        <div className="grid grid-cols-7 mt-3 gap-3 w-full">
+          {/* Khoa */}
+          <div className="flex flex-col gap-1">
+            <label className="font-bold text-[13px] text-[#737373]">Khóa</label>
+            <select
+              value={khoa}
+              onChange={(e) => setKhoa(e.target.value)}
+              disabled={loadingFilters}
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
+            >
+              <option value="">Chọn khóa</option>
+              {khoaList.map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Nganh */}
+          <div className="flex flex-col gap-1">
+            <label className="font-bold text-[13px] text-[#737373]">
+              Ngành
+            </label>
+            <select
+              value={nganh}
+              onChange={(e) => setNganh(e.target.value)}
+              disabled={!khoa || loadingFilters}
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
+            >
+              <option value="">Chọn ngành</option>
+              {nganhList.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Ma lop */}
+          <div className="flex flex-col gap-1">
+            <label className="font-bold text-[13px] text-[#737373]">
+              Mã lớp
+            </label>
+            <select
+              value={maLop}
+              onChange={(e) => setMaLop(e.target.value)}
+              disabled={!khoa || !nganh || loadingFilters}
+              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
+            >
+              <option value="">Chọn lớp</option>
+              {maLopList.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
           {/* Từ ngày */}
           <div className="flex flex-col gap-1">
             <label className="font-bold text-[13px] text-[#737373]">
