@@ -50,11 +50,14 @@ const VerifyOtp = async (req, res) => {
     }
     const { refreshToken, ...newResponse } = response;
 
+    const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-
+      domain: cookieDomain,
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return res.status(200).json(newResponse);
