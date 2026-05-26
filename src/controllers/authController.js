@@ -75,7 +75,15 @@ const Logout = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
     if (token) {
-      res.clearCookie("refreshToken");
+      const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        domain: cookieDomain,
+        path: "/",
+      });
     }
     return res.status(200).json({
       status: "Success",
