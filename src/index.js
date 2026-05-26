@@ -21,6 +21,7 @@ app.use(
       "http://localhost:3000",
       "https://he-thong-diem-danh.vercel.app",
       "http://localhost:3001",
+      "https://hethongdiemdanh.php2json.com",
     ],
     credentials: true,
   }),
