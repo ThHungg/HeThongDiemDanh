@@ -237,6 +237,31 @@ const getCoVanFilterData = async (req, res) => {
     });
   }
 };
+
+const getStudentsByAdvisor = async (req, res) => {
+  try {
+    const advisorId = req.user.code;
+    if (!advisorId) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "Vui lòng cung cấp mã cố vấn học tập",
+      });
+    }
+    const response = await studentService.getStudentsByAdvisor(advisorId);
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
 module.exports = {
   getStudentById,
   getClassesByStudent,
@@ -246,4 +271,5 @@ module.exports = {
   getAttendanceByStudentId,
   getSpecificStudentAttendance,
   getCoVanFilterData,
+  getStudentsByAdvisor,
 };

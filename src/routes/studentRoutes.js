@@ -33,4 +33,10 @@ router.get(
   studentController.getCoVanFilterData,
 );
 
+router.get(
+  "/studentbyAdvisor",
+  authMiddleware,
+  studentController.getStudentsByAdvisor,
+);
+
 module.exports = router;
