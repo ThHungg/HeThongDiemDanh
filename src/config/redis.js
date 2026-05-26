@@ -3,29 +3,35 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const isLocal =
-  !process.env.REDIS_HOST ||
-  process.env.REDIS_HOST === "127.0.0.1" ||
-  process.env.REDIS_HOST === "localhost";
+let redis;
 
-const redis = new Redis({
-  host: process.env.REDIS_HOST || "127.0.0.1",
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-  tls: isLocal ? undefined : { rejectUnauthorized: false },
-  maxRetriesPerRequest: null,
-
-  retryStrategy: (times) => {
-    return Math.min(times * 50, 2000);
-  },
-});
+// Nếu có biến REDIS_URL (khi chạy trên Render), dùng trực tiếp URL đó
+if (process.env.REDIS_URL) {
+  redis = new Redis(process.env.REDIS_URL, {
+    maxRetriesPerRequest: null,
+    retryStrategy: (times) => {
+      return Math.min(times * 50, 2000);
+    },
+  });
+} else {
+  // Khi không có REDIS_URL (chạy local dưới máy tính)
+  redis = new Redis({
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: process.env.REDIS_PORT || 6379,
+    password: process.env.REDIS_PASSWORD || undefined,
+    maxRetriesPerRequest: null,
+    retryStrategy: (times) => {
+      return Math.min(times * 50, 2000);
+    },
+  });
+}
 
 redis.on("connect", () => {
-  console.log("Kết nối redis thành công");
+  console.log("Kết nối Redis thành công!");
 });
 
 redis.on("error", (err) => {
-  console.log("Kết nối thất bại");
+  console.error("Kết nối Redis thất bại:", err);
 });
 
 module.exports = redis;
