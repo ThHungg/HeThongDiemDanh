@@ -1,7 +1,5 @@
 "use client";
-import FilterBar from "@/components/Department/FilterBar";
 import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
-import Pagination from "@/components/Common/Pagination";
 import { memo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import getScoreColor from "@/utils/getScoreColor";

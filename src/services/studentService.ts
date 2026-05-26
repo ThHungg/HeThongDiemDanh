@@ -121,3 +121,12 @@ export const getCoVanFilterDataService = async (khoa?: string, nganh?: string, m
     throw e;
   }
 }
+
+export const getStudentsByAdvisorService = async () => {
+  try {
+    const res = await axiosInstance.get("/students/studentbyAdvisor");
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}
