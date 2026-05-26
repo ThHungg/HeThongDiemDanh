@@ -12,6 +12,13 @@ interface StudentsTableProps {
   searchValue?: string;
 }
 
+interface StudentData {
+  msv: string;
+  name: string;
+  email1: string;
+  email2: string;
+}
+
 const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
   const [isSelectedStudentId, setIsSelectedStudentId] = useState("");
   const [openAttendanceDetail, setOpenAttendanceDetail] = useState(false);
@@ -23,10 +30,6 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
     new Set(),
   );
-  const [studentDataCache, setStudentDataCache] = useState<any>({});
-  const [classStudentCount, setClassStudentCount] = useState<{
-    [key: string]: number;
-  }>({});
 
   const isStudent = useMemo(() => isStudentRole(), []);
 
@@ -84,22 +87,22 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
 
   const paginatedStudents = pagination.data || [];
 
-  // Cache student data
-  useEffect(() => {
-    setStudentDataCache((prev) => {
-      const updated = { ...prev };
-      paginatedStudents.forEach((s: any) => {
-        updated[s.maSinhVien] = {
-          msv: s.maSinhVien,
-          name: s.ten,
-          email1: s.email1 || "",
-          email2: s.email2 || "",
-        };
-      });
-      return updated;
+  // Cache student data using useMemo instead of useEffect to avoid cascading renders
+  const cachedStudentData = useMemo(() => {
+    const cached: Record<string, StudentData> = {};
+    paginatedStudents.forEach((s: any) => {
+      cached[s.maSinhVien] = {
+        msv: s.maSinhVien,
+        name: s.ten,
+        email1: s.email1 || "",
+        email2: s.email2 || "",
+      };
     });
+    return cached;
+  }, [paginatedStudents]);
 
-    // Calculate student count per class
+  // Calculate student count per class using useMemo instead of useEffect
+  const classStudentCountMemo = useMemo(() => {
     const counts: { [key: string]: number } = {};
     if (students && students.length > 0) {
       students.forEach((student: any) => {
@@ -107,8 +110,8 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
         counts[className] = (counts[className] || 0) + 1;
       });
     }
-    setClassStudentCount(counts);
-  }, [paginatedStudents, students]);
+    return counts;
+  }, [students]);
 
   const handleItemsPerPageChange = (newLimit: number) => {
     setLimit(newLimit);
@@ -139,7 +142,7 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
 
   const selectedStudentList = Array.from(selectedStudents)
     .map((msv) => {
-      const cached = studentDataCache[msv] || {
+      const cached = cachedStudentData[msv] || {
         msv,
         name: "",
         email1: "",
@@ -274,7 +277,7 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
 
                   {/* SL lớp - Số lượng sinh viên trong lớp */}
                   <td className="text-center px-4 py-2 font-semibold text-[#8B0000]">
-                    {classStudentCount[student.lopChuyenNganh] || 0}
+                    {classStudentCountMemo[student.lopChuyenNganh] || 0}
                   </td>
 
                   {/* Điểm trung bình */}

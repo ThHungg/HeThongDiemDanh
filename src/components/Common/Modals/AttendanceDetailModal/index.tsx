@@ -25,7 +25,7 @@ const AttendanceDetailModal = ({
   avgChuyenCan: number | null;
   classCode?: string;
 }) => {
-  const [isSelected, setIsSelected] = useState<string | null>(0);
+  const [isSelected, setIsSelected] = useState<string | null>(null);
   const [isOpenSendEmail, setIsOpenSendEmail] = useState(false);
   const [studentData, setStudentData] = useState<any>(null);
   const isInitializedRef = useRef(false);

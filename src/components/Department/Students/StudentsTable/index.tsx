@@ -23,6 +23,13 @@ interface StudentsTableProps {
   filters?: FilterOptions;
 }
 
+interface StudentData {
+  msv: string;
+  name: string;
+  email1: string;
+  email2: string;
+}
+
 const StudentsTable = ({
   searchValue = "",
   filters = {},
@@ -37,8 +44,6 @@ const StudentsTable = ({
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
     new Set(),
   );
-  const [studentDataCache, setStudentDataCache] = useState<any>({});
-
   const isStudent = useMemo(() => isStudentRole(), []);
 
   const getAllStudents = async () => {
@@ -68,20 +73,18 @@ const StudentsTable = ({
 
   const pagination = allStudents?.pagination || {};
 
-  // Cache student data from all pages (including emails)
-  useEffect(() => {
-    setStudentDataCache((prev) => {
-      const updated = { ...prev };
-      students.forEach((s: any) => {
-        updated[s.maSinhVien] = {
-          msv: s.maSinhVien,
-          name: s.ten,
-          email1: s.email1 || "",
-          email2: s.email2 || "",
-        };
-      });
-      return updated;
+  // Cache student data from all pages (including emails) using useMemo
+  const cachedStudentData = useMemo(() => {
+    const cache: Record<string, StudentData> = {};
+    students.forEach((s: any) => {
+      cache[s.maSinhVien] = {
+        msv: s.maSinhVien,
+        name: s.ten,
+        email1: s.email1 || "",
+        email2: s.email2 || "",
+      };
     });
+    return cache;
   }, [students]);
 
   const handleItemsPerPageChange = (newLimit: number) => {
@@ -110,7 +113,7 @@ const StudentsTable = ({
 
   const selectedStudentList = Array.from(selectedStudents)
     .map((msv) => {
-      const cached = studentDataCache[msv] || {
+      const cached = cachedStudentData[msv] || {
         msv,
         name: "",
         email1: "",
@@ -308,6 +311,7 @@ const StudentsTable = ({
               ? {
                   name: selectedStudentList[0].name,
                   msv: selectedStudentList[0].msv,
+                  email1: selectedStudentList[0].email1 || "",
                   classCode: selectStudent?.maLopHocPhan || "",
                 }
               : undefined
