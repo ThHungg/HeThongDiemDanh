@@ -28,9 +28,18 @@ export const verifyOtpService = async (userCode: string, otp: string) => {
 
 export const logoutService = async () => {
   try {
+
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user-data");
+    localStorage.removeItem("semester-data");
+    
     const res = await axiosInstance.post("/auth/logout", {}, { headers: { skipAuth: true } });
     return res.data;
   } catch (e) {
+
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user-data");
+    localStorage.removeItem("semester-data");
     throw e;
   }
 }

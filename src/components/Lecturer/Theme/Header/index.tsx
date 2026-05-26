@@ -16,6 +16,18 @@ const HeaderLecturer = () => {
       onSuccess: (res) => {
         clearProfile();
         toast.success(res.message || "Đăng xuất thành công!");
+
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user-data");
+        localStorage.removeItem("semester-data");
+        router.push("/login");
+      },
+      onError: () => {
+
+        clearProfile();
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user-data");
+        localStorage.removeItem("semester-data");
         router.push("/login");
       },
     });

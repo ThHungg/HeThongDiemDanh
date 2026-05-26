@@ -13,6 +13,16 @@ const LayoutStudent = ({ children }: { children: React.ReactNode }) => {
     logout.mutate(null, {
       onSuccess: (res) => {
         toast.success(res.message || "Đăng xuất thành công!");
+
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user-data");
+        localStorage.removeItem("semester-data");
+        router.push("/login");
+      },
+      onError: () => {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user-data");
+        localStorage.removeItem("semester-data");
         router.push("/login");
       },
     });
