@@ -87,7 +87,6 @@ const ClassDetailListTable = ({
       }
     }
   }, [classSession]);
- 
 
   const handleUpdateStudentScore = (scoreId: number, newScore: number) => {
     const note = noteUpdates[scoreId] || "";
@@ -363,6 +362,8 @@ const ClassDetailListTable = ({
                                 msv: student.maSinhVien,
                                 name: student.ten,
                                 classCode: student.maLopHocPhan,
+                                email1: student.email1,
+                                email2: student.email2,
                               });
                               setIsOpenSendEmailModal(true);
                             }}
@@ -540,8 +541,11 @@ const ClassDetailListTable = ({
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                   e.preventDefault();
-                                  const currentRow = (e.target as HTMLElement).closest("tr");
-                                  const nextRow = currentRow?.nextElementSibling as HTMLElement;
+                                  const currentRow = (
+                                    e.target as HTMLElement
+                                  ).closest("tr");
+                                  const nextRow =
+                                    currentRow?.nextElementSibling as HTMLElement;
                                   if (nextRow) {
                                     const nextInput = nextRow.querySelector(
                                       `input[data-score-index="${scoreIndex}"]`,

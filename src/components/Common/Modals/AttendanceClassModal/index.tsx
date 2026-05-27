@@ -1,6 +1,6 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { memo, useState } from "react";
+import { memo, useState, useMemo } from "react";
 import * as classService from "@/services/classService";
 import * as attendanceService from "@/services/attendanceService";
 import getScoreColor from "@/utils/getScoreColor";
@@ -9,6 +9,7 @@ import StudentDetailModal from "@/components/Common/Modals/StudentDetailModal";
 import SendEmailModal from "../SendEmailModal";
 import { formatClassCode } from "@/utils/formatClassCode";
 import { useMutationHooks } from "@/hooks/useMutationHooks";
+import Loading from "../../Loading";
 
 interface ListStudent {
   classCode: string;
@@ -59,6 +60,7 @@ const AttendanceClassModal = ({
   const [selectedStudentScores, setSelectedStudentScores] = useState<any>(null);
   const [isOpenSendEmailModal, setIsOpenSendEmailModal] = useState(false);
   const [detailStudent, setDetailStudent] = useState<any>(null);
+  const [searchValue, setSearchValue] = useState<string>("");
 
   const getAttendance = async (classCode: string) => {
     const res = await attendanceService.getAttendanceByClassService(classCode);
@@ -81,6 +83,26 @@ const AttendanceClassModal = ({
   });
 
   const classSession = detailClass?.data?.buoi_hoc || [];
+
+  // Filter attendance data based on search value
+  const filteredAttendanceData = useMemo(() => {
+    if (!attendanceData?.data?.attendance || !searchValue.trim()) {
+      return attendanceData?.data?.attendance || [];
+    }
+
+    const lowerSearchValue = searchValue.toLowerCase().trim();
+    return attendanceData.data.attendance.filter((student: any) => {
+      const maSinhVien = (student.maSinhVien || "").toLowerCase();
+      const ten = (student.ten || "").toLowerCase();
+      const lopChuyenNganh = (student.lopChuyenNganh || "").toLowerCase();
+
+      return (
+        maSinhVien.includes(lowerSearchValue) ||
+        ten.includes(lowerSearchValue) ||
+        lopChuyenNganh.includes(lowerSearchValue)
+      );
+    });
+  }, [attendanceData?.data?.attendance, searchValue]);
 
   const handleViewScoreDetail = (student: any) => {
     setSelectedStudentScores(student);
@@ -205,6 +227,8 @@ const AttendanceClassModal = ({
                   <input
                     type="text"
                     placeholder="Tìm kiếm theo khoa, lớp, hoặc sinh viên"
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
                     className="bg-white text-[12px] rounded-lg py-1.5 pl-10 pr-4 w-full border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]"
                   />
                 </div>
@@ -270,126 +294,136 @@ const AttendanceClassModal = ({
               </div>
             </div>
             {/* Table */}
-            <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden">
-              {/* BẢNG 1: CỐ ĐỊNH */}
-              <div className="shrink-0 shadow-[4px_0_8px_rgba(0,0,0,0.05)] z-10">
-                <table className="border-collapse">
-                  <thead className="border-b border-gray-200">
-                    <tr className="bg-[#F8FAFC] text-[#64748B] h-13">
-                      <th className="text-left px-4 py-3 font-semibold border-r border-gray-200">
-                        STT
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold border-r border-gray-200">
-                        Mã SV
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold border-r border-gray-200 min-w-45">
-                        Họ và tên
-                      </th>
-                      <th className="text-left px-4 py-3 font-semibold whitespace-nowrap bg-[#F4E6E6] text-[#8B0000]">
-                        Điểm TB
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {attendanceData?.data?.attendance?.map(
-                      (student: any, index: number) => (
-                        <tr
-                          key={student.id}
-                          className="h-12 hover:bg-gray-50 transition-colors divide-x divide-gray-200"
-                        >
-                          <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
-                            {index + 1}
-                          </td>
-                          <td className="px-4 py-3 font-semibold border-r border-gray-200">
-                            {student.maSinhVien}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
-                            <div className="flex items-center gap-2">
-                              <button
-                                className="cursor-pointer hover:underline text-gray-800"
-                                onClick={() => {
-                                  setSelectedStudent(student.maSinhVien);
-                                  setOpenStudentDetail(true);
-                                }}
-                              >
-                                {student.ten}
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setDetailStudent(student);
-                                  setIsOpenSendEmailModal(true);
-                                }}
-                                className="relative group flex items-center"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="18"
-                                  height="18"
-                                  viewBox="0 0 48 48"
-                                  className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
-                                >
-                                  <g
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="4"
-                                  >
-                                    <path d="M44 24V9H24H4V24V39H24" />
-                                    <path d="M44 34L30 34" />
-                                    <path d="M39 29L44 34L39 39" />
-                                    <path d="M4 9L24 24L44 9" />
-                                  </g>
-                                </svg>
-
-                                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
-                                  <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
-                                    Gửi email cảnh báo tới sinh viên
-                                  </div>
-                                </div>
-                              </button>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
-                            {student?.diemTrungBinh || "-"}
-                          </td>
-                        </tr>
-                      ),
-                    )}
-                  </tbody>
-                </table>
+            {isLoading ? (
+              <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden h-96 items-center justify-center">
+                <Loading text="Đang tải dữ liệu..." />
               </div>
-
-              {/* BẢNG 2: CÓ THỂ CUỘN NGANG */}
-              <div className="flex-1 overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead className="border-b border-gray-200">
-                    <tr className="bg-[#F8FAFC] text-[#64748B] h-13 divide-x divide-gray-200">
-                      {classSession?.map((item: any, index: number) => (
-                        <th
-                          key={index}
-                          className="text-center px-2 py-3 font-semibold text-[11px] min-w-25 border-r border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="leading-tight">
-                            <div className="font-bold">
-                              {formatDate(item.ngayHoc)} (T
-                              {item.chiTietTietHoc.thu})
-                            </div>
-                            <div className="text-[9px] opacity-70">
-                              Tiết {item.chiTietTietHoc.tiet}
-                            </div>
-                          </div>
+            ) : filteredAttendanceData?.length === 0 ? (
+              <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden h-40 items-center justify-center">
+                <p className="text-gray-500 text-sm">
+                  Không tìm thấy sinh viên
+                </p>
+              </div>
+            ) : (
+              <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden">
+                {/* BẢNG 1: CỐ ĐỊNH */}
+                <div className="shrink-0 shadow-[4px_0_8px_rgba(0,0,0,0.05)] z-10">
+                  <table className="border-collapse">
+                    <thead className="border-b border-gray-200">
+                      <tr className="bg-[#F8FAFC] text-[#64748B] h-13">
+                        <th className="text-left px-4 py-3 font-semibold border-r border-gray-200">
+                          STT
                         </th>
-                      ))}
-                      <th className="text-left px-4 py-3 font-semibold min-w-37.5">
-                        Ghi chú
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {attendanceData?.data?.attendance?.map(
-                      (attendance: any) => {
+                        <th className="text-left px-4 py-3 font-semibold border-r border-gray-200">
+                          Mã SV
+                        </th>
+                        <th className="text-left px-4 py-3 font-semibold border-r border-gray-200 min-w-45">
+                          Họ và tên
+                        </th>
+                        <th className="text-left px-4 py-3 font-semibold whitespace-nowrap bg-[#F4E6E6] text-[#8B0000]">
+                          Điểm TB
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredAttendanceData?.map(
+                        (student: any, index: number) => (
+                          <tr
+                            key={student.id}
+                            className="h-12 hover:bg-gray-50 transition-colors divide-x divide-gray-200"
+                          >
+                            <td className="px-4 py-3 text-[#8B0000] font-semibold border-r border-gray-200">
+                              {index + 1}
+                            </td>
+                            <td className="px-4 py-3 font-semibold border-r border-gray-200">
+                              {student.maSinhVien}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap font-bold border-r border-gray-200">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className="cursor-pointer hover:underline text-gray-800"
+                                  onClick={() => {
+                                    setSelectedStudent(student.maSinhVien);
+                                    setOpenStudentDetail(true);
+                                  }}
+                                >
+                                  {student.ten}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setDetailStudent(student);
+                                    setIsOpenSendEmailModal(true);
+                                  }}
+                                  className="relative group flex items-center"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="18"
+                                    height="18"
+                                    viewBox="0 0 48 48"
+                                    className="cursor-pointer text-gray-400 hover:text-red-600 transition-colors"
+                                  >
+                                    <g
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="4"
+                                    >
+                                      <path d="M44 24V9H24H4V24V39H24" />
+                                      <path d="M44 34L30 34" />
+                                      <path d="M39 29L44 34L39 39" />
+                                      <path d="M4 9L24 24L44 9" />
+                                    </g>
+                                  </svg>
+
+                                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10">
+                                    <div className="bg-slate-800 text-white text-[11px] px-2 py-1 rounded shadow-xl whitespace-nowrap">
+                                      Gửi email cảnh báo tới sinh viên
+                                    </div>
+                                  </div>
+                                </button>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-center bg-[#F4E6E6] text-[#8B0000] font-semibold">
+                              {student?.diemTrungBinh || "-"}
+                            </td>
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* BẢNG 2: CÓ THỂ CUỘN NGANG */}
+                <div className="flex-1 overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead className="border-b border-gray-200">
+                      <tr className="bg-[#F8FAFC] text-[#64748B] h-13 divide-x divide-gray-200">
+                        {classSession?.map((item: any, index: number) => (
+                          <th
+                            key={index}
+                            className="text-center px-2 py-3 font-semibold text-[11px] min-w-25 border-r border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                          >
+                            <div className="leading-tight">
+                              <div className="font-bold">
+                                {formatDate(item.ngayHoc)} (T
+                                {item.chiTietTietHoc.thu})
+                              </div>
+                              <div className="text-[9px] opacity-70">
+                                Tiết {item.chiTietTietHoc.tiet}
+                              </div>
+                            </div>
+                          </th>
+                        ))}
+                        <th className="text-left px-4 py-3 font-semibold min-w-37.5">
+                          Ghi chú
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredAttendanceData?.map((attendance: any) => {
                         return (
                           <tr
                             key={attendance.id}
@@ -422,12 +456,12 @@ const AttendanceClassModal = ({
                             </td>
                           </tr>
                         );
-                      },
-                    )}
-                  </tbody>
-                </table>
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
           </div>
           {/* Modal Chi tiết điểm theo ngày */}
           {openDetailScore && selectedStudentScores && (

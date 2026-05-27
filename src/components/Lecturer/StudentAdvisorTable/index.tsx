@@ -212,7 +212,7 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
               <th className="text-left px-4 py-3 font-semibold">MSV</th>
               <th className="text-left px-4 py-3 font-semibold">Họ và tên</th>
               <th className="text-left px-4 py-3 font-semibold">Lớp</th>
-              <th className="text-center px-4 py-3 font-semibold">SL lớp</th>
+              {/* <th className="text-center px-4 py-3 font-semibold">SL lớp</th> */}
               <th className="text-left px-4 py-3 font-semibold">
                 Điểm trung bình
               </th>
@@ -276,9 +276,9 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
                   </td>
 
                   {/* SL lớp - Số lượng sinh viên trong lớp */}
-                  <td className="text-center px-4 py-2 font-semibold text-[#8B0000]">
+                  {/* <td className="text-center px-4 py-2 font-semibold text-[#8B0000]">
                     {classStudentCountMemo[student.lopChuyenNganh] || 0}
-                  </td>
+                  </td> */}
 
                   {/* Điểm trung bình */}
                   <td className="text-left px-4 py-2 font-bold">

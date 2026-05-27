@@ -308,7 +308,7 @@ const SendEmailModal = ({
                 </div>
 
                 {/* Thông tin lớp học kiểu tối giản */}
-                {classCode && (
+                {studentData?.classCode && (
                   <div className="py-3 border-y border-slate-100 my-4">
                     <span className="text-[12px] text-slate-500">
                       Lớp học phần:

@@ -7,6 +7,7 @@ import { formatClassCode } from "@/utils/formatClassCode";
 import { formatDate } from "@/utils/formatDatt";
 import { styles } from "next/dist/client/components/styles/access-error-styles";
 import SendEmailModal from "../SendEmailModal";
+import Loading from "../../Loading";
 
 const AttendanceDetailModal = ({
   detailClass,
@@ -36,6 +37,8 @@ const AttendanceDetailModal = ({
     const res = await studentService.getClassesByStudentId(studentId);
     return res;
   };
+
+  console.log("studentId", studentId);
   const {
     data: classes,
     isLoading,
@@ -44,7 +47,7 @@ const AttendanceDetailModal = ({
     queryKey: ["classes", studentId],
     queryFn: () => getClassesByStudentId(studentId),
   });
-
+  console.log("classes", classes);
   const getAttendanceByStudentId = async (classCode: string) => {
     const res = await studentService.getAttendanceByStudentId(classCode);
     return res;
@@ -232,7 +235,12 @@ const AttendanceDetailModal = ({
             </div>
           </div>
         )}
-        <div className="grid grid-cols-12 border-t border-[#8B0000]/10 flex-1 overflow-auto">
+        <div className="grid grid-cols-12 border-t border-[#8B0000]/10 flex-1 overflow-auto relative">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded-t-lg">
+              <Loading text="Đang tải dữ liệu..." />
+            </div>
+          )}
           {!isStudent && (
             <div className="col-span-4 border-r border-[#8B0000]/10 px-4 py-3">
               <h6 className="font-semibold text-[#737373] mb-[12px]">
@@ -318,7 +326,12 @@ const AttendanceDetailModal = ({
             className={`${isStudent ? "col-span-12" : "col-span-8"} px-4 py-3 flex flex-col min-h-0`}
           >
             <h4 className="mb-2 shrink-0">Chi tiết môn học</h4>
-            <div className="flex-1 border border-[#FCEAE8] rounded-2xl overflow-y-auto bg-white w-full min-h-0">
+            <div className="flex-1 border border-[#FCEAE8] rounded-2xl overflow-y-auto bg-white w-full min-h-0 relative">
+              {isLoadingAttendance && (
+                <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 rounded-t-lg">
+                  <Loading text="Đang tải dữ liệu..." />
+                </div>
+              )}
               <table className="w-full text-left border-collapse h-full">
                 <thead className="bg-[#FDF2F0] sticky top-0 z-10">
                   <tr>
