@@ -1,4 +1,5 @@
 const semesterService = require("./semesterService");
+const cacheService = require("./cacheService");
 const {
   Tkb,
   HocPhan,
@@ -56,9 +57,21 @@ const getStudentById = async (studentId) => {
 const getClassesByStudent = async (studentId, semester) => {
   try {
     console.log("studentId", studentId);
-    const semesterRes = await semesterService.getCurrentSemester();
 
+    // Determine current semester
+    const semesterRes = await semesterService.getCurrentSemester();
     const currentSemester = semesterRes?.data?.ma_ky;
+    const semesterToUse = semester || currentSemester;
+
+    // Check cache first
+    const cacheKey = cacheService.CACHE_KEYS.STUDENT_CLASSES(
+      studentId,
+      semesterToUse,
+    );
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
 
     const classes = await SinhVien.findOne({
       where: {
@@ -73,7 +86,7 @@ const getClassesByStudent = async (studentId, semester) => {
           model: Tkb,
           as: "thong_tin_tkb",
           where: {
-            ma_ky: semester || currentSemester,
+            ma_ky: semesterToUse,
           },
           attributes: [
             "id",
@@ -104,12 +117,17 @@ const getClassesByStudent = async (studentId, semester) => {
         },
       },
     });
-    console.log(mapStudentClasses(classes));
-    return {
+
+    const result = {
       status: "Ok",
       code: 200,
       data: mapStudentClasses(classes),
     };
+
+    // Cache for 30 minutes
+    await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.MEDIUM);
+
+    return result;
   } catch (e) {
     console.log(e);
     return {

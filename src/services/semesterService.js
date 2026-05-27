@@ -1,7 +1,16 @@
 const Ky = require("../models/Ky");
+const cacheService = require("./cacheService");
 
 const getCurrentSemester = async () => {
   try {
+    const cachedResult = await cacheService.get(
+      cacheService.CACHE_KEYS.CURRENT_SEMESTER,
+    );
+
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     const currentSemester = await Ky.findOne({
       where: {
         mac_dinh: true,
@@ -16,11 +25,22 @@ const getCurrentSemester = async () => {
       ],
     });
 
-    return {
+    const result = {
       status: "Success",
       code: 200,
       data: currentSemester,
     };
+
+    // Cache for 2 hours
+    if (currentSemester) {
+      await cacheService.set(
+        cacheService.CACHE_KEYS.CURRENT_SEMESTER,
+        result,
+        cacheService.CACHE_TTL.LONG,
+      );
+    }
+
+    return result;
   } catch (e) {
     return {
       status: "Err",
@@ -32,6 +52,14 @@ const getCurrentSemester = async () => {
 
 const getAllSemesters = async () => {
   try {
+    const cachedResult = await cacheService.get(
+      cacheService.CACHE_KEYS.ALL_SEMESTERS,
+    );
+
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     const semesters = await Ky.findAll({
       attributes: [
         "id",
@@ -44,11 +72,22 @@ const getAllSemesters = async () => {
       order: [["bat_dau_ky_hoc", "DESC"]],
     });
 
-    return {
+    const result = {
       status: "Success",
       code: 200,
       data: semesters,
     };
+
+    // Cache for 2 hours
+    if (semesters && semesters.length > 0) {
+      await cacheService.set(
+        cacheService.CACHE_KEYS.ALL_SEMESTERS,
+        result,
+        cacheService.CACHE_TTL.LONG,
+      );
+    }
+
+    return result;
   } catch (e) {
     return {
       status: "Err",

@@ -7,6 +7,7 @@ const {
   ChuyenCan,
 } = require("../models/index");
 const { mapAttendanceByClass } = require("../mappers/mapperData");
+const cacheService = require("./cacheService");
 const { sequelize } = require("../config/db");
 const { where, Op } = require("sequelize");
 const ExcelJS = require("exceljs");
@@ -71,6 +72,13 @@ const calculateAndUpdateChuyenCan = async (classCode, transaction = null) => {
 
 const getAttendanceByClass = async (classCode) => {
   try {
+    // Check cache first
+    const cacheKey = cacheService.CACHE_KEYS.ATTENDANCE_BY_CLASS(classCode);
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     // const today = new Date().toLocaleDateString("en-CA");
     const today = "2026-04-25";
     const tkb = await Tkb.findOne({
@@ -170,7 +178,7 @@ const getAttendanceByClass = async (classCode) => {
 
     const attendance = mapAttendanceByClass(data);
 
-    return {
+    const result = {
       status: "Ok",
       code: 200,
       data: {
@@ -182,6 +190,11 @@ const getAttendanceByClass = async (classCode) => {
         sessionIds,
       },
     };
+
+    // Cache for 5 minutes (short TTL for frequently changing attendance data)
+    await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.SHORT);
+
+    return result;
   } catch (e) {
     console.log("e :", e);
     return {
@@ -268,6 +281,9 @@ const updateAttendanceByClass = async (attendanceData) => {
 
     console.log("uniqueDangKyIds :", uniqueDangKyIds);
 
+    // Collect class code for cache invalidation
+    let classCodeForCache = null;
+
     for (const dkId of uniqueDangKyIds) {
       console.log(dkId);
       const attendanceRecord = attendances.find((att) =>
@@ -277,6 +293,15 @@ const updateAttendanceByClass = async (attendanceData) => {
       );
       const tkbId = attendanceRecord?.buoi_hoc?.thoi_khoa_bieu?.id;
       const sinhVienId = attendanceRecord?.sinh_vien_id;
+
+      // Get class code for cache invalidation
+      if (
+        !classCodeForCache &&
+        attendanceRecord?.buoi_hoc?.thoi_khoa_bieu?.ma_lop_hoc_phan
+      ) {
+        classCodeForCache =
+          attendanceRecord.buoi_hoc.thoi_khoa_bieu.ma_lop_hoc_phan;
+      }
 
       const allScores = await DiemDanh.findAll({
         where: { sinh_vien_id: sinhVienId },
@@ -312,6 +337,12 @@ const updateAttendanceByClass = async (attendanceData) => {
     }
 
     await t.commit();
+
+    // Invalidate cache after successful update
+    if (classCodeForCache) {
+      await cacheService.invalidate.attendance(classCodeForCache);
+    }
+
     return {
       status: "Ok",
       code: 200,

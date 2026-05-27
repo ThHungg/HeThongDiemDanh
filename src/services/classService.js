@@ -22,6 +22,7 @@ const { getAttendanceDates } = require("../utils/dateHelper");
 const { sendEmailToStudent, sendEmail } = require("../utils/sendEmail");
 
 const semesterService = require("./semesterService");
+const cacheService = require("./cacheService");
 const { emailQueue } = require("./mailQueueService");
 
 const getClassesByLecturer = async (lecturerId, semester) => {
@@ -32,6 +33,16 @@ const getClassesByLecturer = async (lecturerId, semester) => {
     } else {
       const semesterRes = await semesterService.getCurrentSemester();
       currentSemester = semesterRes?.data?.ma_ky;
+    }
+
+    // Check cache first
+    const cacheKey = cacheService.CACHE_KEYS.LECTURER_CLASSES(
+      lecturerId,
+      currentSemester,
+    );
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
     }
 
     const classes = await Tkb.findAll({
@@ -68,11 +79,16 @@ const getClassesByLecturer = async (lecturerId, semester) => {
     });
     const transformedClasses = mapClasses(classes);
 
-    return {
+    const result = {
       status: "Ok",
       code: 200,
       data: transformedClasses,
     };
+
+    // Cache for 30 minutes
+    await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.MEDIUM);
+
+    return result;
   } catch (e) {
     return {
       status: "Err",
@@ -241,6 +257,19 @@ const getAllClasses = async (options = {}) => {
       currentSemester = semesterRes?.data?.ma_ky;
     }
 
+    // Check cache first - include pagination and filters in cache key
+    const cacheKey = cacheService.CACHE_KEYS.ALL_CLASSES(
+      currentSemester,
+      page,
+      limit,
+      lecturerId,
+      searchText,
+    );
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     const whereConditions = [];
 
     // Add semester condition
@@ -380,7 +409,8 @@ const getAllClasses = async (options = {}) => {
         tong_sinh_vien_co_diem: validScores.length,
       };
     });
-    return {
+
+    const result = {
       status: "Ok",
       code: 200,
       data: dataWithClassAverage,
@@ -391,6 +421,11 @@ const getAllClasses = async (options = {}) => {
         totalPages: Math.ceil(totalCount / limit),
       },
     };
+
+    // Cache for 30 minutes
+    await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.MEDIUM);
+
+    return result;
   } catch (e) {
     console.error("getAllClasses error:", e);
     return {
@@ -561,16 +596,28 @@ const getCurrentClasses = async (lecturerId) => {
 
 const getAllLecturer = async () => {
   try {
+    // Check cache first
+    const cacheKey = cacheService.CACHE_KEYS.ALL_LECTURERS;
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
     const lecturers = await GiangVien.findAll({
       attributes: ["ma_giang_vien", "ten"],
       order: [["ten", "ASC"]],
     });
 
-    return {
+    const result = {
       status: "Ok",
       code: 200,
       data: lecturers,
     };
+
+    // Cache for 2 hours
+    await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.LONG);
+
+    return result;
   } catch (e) {
     return {
       status: "Err",
