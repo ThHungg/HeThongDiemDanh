@@ -50,7 +50,10 @@ const VerifyOtp = async (req, res) => {
     }
     const { refreshToken, ...newResponse } = response;
 
-    const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+    const cookieDomain =
+      process.env.NODE_ENV === "production"
+        ? process.env.COOKIE_DOMAIN
+        : undefined;
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -75,7 +78,10 @@ const Logout = async (req, res) => {
   try {
     const token = req.cookies.refreshToken;
     if (token) {
-      const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+      const cookieDomain =
+        process.env.NODE_ENV === "production"
+          ? process.env.COOKIE_DOMAIN
+          : undefined;
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
