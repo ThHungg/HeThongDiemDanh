@@ -9,6 +9,15 @@ export const getAllSemestersService = async () => {
   }
 };
 
+export const getCurrentSemesterService = async () => {
+  try {
+    const res = await axiosInstance.get("/semesters/current");
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+};
+
 export const getClassesByLecturerService = async () => {
   try {
     const semesterData = localStorage.getItem("semester-data");

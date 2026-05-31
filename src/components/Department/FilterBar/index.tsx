@@ -30,6 +30,9 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   const [nganhList, setNganhList] = useState<string[]>([]);
   const [maLopList, setMaLopList] = useState<string[]>([]);
   const [loadingFilters, setLoadingFilters] = useState(false);
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
 
   // Fetch khoa list on mount
   useEffect(() => {
@@ -120,6 +123,55 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
     });
   };
 
+  const handleAiFilter = async () => {
+    const trimmedQuery = aiQuery.trim();
+    if (!trimmedQuery) return;
+
+    setAiLoading(true);
+    setAiError("");
+
+    try {
+      const response =
+        await studentService.parseStudentFiltersWithAIService(trimmedQuery);
+      const filtersApplied = response?.filtersApplied || {};
+
+      const appliedSearch = filtersApplied.search || "";
+      const appliedStartDate = filtersApplied.startDate || "";
+      const appliedEndDate = filtersApplied.endDate || "";
+      const appliedMinScore =
+        filtersApplied.minScore !== undefined &&
+        filtersApplied.minScore !== null
+          ? String(filtersApplied.minScore)
+          : "";
+      const appliedMaxScore =
+        filtersApplied.maxScore !== undefined &&
+        filtersApplied.maxScore !== null
+          ? String(filtersApplied.maxScore)
+          : "";
+      const appliedMaLop = filtersApplied.maLop || "";
+
+      setSearchInput(appliedSearch);
+      setStartDate(appliedStartDate);
+      setEndDate(appliedEndDate);
+      setMinScore(appliedMinScore);
+      setMaxScore(appliedMaxScore);
+      setMaLop(appliedMaLop);
+
+      onSearchChange?.(appliedSearch);
+      onFilterChange?.({
+        startDate: appliedStartDate || undefined,
+        endDate: appliedEndDate || undefined,
+        minScore: appliedMinScore || undefined,
+        maxScore: appliedMaxScore || undefined,
+        maLop: appliedMaLop || undefined,
+      });
+    } catch (error) {
+      setAiError("Khong the xu ly yeu cau AI. Vui long thu lai.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white p-5 mb-[12px] rounded-xl shadow-sm">
       {/* Input Tìm kiếm theo tên hoặc MSV */}
@@ -150,6 +202,40 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
             className="px-3 py-2 bg-[#F8FAFC] w-full text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
           />
         </div>
+      </div>
+      <div className="mb-3">
+        <p className="font-bold text-[12px] text-[#737373] flex items-center gap-1 mb-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            className="text-[#8B0000]"
+          >
+            <path
+              fill="currentColor"
+              d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2m3.29 14.71L12 13.41l-3.29 3.3l-1.42-1.42l3.3-3.29l-3.3-3.29l1.42-1.42l3.29 3.3l3.29-3.3l1.42 1.42l-3.3 3.29l3.3 3.29Z"
+            />
+          </svg>
+          Loc nhanh bang AI
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="VD: lop TT35CL07 diem > 5 tu 2024-01-01 den 2024-05-01"
+            value={aiQuery}
+            onChange={(e) => setAiQuery(e.target.value)}
+            className="px-3 py-2 bg-[#F8FAFC] w-full text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all"
+          />
+          <button
+            onClick={handleAiFilter}
+            disabled={aiLoading}
+            className="px-3 py-2 bg-[#8B0000] text-white text-[12px] font-semibold rounded-lg hover:bg-[#660000] transition-all disabled:opacity-60"
+          >
+            {aiLoading ? "Dang loc..." : "AI loc"}
+          </button>
+        </div>
+        {aiError && <p className="text-[12px] text-red-600 mt-1">{aiError}</p>}
       </div>
       {/* Bộ lọc thường */}
       <div className="border-t border-gray-200 flex items-end justify-between gap-4">

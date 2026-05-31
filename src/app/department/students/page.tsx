@@ -11,6 +11,9 @@ const StudentManagementPage = () => {
     endDate?: string;
     minScore?: string;
     maxScore?: string;
+    khoa?: string;
+    nganh?: string;
+    maLop?: string;
   }>({});
 
   return (

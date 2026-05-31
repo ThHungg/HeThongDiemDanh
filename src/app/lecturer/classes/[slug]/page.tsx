@@ -12,6 +12,8 @@ const DetailClassPage = () => {
   const classCode = useParams().slug as string;
   const router = useRouter();
   const [selectClassCode, setSelectClassCode] = useState<string>(classCode);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [showExportWarning, setShowExportWarning] = useState(false);
   const getDetailClass = async (classCode: string) => {
     const res = await classService.getDetailClassByLecturerService(classCode);
     return res;
@@ -43,6 +45,15 @@ const DetailClassPage = () => {
       },
     });
   };
+
+  const handleExportClick = () => {
+    if (hasUnsavedChanges) {
+      setShowExportWarning(true);
+      return;
+    }
+
+    handleExport({ classCode });
+  };
   return (
     <div className="p-[24px]">
       {/* <button
@@ -70,7 +81,7 @@ const DetailClassPage = () => {
         codeClass={detailClass?.data?.tenLop}
         schedule={detailClass?.data?.thoiKhoaBieuChiTiet}
         showExport={true}
-        onExport={() => handleExport({ classCode })}
+        onExport={handleExportClick}
         addLabel="Thêm lớp học"
         showAdd={false}
         onAdd={() => {}}
@@ -130,6 +141,7 @@ const DetailClassPage = () => {
       <ClassDetailListTable
         classCode={classCode}
         setSelectClassCode={setSelectClassCode}
+        onDirtyChange={setHasUnsavedChanges}
         listStudents={
           detailClass?.data?.danhSachDangKy?.map((student: any) => ({
             id: student.id,
@@ -149,6 +161,56 @@ const DetailClassPage = () => {
           },
         }))}
       />
+      {showExportWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-[520px] p-6">
+            <div className="flex items-start gap-3">
+              <div className="mt-3 text-[#8B0000]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-[16px] font-semibold text-[#1F2937]">
+                  Bạn chưa lưu thay đổi điểm số
+                </h3>
+                <p className="text-[13px] text-[#64748B] mt-1">
+                  Xuất báo cáo lúc này sẽ lấy dữ liệu cũ trên hệ thống.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setShowExportWarning(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-[13px] font-semibold text-[#334155] hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  setShowExportWarning(false);
+                  handleExport({ classCode });
+                }}
+                className="px-4 py-2 rounded-lg bg-[#8B0000] text-white text-[13px] font-semibold hover:bg-[#8B0000]/90"
+              >
+                Xuất bản cũ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -53,9 +53,12 @@ const ContentHeader = ({
           <div className="!text-[14px] text-[#64748B]">
             <div className="mt-1 space-y-1">
               {schedule.map((item, index) => (
-                <p key={index} className="text-[13px]">
+                <span key={index} className="text-[13px] mr-2">
                   Thứ {item.thu}, Tiết {item.tiet}, Phòng: {item.phong}
-                </p>
+                  {index !== schedule.length - 1 && (
+                    <span className="ml-2">-</span>
+                  )}
+                </span>
               ))}
             </div>
           </div>

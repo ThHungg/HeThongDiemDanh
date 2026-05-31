@@ -53,6 +53,17 @@ export const getAllStudentsService = async (
   }
 };
 
+export const parseStudentFiltersWithAIService = async (message: string) => {
+  try {
+    const res = await axiosInstance.post("/ai/students/filters", {
+      message,
+    });
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+};
+
 export const getClassesByStudentId = async (studentId: string) => {
     try {
          const semesterData = localStorage.getItem("semester-data");

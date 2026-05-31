@@ -14,16 +14,21 @@ const Header = () => {
     return res;
   };
 
+  console.log("selectedSemester", selectedSemester);
+
   const { data: Semesters, isLoading } = useQuery({
     queryKey: ["semesters"],
     queryFn: getSemesters,
   });
 
   useEffect(() => {
-    if (Semesters?.data?.length > 0 && !selectedSemester) {
-      setSelectedSemester(Semesters.data[0].ma_ky);
+    if (Semesters?.data?.length > 0) {
+      const defaultSemester = Semesters.data.find(
+        (sem: any) => sem.mac_dinh === 1,
+      );
+      setSelectedSemester(defaultSemester?.ma_ky || Semesters.data[0].ma_ky);
     }
-  }, [Semesters, selectedSemester, setSelectedSemester, queryClient]);
+  }, [Semesters?.data, setSelectedSemester]);
 
   // Invalidate all class queries when semester changes
   useEffect(() => {

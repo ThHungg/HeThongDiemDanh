@@ -16,6 +16,7 @@ import Loading from "@/components/Common/Loading";
 interface ListStudent {
   classCode: string;
   setSelectClassCode: (classCode: string) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
   listStudents?: {
     id: number;
     maSinhVien: string;
@@ -39,6 +40,7 @@ const ClassDetailListTable = ({
   classSession,
   classCode,
   setSelectClassCode,
+  onDirtyChange,
 }: ListStudent) => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -87,6 +89,13 @@ const ClassDetailListTable = ({
       }
     }
   }, [classSession]);
+
+  const hasUnsavedChanges =
+    attendance.attendanceData.length > 0 || Object.keys(noteUpdates).length > 0;
+
+  useEffect(() => {
+    onDirtyChange?.(hasUnsavedChanges);
+  }, [hasUnsavedChanges, onDirtyChange]);
 
   const handleUpdateStudentScore = (scoreId: number, newScore: number) => {
     const note = noteUpdates[scoreId] || "";
