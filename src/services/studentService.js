@@ -27,7 +27,6 @@ const getStudentById = async (studentId) => {
       where: {
         ma_sinh_vien: studentId,
       },
-      //   attributes: ["ma_sinh_vien", "ten", "lop_chuyen_nganh"],
     });
 
     if (!student) {
@@ -45,19 +44,17 @@ const getStudentById = async (studentId) => {
       data: student,
     };
   } catch (e) {
-    return res.status(500).json({
+    return {
       status: "Err",
       code: 500,
       message: "Lỗi hệ thống vui lòng thử lại sau",
-    });
+    };
   }
 };
 
 //Student
 const getClassesByStudent = async (studentId, semester) => {
   try {
-    console.log("studentId", studentId);
-
     // Determine current semester
     const semesterRes = await semesterService.getCurrentSemester();
     const currentSemester = semesterRes?.data?.ma_ky;
@@ -117,6 +114,14 @@ const getClassesByStudent = async (studentId, semester) => {
         },
       },
     });
+
+    if (!classes) {
+      return {
+        status: "Err",
+        code: 404,
+        message: "Không tìm thấy sinh viên",
+      };
+    }
 
     const result = {
       status: "Ok",
@@ -224,136 +229,161 @@ const getAllStudents = async (
     const offset = (pageNumber - 1) * limitNumber;
     const semesterRes = await semesterService.getCurrentSemester();
     const currentSemester = semesterRes?.data?.ma_ky;
+    const semesterKey = semester || currentSemester;
 
-    const whereCondition = {};
-
-    if (search) {
-      const studentIdRegex = /A\d{5}/g;
-      const studentIds = search.match(studentIdRegex);
-
-      if (studentIds && studentIds.length > 0) {
-        whereCondition[Op.or] = [{ ma_sinh_vien: { [Op.in]: studentIds } }];
-      } else {
-        whereCondition[Op.or] = [
-          { ma_sinh_vien: { [Op.like]: `%${search}%` } },
-          { ten: { [Op.like]: `%${search}%` } },
-          { lop_chuyen_nganh: { [Op.like]: `%${search}%` } },
-        ];
-      }
-    }
-
-    if (maLop) {
-      whereCondition.lop_chuyen_nganh = maLop;
-    }
-
-    const queryOptions = {
-      where: whereCondition,
-      attributes: [
-        "ma_sinh_vien",
-        "ten",
-        "lop_chuyen_nganh",
-        "dien_thoai1",
-        "dien_thoai2",
-        "email1",
-        "email2",
-      ],
-      include: [
-        {
-          model: DangKy,
-          as: "dang_ky",
-          required: false,
-          attributes: ["id", "ma_lop_hoc_phan", "ma_ky"],
-          where: {
-            ma_ky: semester || currentSemester,
-          },
-          include: [
-            {
-              model: ChuyenCan,
-              as: "chuyen_can",
-              attributes: ["id", "dang_ky_id", "diem_trung_binh"],
-              required: false,
-            },
-            {
-              model: Tkb,
-              as: "thong_tin_tkb",
-              attributes: [
-                "id",
-                "ma_lop_hoc_phan",
-                "ma_hoc_phan",
-                "ten_lop",
-                "sldk",
-                "suc_chua",
-              ],
-              required: false,
-              include: [
-                {
-                  model: GiangVien,
-                  as: "giang_vien",
-                  attributes: ["ten", "ma_giang_vien"],
-                },
-                {
-                  model: HocPhan,
-                  as: "hoc_phan",
-                  attributes: ["ten_hoc_phan", "ma_hoc_phan"],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          model: DiemDanh,
-          as: "lich_su_diem_danh",
-          attributes: ["id", "buoi_hoc_id", "sinh_vien_id", "diem_so"],
-          required: false,
-          include: [
-            {
-              model: BuoiHoc,
-              as: "buoi_hoc",
-              attributes: ["id", "tkb_id", "ngay_hoc", "trang_thai"],
-              required: false,
-              where:
-                startDate && endDate
-                  ? {
-                      ngay_hoc: {
-                        [Op.between]: [startDate, endDate],
-                      },
-                    }
-                  : undefined,
-            },
-          ],
-        },
-      ],
-      order: [["ma_sinh_vien", "ASC"]],
+    const filterKey = {
+      cacheVersion: "v2",
+      search: search || "",
+      startDate: startDate || "",
+      endDate: endDate || "",
+      minScore: minScore || "",
+      maxScore: maxScore || "",
+      maLop: maLop || "",
     };
-
-    const rows = await SinhVien.findAll(queryOptions);
-
-    let mappedStudents = mapStudents(
-      rows,
-      !!(startDate && endDate),
-      startDate,
-      endDate,
-      minScore,
-      maxScore,
+    const cacheKey = cacheService.CACHE_KEYS.ALL_STUDENTS(
+      semesterKey,
+      pageNumber,
+      limitNumber,
+      filterKey,
     );
 
-    const totalRecords = mappedStudents.length;
-    mappedStudents = mappedStudents.slice(offset, offset + limitNumber);
+    return await cacheService.withCache(cacheKey, async () => {
+      const whereCondition = {};
 
-    const totalPages = Math.ceil(totalRecords / limitNumber);
-    return {
-      status: "Ok",
-      code: 200,
-      data: mappedStudents,
-      pagination: {
-        currentPage: pageNumber,
-        limit: limitNumber,
-        totalRecords: totalRecords,
-        totalPages,
-        hasNextPage: pageNumber < totalPages,
-        hasPrevPage: pageNumber > 1,
-      },
-    };
+      if (search) {
+        const studentIdRegex = /A\d{5}/g;
+        const studentIds = search.match(studentIdRegex);
+
+        if (studentIds && studentIds.length > 0) {
+          whereCondition[Op.or] = [{ ma_sinh_vien: { [Op.in]: studentIds } }];
+        } else {
+          whereCondition[Op.or] = [
+            { ma_sinh_vien: { [Op.like]: `%${search}%` } },
+            { ten: { [Op.like]: `%${search}%` } },
+            { lop_chuyen_nganh: { [Op.like]: `%${search}%` } },
+          ];
+        }
+      }
+
+      if (maLop) {
+        const trimmedMaLop = String(maLop).trim();
+        const hasWildcard =
+          trimmedMaLop.includes("%") || trimmedMaLop.includes("_");
+        console.log("hasWildcard", hasWildcard);
+        whereCondition.lop_chuyen_nganh = hasWildcard
+          ? { [Op.like]: trimmedMaLop }
+          : { [Op.like]: `%${trimmedMaLop}%` };
+      }
+
+      const queryOptions = {
+        where: whereCondition,
+        attributes: [
+          "ma_sinh_vien",
+          "ten",
+          "lop_chuyen_nganh",
+          "dien_thoai1",
+          "dien_thoai2",
+          "email1",
+          "email2",
+        ],
+        include: [
+          {
+            model: DangKy,
+            as: "dang_ky",
+            required: false,
+            attributes: ["id", "ma_lop_hoc_phan", "ma_ky"],
+            where: {
+              ma_ky: semesterKey,
+            },
+            include: [
+              {
+                model: ChuyenCan,
+                as: "chuyen_can",
+                attributes: ["id", "dang_ky_id", "diem_trung_binh"],
+                required: false,
+              },
+              {
+                model: Tkb,
+                as: "thong_tin_tkb",
+                attributes: [
+                  "id",
+                  "ma_lop_hoc_phan",
+                  "ma_hoc_phan",
+                  "ten_lop",
+                  "sldk",
+                  "suc_chua",
+                ],
+                required: false,
+                include: [
+                  {
+                    model: GiangVien,
+                    as: "giang_vien",
+                    attributes: ["ten", "ma_giang_vien"],
+                  },
+                  {
+                    model: HocPhan,
+                    as: "hoc_phan",
+                    attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: DiemDanh,
+            as: "lich_su_diem_danh",
+            attributes: ["id", "buoi_hoc_id", "sinh_vien_id", "diem_so"],
+            required: false,
+            include: [
+              {
+                model: BuoiHoc,
+                as: "buoi_hoc",
+                attributes: ["id", "tkb_id", "ngay_hoc", "trang_thai"],
+                required: false,
+                where:
+                  startDate && endDate
+                    ? {
+                        ngay_hoc: {
+                          [Op.between]: [startDate, endDate],
+                        },
+                      }
+                    : undefined,
+              },
+            ],
+          },
+        ],
+        order: [["ma_sinh_vien", "ASC"]],
+      };
+
+      const rows = await SinhVien.findAll(queryOptions);
+
+      let mappedStudents = mapStudents(
+        rows,
+        !!(startDate && endDate),
+        startDate,
+        endDate,
+        minScore,
+        maxScore,
+      );
+
+      const totalRecords = mappedStudents.length;
+      mappedStudents = mappedStudents.slice(offset, offset + limitNumber);
+
+      const totalPages = Math.ceil(totalRecords / limitNumber);
+      return {
+        status: "Ok",
+        code: 200,
+        data: mappedStudents,
+        pagination: {
+          currentPage: pageNumber,
+          limit: limitNumber,
+          totalRecords: totalRecords,
+          totalPages,
+          hasNextPage: pageNumber < totalPages,
+          hasPrevPage: pageNumber > 1,
+        },
+      };
+    });
   } catch (e) {
     console.error("getAllStudents error:", e);
     return {

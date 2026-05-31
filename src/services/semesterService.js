@@ -22,6 +22,7 @@ const getCurrentSemester = async () => {
         "ma_nam",
         "bat_dau_ky_hoc",
         "ket_thuc_ky_hoc",
+        "mac_dinh",
       ],
     });
 
@@ -31,7 +32,6 @@ const getCurrentSemester = async () => {
       data: currentSemester,
     };
 
-    // Cache for 2 hours
     if (currentSemester) {
       await cacheService.set(
         cacheService.CACHE_KEYS.CURRENT_SEMESTER,
@@ -68,9 +68,12 @@ const getAllSemesters = async () => {
         "ma_nam",
         "bat_dau_ky_hoc",
         "ket_thuc_ky_hoc",
+        "mac_dinh",
       ],
       order: [["bat_dau_ky_hoc", "DESC"]],
     });
+
+    console.log(semesters);
 
     const result = {
       status: "Success",
@@ -78,7 +81,6 @@ const getAllSemesters = async () => {
       data: semesters,
     };
 
-    // Cache for 2 hours
     if (semesters && semesters.length > 0) {
       await cacheService.set(
         cacheService.CACHE_KEYS.ALL_SEMESTERS,
