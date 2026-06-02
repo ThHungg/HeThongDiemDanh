@@ -5,15 +5,18 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSemesterStore } from "@/store/useSemesterStore";
 import { formatClassCode } from "@/utils/formatClassCode";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
   const { selectedSemester, setSelectedSemester } = useSemesterStore();
   const queryClient = useQueryClient();
+  const pathname = usePathname();
   const getSemesters = async () => {
     const res = await classService.getAllSemestersService();
     return res;
   };
 
+  console.log("pathname:", pathname);
   console.log("selectedSemester", selectedSemester);
 
   const { data: Semesters, isLoading } = useQuery({
@@ -73,18 +76,24 @@ const Header = () => {
           </Link>
         )}
         <div className="flex items-center gap-2">
-          <p className="text-[14px] font-medium text-gray-700">Học kỳ:</p>
-          <select
-            value={selectedSemester || ""}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-            className="bg-[#F1F5F9] text-[14px] rounded-lg py-2 px-3 border border-[#E2E8F0] focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer min-w-[180px] font-semibold text-gray-800"
-          >
-            {Semesters?.data?.map((semester: any) => (
-              <option key={semester.ma_ky} value={semester.ma_ky}>
-                {semester.ma_ky} - {semester.ma_nam}
-              </option>
-            ))}
-          </select>
+          {!pathname.startsWith("/lecturer/classes") &&
+            pathname !== "/lecturer/studentadvisor" && (
+              <>
+                <p className="text-[14px] font-medium text-gray-700">Học kỳ:</p>
+
+                <select
+                  value={selectedSemester || ""}
+                  onChange={(e) => setSelectedSemester(e.target.value)}
+                  className="bg-[#F1F5F9] text-[14px] rounded-lg py-2 px-3 border border-[#E2E8F0] focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer min-w-[180px] font-semibold text-gray-800"
+                >
+                  {Semesters?.data?.map((semester: any) => (
+                    <option key={semester.ma_ky} value={semester.ma_ky}>
+                      {semester.ma_ky} - {semester.ma_nam}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
         </div>
 
         <div className="border-l-[1px] border-[#E2E8F0] h-6"></div>
