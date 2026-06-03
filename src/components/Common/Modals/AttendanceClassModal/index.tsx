@@ -83,15 +83,16 @@ const AttendanceClassModal = ({
   });
 
   const classSession = detailClass?.data?.buoi_hoc || [];
+  const attendanceList = attendanceData?.data?.attendance;
 
   // Filter attendance data based on search value
   const filteredAttendanceData = useMemo(() => {
-    if (!attendanceData?.data?.attendance || !searchValue.trim()) {
-      return attendanceData?.data?.attendance || [];
+    if (!attendanceList || !searchValue.trim()) {
+      return attendanceList || [];
     }
 
     const lowerSearchValue = searchValue.toLowerCase().trim();
-    return attendanceData.data.attendance.filter((student: any) => {
+    return attendanceList.filter((student: any) => {
       const maSinhVien = (student.maSinhVien || "").toLowerCase();
       const ten = (student.ten || "").toLowerCase();
       const lopChuyenNganh = (student.lopChuyenNganh || "").toLowerCase();
@@ -102,7 +103,7 @@ const AttendanceClassModal = ({
         lopChuyenNganh.includes(lowerSearchValue)
       );
     });
-  }, [attendanceData?.data?.attendance, searchValue]);
+  }, [attendanceList, searchValue]);
 
   const handleViewScoreDetail = (student: any) => {
     setSelectedStudentScores(student);

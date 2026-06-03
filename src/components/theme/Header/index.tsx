@@ -76,7 +76,7 @@ const Header = () => {
           </Link>
         )}
         <div className="flex items-center gap-2">
-          {!pathname.startsWith("/lecturer/classes") &&
+          {!pathname.startsWith("/lecturer/classes/") &&
             pathname !== "/lecturer/studentadvisor" && (
               <>
                 <p className="text-[14px] font-medium text-gray-700">Học kỳ:</p>
@@ -92,11 +92,10 @@ const Header = () => {
                     </option>
                   ))}
                 </select>
+                <div className="border-l-[1px] border-[#E2E8F0] h-6"></div>
               </>
             )}
         </div>
-
-        <div className="border-l-[1px] border-[#E2E8F0] h-6"></div>
 
         {/* <div className="relative cursor-pointer hover:bg-gray-100 p-2 rounded-full transition-colors">
           <svg

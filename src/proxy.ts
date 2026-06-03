@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { decodeJwt } from "jose";
+import { jwtVerify } from "jose";
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get("refreshToken")?.value;
   const { pathname } = request.nextUrl;
 
@@ -14,7 +14,15 @@ export function proxy(request: NextRequest) {
   }
 
   try {
-    const payload = decodeJwt(token);
+    const refreshTokenSecret = process.env.REFRESH_TOKEN;
+    if (!refreshTokenSecret) {
+      throw new Error("Missing refresh token secret");
+    }
+
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(refreshTokenSecret),
+    );
     const role = payload.role as string;
 
     if (pathname === "/" || pathname === "/login") {
@@ -25,7 +33,7 @@ export function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL("/lecturer/classes", request.url));
       }
       if (role === "Sinh_vien") {
-        return NextResponse.redirect(new URL("/student/classes", request.url));
+        return NextResponse.redirect(new URL("/student", request.url));
       }
       return NextResponse.redirect(new URL("/login", request.url));
     }
@@ -50,7 +58,7 @@ export function proxy(request: NextRequest) {
     }
 
     return NextResponse.next();
-  } catch (e) {
+  } catch {
     const response = NextResponse.redirect(new URL("/login", request.url));
     response.cookies.delete("refreshToken");
     return response;

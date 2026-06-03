@@ -66,11 +66,6 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         }
       };
       fetchNganhList();
-      setNganh("");
-      setMaLop("");
-    } else {
-      setNganhList([]);
-      setMaLopList([]);
     }
   }, [khoa]);
 
@@ -91,9 +86,6 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         }
       };
       fetchMaLopList();
-      setMaLop("");
-    } else {
-      setMaLopList([]);
     }
   }, [khoa, nganh]);
 
@@ -245,7 +237,13 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
             <label className="font-bold text-[13px] text-[#737373]">Khóa</label>
             <select
               value={khoa}
-              onChange={(e) => setKhoa(e.target.value)}
+              onChange={(e) => {
+                setKhoa(e.target.value);
+                setNganh("");
+                setMaLop("");
+                setNganhList([]);
+                setMaLopList([]);
+              }}
               disabled={loadingFilters}
               className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
             >
@@ -264,7 +262,11 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
             </label>
             <select
               value={nganh}
-              onChange={(e) => setNganh(e.target.value)}
+              onChange={(e) => {
+                setNganh(e.target.value);
+                setMaLop("");
+                setMaLopList([]);
+              }}
               disabled={!khoa || loadingFilters}
               className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
             >
