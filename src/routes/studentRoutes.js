@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 const studentController = require("../controllers/studentController");
-const { authMiddleware } = require("../middleware/authMiddleware");
+const {
+  authMiddleware,
+  roleMiddleware,
+} = require("../middleware/authMiddleware");
 
-router.get("/profile/:studentId", studentController.getStudentById);
+router.get("/profile/:studentId", authMiddleware, studentController.getStudentById);
 router.get(
   "/attend/:classCode",
   authMiddleware,
@@ -19,8 +22,17 @@ router.get(
 
 //Department
 //Get All
-router.get("/", studentController.getAllStudents);
-router.get("/:studentId/classes", studentController.getClassesByStudentId);
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware(["Quan_tri", "Thu_ky"]),
+  studentController.getAllStudents,
+);
+router.get(
+  "/:studentId/classes",
+  authMiddleware,
+  studentController.getClassesByStudentId,
+);
 router.get(
   "/attend/:classCode/:studentId",
   authMiddleware,

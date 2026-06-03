@@ -79,8 +79,7 @@ const getAttendanceByClass = async (classCode) => {
       return cachedResult;
     }
 
-    // const today = new Date().toLocaleDateString("en-CA");
-    const today = "2026-04-25";
+    const today = new Date().toLocaleDateString("en-CA");
     const tkb = await Tkb.findOne({
       where: {
         ma_lop_hoc_phan: classCode,
