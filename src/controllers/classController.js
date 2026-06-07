@@ -91,8 +91,6 @@ const getAllClasses = async (req, res) => {
   }
 };
 
-
-
 const getCurrentClasses = async (req, res) => {
   try {
     const lecturerId = req.user.code;
@@ -134,10 +132,82 @@ const getAllLecturer = async (req, res) => {
     });
   }
 };
+
+const getStudentsByAdvisor = async (req, res) => {
+  try {
+    const advisorId = req.user.code;
+    const { ma_lop, semester } = req.query;
+
+    if (!advisorId) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "Vui lòng cung cấp mã cố vấn học tập",
+      });
+    }
+
+    if (!ma_lop) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "Vui lòng chọn lớp",
+      });
+    }
+
+    const response = await classService.getStudentsByAdvisor(
+      advisorId,
+      ma_lop,
+      semester,
+    );
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.error("getStudentsByAdvisor controller error:", e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
+const getClassesByAdvisor = async (req, res) => {
+  try {
+    const advisorId = req.user.code;
+    const semester = req.query.semester;
+    if (!advisorId) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "Vui lòng cung cấp mã cố vấn học tập",
+      });
+    }
+    const response = await classService.getClassesByAdvisor(
+      advisorId,
+      semester,
+    );
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
   getCurrentClasses,
   getAllLecturer,
+  getStudentsByAdvisor,
+  getClassesByAdvisor,
 };

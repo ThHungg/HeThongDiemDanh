@@ -32,4 +32,17 @@ router.get(
 );
 
 router.get("/getAllLecturer", authMiddleware, classController.getAllLecturer);
+
+//Advisor
+router.get(
+  "/studentbyAdvisor",
+  authMiddleware,
+  classController.getStudentsByAdvisor,
+);
+
+router.get(
+  "/getClassesByAdvisor",
+  authMiddleware,
+  classController.getClassesByAdvisor,
+);
 module.exports = router;

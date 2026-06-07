@@ -6,7 +6,11 @@ const {
   roleMiddleware,
 } = require("../middleware/authMiddleware");
 
-router.get("/profile/:studentId", authMiddleware, studentController.getStudentById);
+router.get(
+  "/profile/:studentId",
+  authMiddleware,
+  studentController.getStudentById,
+);
 router.get(
   "/attend/:classCode",
   authMiddleware,
@@ -45,10 +49,5 @@ router.get(
   studentController.getCoVanFilterData,
 );
 
-router.get(
-  "/studentbyAdvisor",
-  authMiddleware,
-  studentController.getStudentsByAdvisor,
-);
 
 module.exports = router;

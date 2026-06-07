@@ -22,7 +22,6 @@ const emailWorker = new Worker(
     },
   },
 );
-
 emailWorker.on("failed", (job, err) => {
   console.log("Lỗi gửi mail", job.id, err.message);
 });

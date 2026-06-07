@@ -1,11 +1,18 @@
 const redis = require("../config/redis");
 
 // Cache TTL constants (in seconds)
+// const CACHE_TTL = {
+//   SHORT: 5 * 60,
+//   MEDIUM: 30 * 60,
+//   LONG: 2 * 60 * 60,
+//   VERY_LONG: 24 * 60 * 60,
+// };
+
 const CACHE_TTL = {
-  SHORT: 5 * 60, // 5 minutes - for frequently changing data
-  MEDIUM: 30 * 60, // 30 minutes - for moderately changing data
-  LONG: 2 * 60 * 60, // 2 hours - for static data like semesters
-  VERY_LONG: 24 * 60 * 60, // 24 hours - for rarely changing data
+  SHORT: 0,
+  MEDIUM: 0,
+  LONG: 0,
+  VERY_LONG: 0,
 };
 
 // Cache key patterns

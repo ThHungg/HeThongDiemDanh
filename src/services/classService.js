@@ -4,6 +4,7 @@ const {
   mapClassInfo,
   mapSessions,
   mapStudentClasses,
+  mapStudents,
 } = require("../mappers/mapperData");
 const {
   Tkb,
@@ -24,6 +25,7 @@ const { sendEmailToStudent, sendEmail } = require("../utils/sendEmail");
 const semesterService = require("./semesterService");
 const cacheService = require("./cacheService");
 const { emailQueue } = require("./mailQueueService");
+const CoVanHocTap = require("../models/CoVanHocTap");
 
 const getClassesByLecturer = async (lecturerId, semester) => {
   try {
@@ -627,10 +629,193 @@ const getAllLecturer = async () => {
   }
 };
 
+const getStudentsByAdvisor = async (advisorId, maLop, semester) => {
+  try {
+    let currentSemester;
+    if (semester) {
+      currentSemester = semester;
+    } else {
+      const semesterRes = await semesterService.getCurrentSemester();
+      currentSemester = semesterRes?.data?.ma_ky;
+    }
+
+    if (!currentSemester) {
+      return {
+        status: "Err",
+        code: 404,
+        message: "Không tìm thấy kỳ học hiện tại",
+      };
+    }
+
+    // Verify advisor manages this class
+    const advisor = await CoVanHocTap.findOne({
+      where: {
+        ma_giang_vien: advisorId,
+        ma_lop: maLop,
+        ma_ky: currentSemester,
+      },
+    });
+
+    if (!advisor) {
+      return {
+        status: "Err",
+        code: 403,
+        message: "Bạn không có quyền quản lý lớp này",
+      };
+    }
+
+    const students = await SinhVien.findAll({
+      where: {
+        lop_chuyen_nganh: maLop,
+      },
+      attributes: [
+        "id",
+        "ma_sinh_vien",
+        "ten",
+        "lop_chuyen_nganh",
+        "dien_thoai1",
+        "dien_thoai2",
+        "email1",
+        "email2",
+      ],
+      include: [
+        {
+          model: DangKy,
+          as: "dang_ky",
+          required: false,
+          attributes: ["id", "ma_lop_hoc_phan", "ma_ky"],
+          where: {
+            ma_ky: currentSemester,
+          },
+          include: [
+            {
+              model: ChuyenCan,
+              as: "chuyen_can",
+              attributes: ["id", "dang_ky_id", "diem_trung_binh"],
+              required: false,
+            },
+            {
+              model: Tkb,
+              as: "thong_tin_tkb",
+              attributes: [
+                "id",
+                "ma_lop_hoc_phan",
+                "ma_hoc_phan",
+                "ten_lop",
+                "sldk",
+                "suc_chua",
+              ],
+              required: false,
+              include: [
+                {
+                  model: GiangVien,
+                  as: "giang_vien",
+                  attributes: ["ten", "ma_giang_vien"],
+                },
+                {
+                  model: HocPhan,
+                  as: "hoc_phan",
+                  attributes: ["ten_hoc_phan", "ma_hoc_phan"],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: DiemDanh,
+          as: "lich_su_diem_danh",
+          attributes: ["id", "buoi_hoc_id", "sinh_vien_id", "diem_so"],
+          required: false,
+          include: [
+            {
+              model: BuoiHoc,
+              as: "buoi_hoc",
+              attributes: ["id", "tkb_id", "ngay_hoc", "trang_thai"],
+              required: false,
+            },
+          ],
+        },
+      ],
+      order: [["ma_sinh_vien", "ASC"]],
+    });
+
+    if (!students || students.length === 0) {
+      return {
+        status: "Ok",
+        code: 200,
+        data: [],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          totalRecords: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
+    }
+
+    // Map students data
+    const mappedStudents = mapStudents(students, false);
+
+    return {
+      status: "Ok",
+      code: 200,
+      data: mappedStudents,
+      pagination: {
+        currentPage: 1,
+        limit: 10,
+        totalRecords: mappedStudents.length,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+      },
+    };
+  } catch (e) {
+    console.error("getStudentsByAdvisor error:", e);
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
+const getClassesByAdvisor = async (advisorId, semester) => {
+  try {
+    let currentSemester;
+    if (semester) {
+      currentSemester = semester;
+    } else {
+      const semesterRes = await semesterService.getCurrentSemester();
+      currentSemester = semesterRes?.data?.ma_ky;
+    }
+    const advisors = await CoVanHocTap.findAll({
+      where: {
+        ma_giang_vien: advisorId,
+        ma_ky: currentSemester,
+      },
+    });
+    return {
+      status: "Ok",
+      code: 200,
+      data: advisors,
+    };
+  } catch (e) {
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
   getAllClasses,
   getCurrentClasses,
   getAllLecturer,
+  getStudentsByAdvisor,
+  getClassesByAdvisor,
 };

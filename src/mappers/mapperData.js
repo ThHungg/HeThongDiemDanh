@@ -92,7 +92,6 @@ const mapSessions = (sessions) => {
 
 //Student
 const mapStudentClasses = (studentData) => {
-  console.log("studentData", studentData);
   return {
     maSinhVien: studentData.ma_sinh_vien,
     ten: studentData.ten,

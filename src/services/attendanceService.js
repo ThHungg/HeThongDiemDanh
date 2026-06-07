@@ -137,7 +137,6 @@ const getAttendanceByClass = async (classCode) => {
     }
     if (newRecords.length > 0) {
       await DiemDanh.bulkCreate(newRecords, { ignoreDuplicates: true });
-      // Tính lại điểm trung bình sau khi auto-assign
       await calculateAndUpdateChuyenCan(classCode);
     }
 
