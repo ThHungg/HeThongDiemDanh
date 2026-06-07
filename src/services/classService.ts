@@ -101,3 +101,40 @@ export const getAllLecturerService = async () => {
     throw e;
   }
 }
+
+
+//Advisor
+export const getStudentsByAdvisorService = async (maLop: string, semester?: string) => {
+  try {
+    const semesterParam = semester || localStorage.getItem("semester-data")
+      ? JSON.parse(localStorage.getItem("semester-data") || "{}").state?.selectedSemester
+      : "";
+    
+    const res = await axiosInstance.get("/classes/studentbyAdvisor", {
+      params: {
+        ma_lop: maLop,
+        semester: semesterParam,
+      },
+    });
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export const getClassesByAdvisorService = async (semester?: string) => {
+  try {
+    const semesterParam = semester || localStorage.getItem("semester-data")
+      ? JSON.parse(localStorage.getItem("semester-data") || "{}").state?.selectedSemester
+      : "";
+    
+    const res = await axiosInstance.get("/classes/getClassesByAdvisor", {
+      params: {
+        semester: semesterParam,
+      },
+    });
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}

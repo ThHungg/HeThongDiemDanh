@@ -4,12 +4,15 @@ import SendEmailModal from "@/components/Common/Modals/SendEmailModal";
 import Pagination from "@/components/Common/Pagination";
 import { memo, useState, useMemo, useEffect } from "react";
 import * as studentService from "@/services/studentService";
+import * as classService from "@/services/classService";
 import { useQuery } from "@tanstack/react-query";
 import isStudentRole from "@/utils/isStudent";
 import Loading from "@/components/Common/Loading";
 
 interface StudentsTableProps {
   searchValue?: string;
+  selectedClass: string;
+  semester: string;
 }
 
 interface StudentData {
@@ -19,7 +22,11 @@ interface StudentData {
   email2: string;
 }
 
-const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
+const StudentAdvisorTable = ({
+  searchValue = "",
+  selectedClass = "",
+  semester = "",
+}: StudentsTableProps) => {
   const [isSelectedStudentId, setIsSelectedStudentId] = useState("");
   const [openAttendanceDetail, setOpenAttendanceDetail] = useState(false);
   const [openBulkEmailModal, setOpenBulkEmailModal] = useState(false);
@@ -33,18 +40,30 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
 
   const isStudent = useMemo(() => isStudentRole(), []);
 
-  const getStudentsByAdvisor = async () => {
-    const res = await studentService.getStudentsByAdvisorService();
+  const getStudentsByAdvisor = async (selectedClass: string) => {
+    if (!selectedClass) return { data: [] };
+    const res = await classService.getStudentsByAdvisorService(
+      selectedClass,
+      semester,
+    );
     return res;
   };
-
+  console.log("selectedClass", selectedClass);
   const {
     data: allStudents,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["advisor-students", page, limit, searchValue],
-    queryFn: () => getStudentsByAdvisor(),
+    queryKey: [
+      "advisor-students",
+      selectedClass,
+      semester,
+      page,
+      limit,
+      searchValue,
+    ],
+    queryFn: () => getStudentsByAdvisor(selectedClass),
+    enabled: !!selectedClass,
   });
 
   const students = useMemo(() => {
@@ -53,11 +72,15 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
 
     return allData.filter(
       (student: any) =>
-        student.maSinhVien.toLowerCase().includes(searchValue.toLowerCase()) ||
-        student.ten.toLowerCase().includes(searchValue.toLowerCase()) ||
-        student.lopChuyenNganh
-          .toLowerCase()
-          .includes(searchValue.toLowerCase()),
+        (student.maSinhVien?.toLowerCase() || "").includes(
+          searchValue.toLowerCase(),
+        ) ||
+        (student.ten?.toLowerCase() || "").includes(
+          searchValue.toLowerCase(),
+        ) ||
+        (student.lopChuyenNganh?.toLowerCase() || "").includes(
+          searchValue.toLowerCase(),
+        ),
     );
   }, [allStudents?.data, searchValue]);
 
@@ -101,17 +124,13 @@ const StudentAdvisorTable = ({ searchValue = "" }: StudentsTableProps) => {
     return cached;
   }, [paginatedStudents]);
 
-  // Calculate student count per class using useMemo instead of useEffect
-  const classStudentCountMemo = useMemo(() => {
-    const counts: { [key: string]: number } = {};
-    if (students && students.length > 0) {
-      students.forEach((student: any) => {
-        const className = student.lopChuyenNganh;
-        counts[className] = (counts[className] || 0) + 1;
-      });
-    }
-    return counts;
-  }, [students]);
+  if (!selectedClass) {
+    return (
+      <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 p-8 text-center text-gray-500">
+        Vui lòng chọn một lớp để xem danh sách sinh viên
+      </div>
+    );
+  }
 
   const handleItemsPerPageChange = (newLimit: number) => {
     setLimit(newLimit);

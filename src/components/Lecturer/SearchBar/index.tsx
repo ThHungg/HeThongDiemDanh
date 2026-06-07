@@ -1,12 +1,32 @@
 "use client";
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 
 interface SearchBarProps {
   onSearchChange?: (search: string) => void;
+  onClassChange?: (classCode: string) => void;
+  classes?: Array<{ id: number; ma_lop: string }>;
+  selectedClass?: string;
+  setSelectedClass?: (classCode: string) => void;
+  semester?: string;
 }
 
-const SearchBar = ({ onSearchChange }: SearchBarProps) => {
+const SearchBar = ({
+  onSearchChange,
+  onClassChange,
+  classes = [],
+  selectedClass = "",
+  setSelectedClass,
+  semester,
+}: SearchBarProps) => {
   const [searchInput, setSearchInput] = useState("");
+
+  // Auto-select lớp đầu tiên khi classes load hoặc kỳ học thay đổi
+  useEffect(() => {
+    if (classes.length > 0) {
+      setSelectedClass?.(classes[0].ma_lop);
+      onClassChange?.(classes[0].ma_lop);
+    }
+  }, [classes, semester, setSelectedClass, onClassChange]);
 
   const handleSearchChange = (value: string) => {
     setSearchInput(value);
@@ -21,6 +41,28 @@ const SearchBar = ({ onSearchChange }: SearchBarProps) => {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
       <div className="flex items-center gap-3">
+        {/* Class filter dropdown */}
+        {classes.length > 0 && (
+          <select
+            value={selectedClass}
+            onChange={(e) => {
+              onClassChange?.(e.target.value);
+              setSelectedClass?.(e.target.value);
+            }}
+            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B0000] focus:border-transparent text-[14px] bg-white min-w-[150px]"
+          >
+            <option value="">-- Chọn lớp --</option>
+            {classes.map((cls) => {
+              return (
+                <option key={cls.id} value={cls.ma_lop}>
+                  {cls.ma_lop}
+                </option>
+              );
+            })}
+          </select>
+        )}
+
+        {/* Search input */}
         <div className="flex-1 relative">
           <svg
             className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"

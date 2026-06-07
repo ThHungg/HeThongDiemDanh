@@ -76,25 +76,24 @@ const Header = () => {
           </Link>
         )}
         <div className="flex items-center gap-2">
-          {!pathname.startsWith("/lecturer/classes/") &&
-            pathname !== "/lecturer/studentadvisor" && (
-              <>
-                <p className="text-[14px] font-medium text-gray-700">Học kỳ:</p>
+          {!pathname.startsWith("/lecturer/classes/") && (
+            <>
+              <p className="text-[14px] font-medium text-gray-700">Học kỳ:</p>
 
-                <select
-                  value={selectedSemester || ""}
-                  onChange={(e) => setSelectedSemester(e.target.value)}
-                  className="bg-[#F1F5F9] text-[14px] rounded-lg py-2 px-3 border border-[#E2E8F0] focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer min-w-[180px] font-semibold text-gray-800"
-                >
-                  {Semesters?.data?.map((semester: any) => (
-                    <option key={semester.ma_ky} value={semester.ma_ky}>
-                      {semester.ma_ky} - {semester.ma_nam}
-                    </option>
-                  ))}
-                </select>
-                <div className="border-l-[1px] border-[#E2E8F0] h-6"></div>
-              </>
-            )}
+              <select
+                value={selectedSemester || ""}
+                onChange={(e) => setSelectedSemester(e.target.value)}
+                className="bg-[#F1F5F9] text-[14px] rounded-lg py-2 px-3 border border-[#E2E8F0] focus:outline-none focus:ring-1 focus:ring-[#8B0000] cursor-pointer min-w-[180px] font-semibold text-gray-800"
+              >
+                {Semesters?.data?.map((semester: any) => (
+                  <option key={semester.ma_ky} value={semester.ma_ky}>
+                    {semester.ma_ky} - {semester.ma_nam}
+                  </option>
+                ))}
+              </select>
+              <div className="border-l-[1px] border-[#E2E8F0] h-6"></div>
+            </>
+          )}
         </div>
 
         {/* <div className="relative cursor-pointer hover:bg-gray-100 p-2 rounded-full transition-colors">
