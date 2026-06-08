@@ -62,7 +62,7 @@ const sendEmailToStudent = async (
 
           <p>Xin chào em,</p>
 
-          <div style="white-space: pre-wrap;">
+          <div >
             ${content}
           </div>
 
@@ -70,7 +70,7 @@ const sendEmailToStudent = async (
             <strong>Lớp học phần:</strong> ${classCode}
           </p>
 
-          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+          <hr style="border: none; border-top: 1px solid #eee; " />
 
           <p style="margin: 0;">Trân trọng,</p>
           <p style="margin: 0; font-weight: bold;">Khoa Công nghệ Thông tin - Trường Đại học Thăng Long</p>

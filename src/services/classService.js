@@ -37,7 +37,6 @@ const getClassesByLecturer = async (lecturerId, semester) => {
       currentSemester = semesterRes?.data?.ma_ky;
     }
 
-    // Check cache first
     const cacheKey = cacheService.CACHE_KEYS.LECTURER_CLASSES(
       lecturerId,
       currentSemester,
@@ -87,7 +86,6 @@ const getClassesByLecturer = async (lecturerId, semester) => {
       data: transformedClasses,
     };
 
-    // Cache for 30 minutes
     await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.MEDIUM);
 
     return result;
@@ -126,7 +124,7 @@ const getClassByLecturerAndId = async (lecturerId, classCode) => {
           model: DangKy,
           as: "danh_sach_dang_ky",
           attributes: ["id", "sinh_vien_id"],
-          required: false, // LEFT JOIN
+          required: false,
           include: [
             {
               model: SinhVien,
@@ -259,7 +257,6 @@ const getAllClasses = async (options = {}) => {
       currentSemester = semesterRes?.data?.ma_ky;
     }
 
-    // Check cache first - include pagination and filters in cache key
     const cacheKey = cacheService.CACHE_KEYS.ALL_CLASSES(
       currentSemester,
       page,
@@ -274,17 +271,14 @@ const getAllClasses = async (options = {}) => {
 
     const whereConditions = [];
 
-    // Add semester condition
     if (currentSemester) {
       whereConditions.push({ ma_ky: currentSemester });
     }
 
-    // Add lecturer filter
     if (lecturerId) {
       whereConditions.push({ ma_giang_vien: lecturerId });
     }
 
-    // Build search conditions
     const searchConditions = [];
     if (searchText) {
       searchConditions.push({
@@ -298,13 +292,11 @@ const getAllClasses = async (options = {}) => {
 
     const offset = (page - 1) * limit;
 
-    // Query 1: Count total distinct classes
     const count = await Tkb.count({
       where,
       distinct: true,
     });
 
-    // Query 2: Fetch all rows (no limit here, need to dedupe manually)
     const allRows = await Tkb.findAll({
       where,
       attributes: [
@@ -358,7 +350,6 @@ const getAllClasses = async (options = {}) => {
     });
     let uniqueRows = Array.from(uniqueClassesMap.values());
 
-    // Apply search filter on client side for associated table searches
     if (searchText) {
       uniqueRows = uniqueRows.filter((row) => {
         const searchLower = searchText.toLowerCase();
@@ -424,7 +415,6 @@ const getAllClasses = async (options = {}) => {
       },
     };
 
-    // Cache for 30 minutes
     await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.MEDIUM);
 
     return result;
@@ -456,17 +446,14 @@ const getCurrentClasses = async (lecturerId) => {
     let currentMinute = String(now.getMinutes()).padStart(2, "0");
     let currentTime = `${currentHour}:${currentMinute}`;
 
-    // Lấy thứ hiện tại (1-8, trong đó 8=Chủ nhật, 1=Thứ 2)
     let dayOfWeek = now.getDay();
     let currentDay = dayOfWeek === 0 ? 8 : dayOfWeek + 1;
 
-    // ============ HARD CODE FOR TESTING ============
-    currentTime = "12:30"; // Uncomment để test - Sẽ match tiết 3-6
-    currentDay = 4; // Uncomment để test vào Thứ 2
+    currentTime = "10:30";
+    currentDay = 2;
 
-    // currentTime = "14:30"; // Uncomment để test - Sẽ match tiết 6-8
-    // currentDay = 4; // Uncomment để test vào Thứ 4
-    // ============ END HARD CODE ============
+    // currentTime = "14:30";
+    // currentDay = 4;
 
     const semesterRes = await semesterService.getCurrentSemester();
     const currentSemester = semesterRes?.data?.ma_ky;
@@ -479,13 +466,11 @@ const getCurrentClasses = async (lecturerId) => {
       };
     }
 
-    // Lấy tất cả Ca Học để mapping
     const allCaHoc = await CaHoc.findAll({
       attributes: ["id", "gio_bat_dau", "gio_ket_thuc", "ten_ca"],
       raw: true,
     });
 
-    // Tạo mapping từ id đến thông tin ca học
     const caHocMap = {};
     allCaHoc.forEach((ca) => {
       caHocMap[ca.id] = ca;
@@ -524,24 +509,19 @@ const getCurrentClasses = async (lecturerId) => {
       order: [["id", "DESC"]],
     });
 
-    // Xử lý để thêm thông tin ca học đang diễn ra
     const classesWithCurrentSession = classes
       .map((cls) => {
         let currentCaHoc = null;
 
-        // Kiểm tra từng tiết học xem cái nào đang diễn ra
         if (
           cls.thoi_khoa_bieu_chi_tiet &&
           cls.thoi_khoa_bieu_chi_tiet.length > 0
         ) {
-          // Kiểm tra thứ trước
           const matchedSchedule = cls.thoi_khoa_bieu_chi_tiet.find((tiet) => {
-            // Kiểm tra xem thứ có match không
             if (tiet.thu !== currentDay) {
               return false;
             }
 
-            // Lấy thông tin ca học bắt đầu và kết thúc
             const caBatDau = caHocMap[tiet.bat_dau];
             const caKetThuc = caHocMap[tiet.ket_thuc];
 
@@ -549,7 +529,6 @@ const getCurrentClasses = async (lecturerId) => {
               return false;
             }
 
-            // So sánh thời gian: giờ hiện tại có nằm trong khoảng từ ca bắt đầu đến ca kết thúc không
             const gioBatDau = caBatDau.gio_bat_dau;
             const gioKetThuc = caKetThuc.gio_ket_thuc;
 
@@ -580,10 +559,9 @@ const getCurrentClasses = async (lecturerId) => {
           thuHienTai: currentDay,
         };
       })
-      .filter((classData) => classData.caCaHocHienTai !== null); // ← Thêm dòng này
-
+      .filter((classData) => classData.caCaHocHienTai !== null);
     return {
-      status: "Ok",
+      status: "Ok 123",
       code: 200,
       data: classesWithCurrentSession,
     };
@@ -598,7 +576,6 @@ const getCurrentClasses = async (lecturerId) => {
 
 const getAllLecturer = async () => {
   try {
-    // Check cache first
     const cacheKey = cacheService.CACHE_KEYS.ALL_LECTURERS;
     const cachedResult = await cacheService.get(cacheKey);
     if (cachedResult) {
@@ -616,7 +593,6 @@ const getAllLecturer = async () => {
       data: lecturers,
     };
 
-    // Cache for 2 hours
     await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.LONG);
 
     return result;
@@ -647,7 +623,6 @@ const getStudentsByAdvisor = async (advisorId, maLop, semester) => {
       };
     }
 
-    // Verify advisor manages this class
     const advisor = await CoVanHocTap.findOne({
       where: {
         ma_giang_vien: advisorId,

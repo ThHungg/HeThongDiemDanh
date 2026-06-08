@@ -2,7 +2,6 @@ const { SinhVien } = require("../models");
 const { emailQueue } = require("./mailQueueService");
 const { Op } = require("sequelize");
 
-
 const sendEmail = async (listMsv, subject, content, classCode) => {
   try {
     if (!listMsv || !subject || !content) {
@@ -58,9 +57,10 @@ const sendEmail = async (listMsv, subject, content, classCode) => {
           </h2>
           <p>Xin chào em,</p>
 
-          <div style="white-space: pre-wrap; background-color: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #8B0000;">
+          <div >
             ${content}
           </div>
+
 
           <p style="font-size: 13px; color: #666; margin-top: 15px;">
             <strong>Lớp học phần:</strong> ${classCode}

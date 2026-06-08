@@ -1,6 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Tool definition to extract student filter params
 const filterAllStudentsTool = {
   name: "get_all_students_filters",
   description:
@@ -57,26 +56,34 @@ const model = genAI
     })
   : null;
 
-class AIService {
-  static async parseQueryToJSON(userMessage) {
-    if (!model) {
-      throw new Error("GEMINI_API_KEY is not configured");
-    }
-
-    try {
-      const result = await model.generateContent(userMessage);
-      const response = result.response;
-
-      const functionCall = response.functionCalls()?.[0];
-      if (functionCall && functionCall.name === "get_all_students_filters") {
-        return functionCall.args;
-      }
-      return null;
-    } catch (error) {
-      console.error("AI Service error:", error);
-      throw new Error("Tro ly AI dang ban, vui long thu lai sau.");
-    }
+const AIService = async (userMessage) => {
+  console.log("model", model);
+  if (!model) {
+    console.log(model);
+    return {
+      status: "Err",
+      message: "Tro ly AI dang ban, vui long thu lai sau.",
+    };
   }
-}
 
-module.exports = AIService;
+  try {
+    const result = await model.generateContent(userMessage);
+    const response = result.response;
+    console.log("result", result);
+    console.log("response", response);
+
+    const functionCall = response.functionCalls()?.[0];
+    if (functionCall && functionCall.name === "get_all_students_filters") {
+      return functionCall.args;
+    }
+    console.log("functionCall", functionCall.args);
+    return null;
+  } catch (error) {
+    return {
+      status: "Err",
+      message: "Tro ly AI dang ban, vui long thu lai sau.",
+    };
+  }
+};
+
+module.exports = { AIService };

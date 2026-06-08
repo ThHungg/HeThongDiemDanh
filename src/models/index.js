@@ -7,13 +7,8 @@ const TkbChiTiet = require("./ThoiKhoaBieuChiTiet");
 const DangKy = require("./DangKy");
 const BuoiHoc = require("./BuoiHoc");
 const DiemDanh = require("./DiemDanh");
-const ChuyenCan = require("./ChuyenCan"); // Đảm bảo bạn đã tạo file này
+const ChuyenCan = require("./ChuyenCan"); 
 const CaHoc = require("./CaHoc");
-
-/**
- * 1. QUẢN LÝ THỜI KHÓA BIỂU (TKB) TỔNG QUAN
- * Các thực thể chính liên kết để tạo ra một lớp học phần
- */
 
 // Học kỳ - Tkb (1 - n): Một học kỳ có nhiều lớp học phần
 Ky.hasMany(Tkb, {
@@ -47,10 +42,6 @@ Tkb.belongsTo(HocPhan, {
   as: "hoc_phan",
 });
 
-/**
- * 2. CHI TIẾT LỊCH HỌC VÀ ĐĂNG KÝ
- * Phân rã TKB tổng thành lịch hàng tuần và danh sách sinh viên
- */
 
 // Tkb tổng - Tkb chi tiết (1 - n): Một lớp học phần có nhiều tiết học (Thứ/Ca) trong tuần
 Tkb.hasMany(TkbChiTiet, {
@@ -75,11 +66,6 @@ DangKy.belongsTo(Tkb, {
   as: "thong_tin_tkb",
 });
 
-/**
- * 3. HỆ THỐNG BUỔI HỌC THỰC TẾ (SESSIONS)
- * Phẳng hóa lịch học từ TKB hàng tuần sang các ngày cụ thể trong năm
- */
-
 // Tkb tổng - Buổi học (1 - n): Một lớp học phần có nhiều buổi học thực tế theo ngày
 Tkb.hasMany(BuoiHoc, { foreignKey: "tkb_id", as: "cac_buoi_hoc" });
 BuoiHoc.belongsTo(Tkb, { foreignKey: "tkb_id", as: "thoi_khoa_bieu" });
@@ -93,11 +79,6 @@ BuoiHoc.belongsTo(TkbChiTiet, {
   foreignKey: "tkb_chi_tiet_id",
   as: "chi_tiet_tiet_hoc",
 });
-
-/**
- * 4. HỆ THỐNG ĐIỂM DANH (ATTENDANCE)
- * Lưu vết sự hiện diện của sinh viên trong từng buổi học
- */
 
 // Buổi học - Điểm danh (1 - n): Một buổi học có danh sách điểm danh cho cả lớp
 BuoiHoc.hasMany(DiemDanh, {

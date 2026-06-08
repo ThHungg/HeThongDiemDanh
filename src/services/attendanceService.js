@@ -49,10 +49,7 @@ const calculateAndUpdateChuyenCan = async (classCode, transaction = null) => {
           0,
         );
         const avg = (totalScore / allScores.length).toFixed(2);
-        console.log(avg);
-        console.log("totalScore", totalScore);
 
-        // Thử update trước, nếu không có record thì tạo mới
         const [updated] = await ChuyenCan.update(
           { diem_trung_binh: avg },
           { where: { dang_ky_id: dk.id }, transaction },
@@ -72,7 +69,6 @@ const calculateAndUpdateChuyenCan = async (classCode, transaction = null) => {
 
 const getAttendanceByClass = async (classCode) => {
   try {
-    // Check cache first
     const cacheKey = cacheService.CACHE_KEYS.ATTENDANCE_BY_CLASS(classCode);
     const cachedResult = await cacheService.get(cacheKey);
     if (cachedResult) {
@@ -189,7 +185,6 @@ const getAttendanceByClass = async (classCode) => {
       },
     };
 
-    // Cache for 5 minutes (short TTL for frequently changing attendance data)
     await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.SHORT);
 
     return result;
@@ -206,7 +201,6 @@ const getAttendanceByClass = async (classCode) => {
 const updateAttendanceByClass = async (attendanceData) => {
   const t = await sequelize.transaction();
   try {
-    console.log("attendanceData", attendanceData);
     const update = attendanceData.map((item) => {
       return DiemDanh.update(
         {
@@ -274,12 +268,10 @@ const updateAttendanceByClass = async (attendanceData) => {
       .filter((dk) => dk !== null)
       .map((dk) => dk.id);
 
-    // Unique dangKyIds để tránh tính lại nhiều lần cho cùng 1 sinh viên
     const uniqueDangKyIds = [...new Set(dangKyIds)];
 
     console.log("uniqueDangKyIds :", uniqueDangKyIds);
 
-    // Collect class code for cache invalidation
     let classCodeForCache = null;
 
     for (const dkId of uniqueDangKyIds) {
@@ -292,7 +284,6 @@ const updateAttendanceByClass = async (attendanceData) => {
       const tkbId = attendanceRecord?.buoi_hoc?.thoi_khoa_bieu?.id;
       const sinhVienId = attendanceRecord?.sinh_vien_id;
 
-      // Get class code for cache invalidation
       if (
         !classCodeForCache &&
         attendanceRecord?.buoi_hoc?.thoi_khoa_bieu?.ma_lop_hoc_phan
@@ -321,7 +312,6 @@ const updateAttendanceByClass = async (attendanceData) => {
       const avg = allScores.length > 0 ? totalScore / allScores.length : 0;
       console.log();
 
-      // Thử update trước, nếu không có record thì tạo mới
       const [updated] = await ChuyenCan.update(
         { diem_trung_binh: avg.toFixed(2) },
         { where: { dang_ky_id: dkId }, transaction: t },
@@ -358,10 +348,9 @@ const updateAttendanceByClass = async (attendanceData) => {
   }
 };
 
-// ============ EXPORT EXCEL ============
+
 const exportAttendanceToExcel = async (classCode) => {
   try {
-    // Lấy dữ liệu sinh viên và điểm danh
     const response = await getAttendanceByClass(classCode);
 
     if (response.status !== "Ok") {
@@ -371,11 +360,9 @@ const exportAttendanceToExcel = async (classCode) => {
     const attendance = response.data.attendance;
     const pastSessions = response.data.pastSessions || [];
 
-    // Tạo workbook
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Điểm danh");
 
-    // Tạo header với dynamic columns cho mỗi buổi học
     const columns = [
       { header: "STT", key: "stt", width: 5 },
       { header: "Mã SV", key: "ma_sinh_vien", width: 12 },
@@ -391,7 +378,6 @@ const exportAttendanceToExcel = async (classCode) => {
 
     worksheet.columns = columns;
 
-    // Style header
     const headerRow = worksheet.getRow(1);
     headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
     headerRow.fill = {
@@ -401,10 +387,8 @@ const exportAttendanceToExcel = async (classCode) => {
     };
     headerRow.alignment = { horizontal: "center", vertical: "center" };
 
-    // Thêm dữ liệu
     let rowNumber = 2;
     attendance.forEach((item, index) => {
-      // Tạo map để quick lookup điểm theo buoiHocId
       const diemMap = {};
       if (item.lichSuDiemDanh) {
         item.lichSuDiemDanh.forEach((d) => {
@@ -419,7 +403,6 @@ const exportAttendanceToExcel = async (classCode) => {
         lop_chuyen_nganh: item.lopChuyenNganh,
       };
 
-      // Thêm điểm cho mỗi buổi học
       pastSessions.forEach((session) => {
         const diem = diemMap[session.id];
         rowData[`session_${session.id}`] = diem !== undefined ? diem : "";
@@ -429,10 +412,8 @@ const exportAttendanceToExcel = async (classCode) => {
 
       const row = worksheet.addRow(rowData);
 
-      // Style dữ liệu
       row.getCell("stt").alignment = { horizontal: "center" };
 
-      // Style điểm theo từng buổi - màu xanh nếu 10, đỏ nếu < 10
       pastSessions.forEach((session) => {
         const cell = row.getCell(`session_${session.id}`);
         cell.alignment = { horizontal: "center" };
@@ -458,18 +439,14 @@ const exportAttendanceToExcel = async (classCode) => {
       rowNumber++;
     });
 
-    // Tạo folder exports nếu chưa có
     const exportsDir = path.join(process.cwd(), "exports");
     if (!fs.existsSync(exportsDir)) {
       fs.mkdirSync(exportsDir, { recursive: true });
     }
 
-    // Lưu file
     const fileName = `DiemDanh_${classCode}_${Date.now()}.xlsx`;
     const filePath = path.join(exportsDir, fileName);
     await workbook.xlsx.writeFile(filePath);
-
-    console.log("✅ Export thành công:", filePath);
 
     return {
       status: "Ok",
@@ -481,7 +458,6 @@ const exportAttendanceToExcel = async (classCode) => {
       },
     };
   } catch (e) {
-    console.log("❌ Export error:", e);
     return {
       status: "Err",
       code: 500,

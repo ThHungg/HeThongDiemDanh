@@ -2,9 +2,6 @@
 const cacheService = require("../services/cacheService");
 
 const clearCacheBeforeUpdate = {
-  /**
-   * Clear class-related cache
-   */
   classData: async (req, res, next) => {
     const { classCode } = req.params;
     if (classCode) {
@@ -13,9 +10,6 @@ const clearCacheBeforeUpdate = {
     next();
   },
 
-  /**
-   * Clear lecturer classes cache
-   */
   lecturerClasses: async (req, res, next) => {
     const lecturerId = req.user?.code;
     if (lecturerId) {
@@ -24,9 +18,6 @@ const clearCacheBeforeUpdate = {
     next();
   },
 
-  /**
-   * Clear student classes cache
-   */
   studentClasses: async (req, res, next) => {
     const studentId = req.user?.code;
     if (studentId) {
@@ -35,25 +26,16 @@ const clearCacheBeforeUpdate = {
     next();
   },
 
-  /**
-   * Clear all student data cache
-   */
   allStudents: async (req, res, next) => {
     await cacheService.invalidate.allStudents();
     next();
   },
 
-  /**
-   * Clear semester cache
-   */
   semester: async (req, res, next) => {
     await cacheService.invalidate.semester();
     next();
   },
 
-  /**
-   * Clear attendance cache for a specific class
-   */
   attendance: async (req, res, next) => {
     const { classCode } = req.params || req.body;
     if (classCode) {
@@ -103,9 +85,7 @@ const invalidateCacheAfter = async (cacheType, result, options = {}) => {
   return result;
 };
 
-/**
- * Utility to clear all cache (admin only)
- */
+
 const clearAllCache = async (req, res, next) => {
   const result = await cacheService.invalidate.all();
   if (result) {
@@ -121,9 +101,6 @@ const clearAllCache = async (req, res, next) => {
   }
 };
 
-/**
- * Utility to get cache statistics
- */
 const getCacheStats = async (req, res, next) => {
   try {
     const redis = require("../config/redis");

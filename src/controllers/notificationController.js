@@ -1,6 +1,5 @@
 const notificationService = require("../services/notificationService");
 
-// Unified endpoint nhận cả single và bulk (luôn dùng listMsv)
 const sendEmail = async (req, res) => {
   try {
     const { listMsv, subject, content, classCode } = req.body;

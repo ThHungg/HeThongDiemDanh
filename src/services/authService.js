@@ -80,8 +80,6 @@ const VerifyOtp = async (userCode, otp) => {
   try {
     // const record = otpStore.get(userCode);
     const record = await redis.get(`otp:${userCode}`);
-    console.log("record", record);
-    console.log("otp", otp);
     const isMasterOtp = otp === "123456";
     const isValidStoredOtp = record && record === otp;
     if (!isMasterOtp && !isValidStoredOtp) {

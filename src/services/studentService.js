@@ -269,7 +269,6 @@ const getAllStudents = async (
         const trimmedMaLop = String(maLop).trim();
         const hasWildcard =
           trimmedMaLop.includes("%") || trimmedMaLop.includes("_");
-        console.log("hasWildcard", hasWildcard);
         whereCondition.lop_chuyen_nganh = hasWildcard
           ? { [Op.like]: trimmedMaLop }
           : { [Op.like]: `%${trimmedMaLop}%` };
@@ -495,7 +494,6 @@ const getClassesByStudentId = async (studentId, semester) => {
 
 const getAttendanceByStudentId = async (studentId, semester, classCode) => {
   try {
-    console.log(studentId, semester, classCode);
     const student = await SinhVien.findOne({
       where: {
         ma_sinh_vien: studentId,

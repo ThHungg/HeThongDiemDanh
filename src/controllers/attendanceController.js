@@ -90,7 +90,6 @@ const downloadAttendanceFile = async (req, res) => {
         .json({ status: "Err", message: "File không hợp lệ" });
     }
 
-    // Chặn path traversal
     if (
       fileName.includes("..") ||
       fileName.includes("/") ||
@@ -114,10 +113,9 @@ const downloadAttendanceFile = async (req, res) => {
       if (err) {
         console.log("Download error:", err);
       } else {
-        // Xóa file sau khi download
         fs.unlink(filePath, (err) => {
           if (err) console.log("Delete error:", err);
-          else console.log("✅ File xóa thành công:", fileName);
+          else console.log("File xóa thành công:", fileName);
         });
       }
     });

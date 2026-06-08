@@ -73,8 +73,6 @@ const getAllSemesters = async () => {
       order: [["bat_dau_ky_hoc", "DESC"]],
     });
 
-    console.log(semesters);
-
     const result = {
       status: "Success",
       code: 200,

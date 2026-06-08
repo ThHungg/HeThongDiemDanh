@@ -57,10 +57,8 @@ const get = async (key) => {
   try {
     const data = await redis.get(key);
     if (data) {
-      console.log(`[Cache HIT] ${key}`);
       return JSON.parse(data);
     }
-    console.log(`[Cache MISS] ${key}`);
     return null;
   } catch (error) {
     console.error(`[Cache GET Error] ${key}:`, error);
@@ -71,10 +69,8 @@ const get = async (key) => {
 const set = async (key, value, ttl = CACHE_TTL.MEDIUM) => {
   try {
     await redis.setex(key, ttl, JSON.stringify(value));
-    console.log(`[Cache SET] ${key} (TTL: ${ttl}s)`);
     return true;
   } catch (error) {
-    console.error(`[Cache SET Error] ${key}:`, error);
     return false;
   }
 };
