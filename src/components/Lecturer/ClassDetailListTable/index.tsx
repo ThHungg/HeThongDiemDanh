@@ -64,8 +64,8 @@ const ClassDetailListTable = ({
 
   const isToday = (dateString: string) => {
     const sessionDate = new Date(dateString);
-    // const today = new Date();
-    const today = new Date("2026-04-25");
+    const today = new Date();
+    // const today = new Date("2026-06-08");
     return (
       sessionDate.getDate() === today.getDate() &&
       sessionDate.getMonth() === today.getMonth() &&
@@ -79,7 +79,6 @@ const ClassDetailListTable = ({
         'th[data-is-today="true"]',
       ) as HTMLElement;
       if (todayColumn) {
-        // Scroll to column with smooth behavior
         const scrollLeft =
           todayColumn.offsetLeft - scrollContainerRef.current.clientWidth / 2;
         scrollContainerRef.current.scrollTo({
@@ -175,7 +174,6 @@ const ClassDetailListTable = ({
       Object.keys(noteUpdates).length > 0 &&
       attendance.attendanceData.length === 0
     ) {
-      // Lấy dữ liệu gốc từ API và merge với ghi chú mới
       attendanceData?.data?.attendance?.forEach((att: any) => {
         if (noteUpdates[att.id]) {
           att.lichSuDiemDanh?.forEach((score: any) => {
@@ -514,14 +512,12 @@ const ClassDetailListTable = ({
                               onChange={(e) => {
                                 const value = e.target.value;
                                 if (value === "") {
-                                  // Allow empty input - set to 0
                                   if (score?.id) {
                                     handleUpdateStudentScore(score.id, 0);
                                   }
                                 } else {
                                   const numValue = parseFloat(value);
 
-                                  // Validate: Check decimal places (max 1)
                                   const decimalPlaces = value.includes(".")
                                     ? value.split(".")[1].length
                                     : 0;

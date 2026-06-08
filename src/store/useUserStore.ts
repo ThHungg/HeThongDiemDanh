@@ -50,7 +50,7 @@ interface UserState {
 export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
-      profile: null, 
+      profile: null as UserProfile | null,
       setProfile: (profile) => set({ profile }),
       clearProfile: () => set({ profile: null }),
     }),

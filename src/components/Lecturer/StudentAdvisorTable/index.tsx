@@ -124,10 +124,18 @@ const StudentAdvisorTable = ({
     return cached;
   }, [paginatedStudents]);
 
-  if (!selectedClass) {
+  // if (!selectedClass) {
+  //   return (
+  //     <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 p-8 text-center text-gray-500">
+  //       Vui lòng chọn một lớp để xem danh sách sinh viên
+  //     </div>
+  //   );
+  // }
+
+  if (allStudents && allStudents.data.length === 0) {
     return (
       <div className="rounded-xl bg-[#FBFDFD] border border-gray-200 p-8 text-center text-gray-500">
-        Vui lòng chọn một lớp để xem danh sách sinh viên
+        Không tìm thấy sinh viên nào cho lớp này
       </div>
     );
   }
@@ -329,7 +337,7 @@ const StudentAdvisorTable = ({
             ) : (
               <tr>
                 <td colSpan={8} className="text-center py-4 text-gray-500">
-                  Không có dữ liệu
+                  Không tìm thấy lớp CVHT
                 </td>
               </tr>
             )}

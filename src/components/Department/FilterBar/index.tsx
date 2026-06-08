@@ -158,6 +158,7 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         maLop: appliedMaLop || undefined,
       });
     } catch (error) {
+      console.log("error", error);
       setAiError("Khong the xu ly yeu cau AI. Vui long thu lai.");
     } finally {
       setAiLoading(false);
@@ -222,7 +223,7 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
           <button
             onClick={handleAiFilter}
             disabled={aiLoading}
-            className="px-3 py-2 bg-[#8B0000] text-white text-[12px] font-semibold rounded-lg hover:bg-[#660000] transition-all disabled:opacity-60"
+            className="px-3 py-2 bg-[#8B0000] text-white text-[12px] whitespace-nowrap font-semibold rounded-lg hover:bg-[#660000] transition-all disabled:opacity-60"
           >
             {aiLoading ? "Dang loc..." : "AI loc"}
           </button>

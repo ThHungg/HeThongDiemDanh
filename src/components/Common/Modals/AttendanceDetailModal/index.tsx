@@ -8,6 +8,7 @@ import { formatDate } from "@/utils/formatDatt";
 import { styles } from "next/dist/client/components/styles/access-error-styles";
 import SendEmailModal from "../SendEmailModal";
 import Loading from "../../Loading";
+import { useSemesterStore } from "@/store/useSemesterStore";
 
 const AttendanceDetailModal = ({
   detailClass,
@@ -30,11 +31,13 @@ const AttendanceDetailModal = ({
   const [isOpenSendEmail, setIsOpenSendEmail] = useState(false);
   const [studentData, setStudentData] = useState<any>(null);
   const isInitializedRef = useRef(false);
+  const semester = useSemesterStore((state) => state.selectedSemester);
 
   console.log("studentInfo", detailClass);
+  console.log("studentId", studentId);
 
   const getClassesByStudentId = async (studentId: string) => {
-    const res = await studentService.getClassesByStudentId(studentId);
+    const res = await studentService.getClassesByStudentId(studentId, semester);
     return res;
   };
 
@@ -44,12 +47,12 @@ const AttendanceDetailModal = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["classes", studentId],
+    queryKey: ["classes", studentId, semester],
     queryFn: () => getClassesByStudentId(studentId),
   });
   console.log("classes", classes);
   const getAttendanceByStudentId = async (classCode: string) => {
-    const res = await studentService.getAttendanceByStudentId(classCode);
+    const res = await studentService.getAttendanceByStudentId(classCode, semester);
     return res;
   };
 
@@ -60,6 +63,7 @@ const AttendanceDetailModal = ({
     const res = await studentService.getSpecificStudentAttendance(
       classCode,
       studentId,
+      semester
     );
     return res;
   };
@@ -69,7 +73,7 @@ const AttendanceDetailModal = ({
     isLoading: isLoadingAttendance,
     error: errorAttendance,
   } = useQuery({
-    queryKey: ["attendance", classCode, isSelected, isStudent, studentId],
+    queryKey: ["attendance", classCode, isSelected, isStudent, studentId, semester],
     queryFn: () => {
       if (isStudent) {
         return getAttendanceByStudentId(attendanceCode || "");
@@ -81,6 +85,10 @@ const AttendanceDetailModal = ({
     staleTime: 0,
     gcTime: 0,
   });
+
+  useEffect(() => {
+    isInitializedRef.current = false;
+  }, [semester, studentId]);
 
   useEffect(() => {
     if (
@@ -98,6 +106,7 @@ const AttendanceDetailModal = ({
     }
   }, [classes, classCode]);
   console.log("studentData", studentData);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="max-w-[800px] h-[80vh] w-full bg-white rounded-lg flex flex-col">

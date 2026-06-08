@@ -64,55 +64,53 @@ export const parseStudentFiltersWithAIService = async (message: string) => {
   }
 };
 
-export const getClassesByStudentId = async (studentId: string) => {
+export const getClassesByStudentId = async (studentId: string, semester?: string | null) => {
     try {
-         const semesterData = localStorage.getItem("semester-data");
-    const semester = semesterData
-      ? JSON.parse(semesterData).state.selectedSemester
-      : "";
-    const res = await axiosInstance.get(`/students/${studentId}/classes`, {
-      params: {
-        semester: semester,
-      },
-    });
-    return res.data;
+        const semesterData = localStorage.getItem("semester-data");
+        const semesterToUse = semester || (semesterData
+          ? JSON.parse(semesterData).state.selectedSemester
+          : "");
+        const res = await axiosInstance.get(`/students/${studentId}/classes`, {
+          params: {
+            semester: semesterToUse,
+          },
+        });
+        return res.data;
     } catch (e) {
         throw e;
     }
 }
 
 
-export const getAttendanceByStudentId = async (classCode: string) => {
+export const getAttendanceByStudentId = async (classCode: string, semester?: string | null) => {
     try {
-         const semesterData = localStorage.getItem("semester-data");
-    const semester = semesterData
-      ? JSON.parse(semesterData).state.selectedSemester
-      : "";
-    const res = await axiosInstance.get(`/students/attend/${classCode}`, {
-      params: {
-        semester: semester,
-      
-      },
-    });
-    return res.data;
+        const semesterData = localStorage.getItem("semester-data");
+        const semesterToUse = semester || (semesterData
+          ? JSON.parse(semesterData).state.selectedSemester
+          : "");
+        const res = await axiosInstance.get(`/students/attend/${classCode}`, {
+          params: {
+            semester: semesterToUse,
+          },
+        });
+        return res.data;
     } catch (e) {
         throw e;
     }
 }
 
-export const getSpecificStudentAttendance = async (classCode: string, studentId: string) => {
+export const getSpecificStudentAttendance = async (classCode: string, studentId: string, semester?: string | null) => {
     try {
-         const semesterData = localStorage.getItem("semester-data");
-    const semester = semesterData
-      ? JSON.parse(semesterData).state.selectedSemester
-      : "";
-    const res = await axiosInstance.get(`/students/attend/${classCode}/${studentId}`, {
-      params: {
-        semester: semester,
-      
-      },
-    });
-    return res.data;
+        const semesterData = localStorage.getItem("semester-data");
+        const semesterToUse = semester || (semesterData
+          ? JSON.parse(semesterData).state.selectedSemester
+          : "");
+        const res = await axiosInstance.get(`/students/attend/${classCode}/${studentId}`, {
+          params: {
+            semester: semesterToUse,
+          },
+        });
+        return res.data;
     } catch (e) {
         throw e;
     }

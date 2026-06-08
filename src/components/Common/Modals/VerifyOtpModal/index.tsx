@@ -8,6 +8,8 @@ import { useUserStore } from "@/store/useUserStore";
 import { useRouter } from "next/navigation";
 import Loading from "../../Loading";
 import * as classService from "@/services/classService";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSemesterStore } from "@/store/useSemesterStore";
 
 const VerifyOtpModal = ({
   onClose,
@@ -18,7 +20,9 @@ const VerifyOtpModal = ({
 }) => {
   const setProfile = useUserStore((state) => state.setProfile);
   const router = useRouter();
-  const [time, setTime] = useState(300);
+  const queryClient = useQueryClient();
+  const { setSelectedSemester } = useSemesterStore();
+  const [time, setTime] = useState(10);
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const inputRef = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -88,6 +92,11 @@ const VerifyOtpModal = ({
         toast.success(res.message || "Xác thực OTP thành công!");
         localStorage.setItem("accessToken", res.accessToken);
         setProfile(res.filteredInfo);
+
+        // Clear tất cả query cache để tải dữ liệu mới cho tài khoản mới
+        queryClient.clear();
+        setSelectedSemester("");
+
         if (
           res.filteredInfo.role === "Quan_tri" ||
           res.filteredInfo.role === "Thu_ky"

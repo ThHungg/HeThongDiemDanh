@@ -1,8 +1,6 @@
 import { useMutation, MutationFunction } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 
-// TData: Kiểu dữ liệu trả về từ API
-// TVariables: Kiểu dữ liệu truyền vào hàm (ví dụ: string hoặc {msv, otp})
 export const useMutationHooks = <TData, TVariables>(
   fnCallback: MutationFunction<TData, TVariables>,
 ) => {
