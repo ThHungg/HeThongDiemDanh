@@ -104,6 +104,11 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   }, [searchInput, onSearchChange]);
 
   const handleFilterSubmit = () => {
+    let effectiveMaLop = maLop;
+    if (!effectiveMaLop && khoa) {
+      effectiveMaLop = nganh ? `${khoa}${nganh}` : khoa;
+    }
+
     onFilterChange?.({
       startDate: startDate || undefined,
       endDate: endDate || undefined,
@@ -111,7 +116,7 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
       maxScore: maxScore || undefined,
       khoa: khoa || undefined,
       nganh: nganh || undefined,
-      maLop: maLop || undefined,
+      maLop: effectiveMaLop || undefined,
     });
   };
 
@@ -140,14 +145,47 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         filtersApplied.maxScore !== null
           ? String(filtersApplied.maxScore)
           : "";
-      const appliedMaLop = filtersApplied.maLop || "";
+      const appliedMaLopRaw = filtersApplied.maLop || "";
+
+      let appliedKhoa = "";
+      let appliedNganh = "";
+      let appliedLop = "";
+
+      if (appliedMaLopRaw) {
+        const match = appliedMaLopRaw.match(/^([a-zA-Z]{2})(\d+)(.*)$/);
+        if (match) {
+          appliedNganh = match[1].toUpperCase();
+          appliedKhoa = match[2];
+          if (match[3]) {
+            appliedLop = appliedMaLopRaw;
+          }
+        } else {
+          if (/^\d+$/.test(appliedMaLopRaw)) {
+            appliedKhoa = appliedMaLopRaw;
+          } else {
+            appliedLop = appliedMaLopRaw;
+          }
+        }
+      }
 
       setSearchInput(appliedSearch);
       setStartDate(appliedStartDate);
       setEndDate(appliedEndDate);
       setMinScore(appliedMinScore);
       setMaxScore(appliedMaxScore);
-      setMaLop(appliedMaLop);
+      if (appliedKhoa && !khoaList.includes(appliedKhoa)) {
+        setKhoaList((prev) => [...prev, appliedKhoa]);
+      }
+      if (appliedNganh) {
+        setNganhList((prev) => prev.includes(appliedNganh) ? prev : [...prev, appliedNganh]);
+      }
+      if (appliedLop) {
+        setMaLopList((prev) => prev.includes(appliedLop) ? prev : [...prev, appliedLop]);
+      }
+
+      setKhoa(appliedKhoa);
+      setNganh(appliedNganh);
+      setMaLop(appliedLop);
 
       onSearchChange?.(appliedSearch);
       onFilterChange?.({
@@ -155,7 +193,9 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         endDate: appliedEndDate || undefined,
         minScore: appliedMinScore || undefined,
         maxScore: appliedMaxScore || undefined,
-        maLop: appliedMaLop || undefined,
+        khoa: appliedKhoa || undefined,
+        nganh: appliedNganh || undefined,
+        maLop: appliedMaLopRaw || undefined,
       });
     } catch (error) {
       console.log("error", error);
