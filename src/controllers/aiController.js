@@ -14,6 +14,7 @@ const AIController = async (req, res) => {
     }
 
     const filterParams = await aiService.AIService(message);
+    console.log("filterParams", filterParams);
     if (!filterParams) {
       return res.status(400).json({
         status: "Err",

@@ -1,65 +1,52 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
 const filterAllStudentsTool = {
-  name: "get_all_students_filters",
-  description:
-    "Trich xuat tham so loc de tim kiem sinh vien dua tren cau hoi cua Thu ky Khoa.",
-  parameters: {
-    type: "OBJECT",
-    properties: {
-      search: {
-        type: "STRING",
-        description:
-          "Ten hoac Ma sinh vien can tim. Vi du: 'Tim Nguyen Van A' -> 'Nguyen Van A'.",
-      },
-      maLop: {
-        type: "STRING",
-        description:
-          "Ma lop chuyen nganh. Vi du: 'lop TT35CL07' -> 'TT35CL07'.",
-      },
-      minScore: {
-        type: "NUMBER",
-        description:
-          "Diem chuyen can toi thieu (0-10). Vi du: 'diem lon hon 5' -> 5.",
-      },
-      maxScore: {
-        type: "NUMBER",
-        description:
-          "Diem chuyen can toi da. Neu nhac 'cam thi', 'rot mon', 'bao dong' -> 3.9.",
-      },
-      startDate: {
-        type: "STRING",
-        description: "Ngay bat dau tim kiem (YYYY-MM-DD).",
-      },
-      endDate: {
-        type: "STRING",
-        description: "Ngay ket thuc tim kiem (YYYY-MM-DD).",
+  type: "function",
+  function: {
+    name: "get_all_students_filters",
+    description:
+      "Trich xuat tham so loc de tim kiem sinh vien dua tren cau hoi cua Thu ky Khoa.",
+    parameters: {
+      type: "object",
+      properties: {
+        search: {
+          type: "string",
+          description: "Ten hoac Ma sinh vien can tim.",
+        },
+        maLop: {
+          type: "string",
+          description: "Ma lop chuyen nganh (VD: TT35CL07).",
+        },
+        minScore: {
+          type: "number",
+          description: "Diem chuyen can toi thieu (0-10).",
+        },
+        maxScore: {
+          type: "number",
+          description: "Diem chuyen can toi da (0-10).",
+        },
+        startDate: {
+          type: "string",
+          description: "Ngay bat dau tim kiem (YYYY-MM-DD).",
+        },
+        endDate: {
+          type: "string",
+          description: "Ngay ket thuc tim kiem (YYYY-MM-DD).",
+        },
       },
     },
   },
 };
 
 const systemInstruction = `Ban la Tro ly AI ho tro Thu ky Khoa quan ly du lieu sinh vien.
-Nhiem vu: Nhan cau lenh tu nhien, phan tich va goi ham get_all_students_filters.
+Nhiem vu: Nhan cau lenh tu nhien, phan tich va tra ve JSON chua tham so goi ham get_all_students_filters.
 Quy tac:
 1. "cam thi", "rot mon", "canh bao" -> maxScore = 3.9.
 2. "xuat sac", "diem tuyet doi", "khong cup hoc" -> minScore = 9, maxScore = 10.
-Chi tra ve tham so goi ham, tuyet doi khong giai thich van ban.`;
+Chi tra ve chuoi JSON hop le, tuyet doi khong giai thich van ban.`;
 
 const apiKey = process.env.GEMINI_API_KEY;
-const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
-const model = genAI
-  ? genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      tools: [{ functionDeclarations: [filterAllStudentsTool] }],
-      systemInstruction,
-    })
-  : null;
 
 const AIService = async (userMessage) => {
-  console.log("model", model);
-  if (!model) {
-    console.log(model);
+  if (!apiKey) {
     return {
       status: "Err",
       message: "Tro ly AI dang ban, vui long thu lai sau.",
@@ -67,18 +54,66 @@ const AIService = async (userMessage) => {
   }
 
   try {
-    const result = await model.generateContent(userMessage);
-    const response = result.response;
-    console.log("result", result);
-    console.log("response", response);
+    const response = await fetch("https://api.orimise.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gemini-2.5-flash",
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: userMessage },
+        ],
+        tools: [filterAllStudentsTool],
+        tool_choice: {
+          type: "function",
+          function: { name: "get_all_students_filters" },
+        },
+      }),
+    });
 
-    const functionCall = response.functionCalls()?.[0];
-    if (functionCall && functionCall.name === "get_all_students_filters") {
-      return functionCall.args;
+    if (!response.ok) {
+      console.error(`AI API request failed with status: ${response.status}`);
+      return {
+        status: "Err",
+        message: "Tro ly AI dang ban, vui long thu lai sau.",
+      };
     }
-    console.log("functionCall", functionCall.args);
+
+    const data = await response.json();
+    const message = data.choices?.[0]?.message;
+    if (!message) return null;
+
+    // 1. Try parsing OpenAI tool_calls if returned
+    const toolCall = message.tool_calls?.[0];
+    if (toolCall && toolCall.function?.name === "get_all_students_filters") {
+      return JSON.parse(toolCall.function.arguments);
+    }
+
+    // 2. Fallback: Parse the JSON string from content
+    if (message.content) {
+      try {
+        const text = message.content.trim();
+        const jsonText = text.replace(/^```json\s*|```$/gi, "").trim();
+        return JSON.parse(jsonText);
+      } catch (e) {
+        const match = message.content.match(/\{[\s\S]*?\}/);
+        if (match) {
+          try {
+            return JSON.parse(match[0]);
+          } catch (err) {
+            console.error("Failed to parse regex-extracted JSON:", err);
+          }
+        }
+      }
+    }
+
+    console.log("No tool call or parseable content in AI response:", data);
     return null;
   } catch (error) {
+    console.error("AIService error:", error);
     return {
       status: "Err",
       message: "Tro ly AI dang ban, vui long thu lai sau.",
