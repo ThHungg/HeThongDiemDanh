@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "MoodTracker",
-    "slug": "MoodTracker",
+    "name": "HeThongDiemDanh",
+    "slug": "HeThongDiemDanh",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "moodtracker",
+    "scheme": "HeThongDiemDanh",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
