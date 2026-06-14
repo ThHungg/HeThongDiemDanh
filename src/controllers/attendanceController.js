@@ -1,6 +1,7 @@
 const attendanceService = require("../services/attendanceService");
 const path = require("path");
 const fs = require("fs");
+const { sequelize } = require("../config/db");
 
 const getAttendanceByClass = async (req, res) => {
   try {

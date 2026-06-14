@@ -201,6 +201,19 @@ const getClassesByAdvisor = async (req, res) => {
   }
 };
 
+const getAllThuky = async (req, res) => {
+  try {
+    const response = await classService.getAllThuky();
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
@@ -209,4 +222,5 @@ module.exports = {
   getAllLecturer,
   getStudentsByAdvisor,
   getClassesByAdvisor,
+  getAllThuky,
 };

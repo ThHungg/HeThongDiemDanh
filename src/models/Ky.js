@@ -53,6 +53,11 @@ const Ky = sequelize.define(
       defaultValue: 0,
       comment: "1 là kỳ hiện tại đang hoạt động",
     },
+    trang_thai: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
     last_modify: {
       type: DataTypes.DATE(6),
       allowNull: true,

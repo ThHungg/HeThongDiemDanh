@@ -7,8 +7,10 @@ const TkbChiTiet = require("./ThoiKhoaBieuChiTiet");
 const DangKy = require("./DangKy");
 const BuoiHoc = require("./BuoiHoc");
 const DiemDanh = require("./DiemDanh");
-const ChuyenCan = require("./ChuyenCan"); 
+const ChuyenCan = require("./ChuyenCan");
 const CaHoc = require("./CaHoc");
+const ReportMailConfig = require("./ReportMailConfig");
+
 
 // Học kỳ - Tkb (1 - n): Một học kỳ có nhiều lớp học phần
 Ky.hasMany(Tkb, {
@@ -140,4 +142,5 @@ module.exports = {
   DiemDanh,
   ChuyenCan,
   CaHoc,
+  ReportMailConfig,
 };

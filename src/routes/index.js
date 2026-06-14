@@ -5,7 +5,7 @@ const attendanceRoutes = require("./attendanceRoutes");
 const studentRoutes = require("./studentRoutes");
 const notificationRoutes = require("./notificationRoutes");
 const aiRoutes = require("./aiRoutes");
-
+const mailConfigRoutes = require("./mailConfigRoutes");
 const routes = (app) => {
   app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1/classes", classRoutes);
@@ -14,6 +14,7 @@ const routes = (app) => {
   app.use("/api/v1/students", studentRoutes);
   app.use("/api/v1/notifications", notificationRoutes);
   app.use("/api/v1/ai", aiRoutes);
+  app.use("/api/v1/mailConfig", mailConfigRoutes);
 };
 
 module.exports = routes;

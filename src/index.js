@@ -8,7 +8,9 @@ const cors = require("cors");
 const { connectDB } = require("./config/db");
 const routes = require("./routes");
 const redis = require("./config/redis");
+
 require("./services/mailQueueService");
+require("./services/schedulerService");
 
 dotenv.config();
 const app = express();

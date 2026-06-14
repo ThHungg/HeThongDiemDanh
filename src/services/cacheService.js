@@ -28,6 +28,8 @@ const CACHE_KEYS = {
   LECTURER_CURRENT_CLASSES: (lecturerId) =>
     `lecturer:${lecturerId}:current_classes`,
 
+  ALL_THUKY: "thuky:all",
+
   // All Classes (Admin)
   ALL_CLASSES: (semester, page, limit, lecturerId, searchText) =>
     `classes:all:${semester}:p${page}:l${limit}:lec${lecturerId || "all"}:s${searchText || ""}`,

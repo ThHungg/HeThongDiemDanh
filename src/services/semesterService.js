@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const Ky = require("../models/Ky");
 const cacheService = require("./cacheService");
 
@@ -23,6 +24,7 @@ const getCurrentSemester = async () => {
         "bat_dau_ky_hoc",
         "ket_thuc_ky_hoc",
         "mac_dinh",
+        "trang_thai",
       ],
     });
 
@@ -69,6 +71,7 @@ const getAllSemesters = async () => {
         "bat_dau_ky_hoc",
         "ket_thuc_ky_hoc",
         "mac_dinh",
+        "trang_thai",
       ],
       order: [["bat_dau_ky_hoc", "DESC"]],
     });
@@ -97,7 +100,44 @@ const getAllSemesters = async () => {
   }
 };
 
+const toggleLockSemester = async (maKy, trangThai) => {
+  try {
+    const semester = await Ky.findOne({
+      where: { ma_ky: maKy }
+    })
+    if (!semester) {
+      return {
+        status: "Err",
+        code: 404,
+        message: "Không tìm thấy học kỳ"
+      }
+    }
+
+    semester.trang_thai = trangThai;
+    await semester.save();
+
+    await cacheService.invalidate.semester();
+
+    return {
+      status: "Success",
+      code: 200,
+      data: {
+        ma_ky: semester.ma_ky,
+        trang_thai: semester.trang_thai,
+      }
+    }
+
+  } catch (e) {
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau"
+    }
+  }
+}
+
 module.exports = {
   getCurrentSemester,
   getAllSemesters,
+  toggleLockSemester,
 };

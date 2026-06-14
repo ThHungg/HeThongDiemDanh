@@ -5,6 +5,7 @@ const {
   SinhVien,
   DangKy,
   ChuyenCan,
+  Ky,
 } = require("../models/index");
 const { mapAttendanceByClass } = require("../mappers/mapperData");
 const cacheService = require("./cacheService");
@@ -201,6 +202,44 @@ const getAttendanceByClass = async (classCode) => {
 const updateAttendanceByClass = async (attendanceData) => {
   const t = await sequelize.transaction();
   try {
+    const firstItem = attendanceData[0];
+    const checkDiemDanh = await DiemDanh.findOne({
+      where: { id: firstItem.id },
+      include: [
+        {
+          model: BuoiHoc,
+          as: "buoi_hoc",
+          include: [
+            {
+              model: Tkb,
+              as: "thoi_khoa_bieu",
+              include: [
+                {
+                  model: Ky,
+                  as: "ky",
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      transaction: t,
+    });
+
+    console.log("checkDiemDanh", checkDiemDanh?.buoi_hoc?.thoi_khoa_bieu?.ky?.trang_thai);
+
+    // Sử dụng ?. để tránh crash và so sánh với số 1 thay vì chuỗi "1"
+    if (checkDiemDanh && checkDiemDanh.buoi_hoc?.thoi_khoa_bieu?.ky?.trang_thai === 1) {
+      await t.rollback();
+      return {
+        status: "Err",
+        code: 403,
+        message: "Học kỳ đã bị khóa. Giảng viên không thể chỉnh sửa điểm danh.",
+      };
+    }
+
+
+
     const update = attendanceData.map((item) => {
       return DiemDanh.update(
         {

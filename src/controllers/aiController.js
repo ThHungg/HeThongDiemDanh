@@ -24,28 +24,11 @@ const AIController = async (req, res) => {
       });
     }
 
-    const studentsResponse = await StudentService.getAllStudents(
-      null,
-      1,
-      50,
-      filterParams.search,
-      filterParams.startDate,
-      filterParams.endDate,
-      filterParams.minScore,
-      filterParams.maxScore,
-      filterParams.maLop,
-    );
-
-    if (studentsResponse.status === "Err") {
-      return res.status(studentsResponse.code || 400).json(studentsResponse);
-    }
-
     return res.status(200).json({
       status: "Ok",
       code: 200,
       filtersApplied: filterParams,
-      data: studentsResponse.data,
-      pagination: studentsResponse.pagination,
+
     });
   } catch (error) {
     console.error("AI Controller error:", error);

@@ -785,6 +785,42 @@ const getClassesByAdvisor = async (advisorId, semester) => {
   }
 };
 
+const getAllThuky = async () => {
+  try {
+    const cacheKey = cacheService.CACHE_KEYS.ALL_THUKY;
+    const cachedResult = await cacheService.get(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
+
+    const thuky = await GiangVien.findAll({
+      where: {
+        [Op.or]: [
+          { thu_ky: true },
+          // ,{ quan_tri: true }
+        ],
+      },
+      attributes: ["id", "ten", "ma_giang_vien", "email1", "email2"],
+    });
+
+    const result = {
+      status: "Ok",
+      code: 200,
+      data: thuky,
+    };
+
+    await cacheService.set(cacheKey, result, cacheService.CACHE_TTL.LONG);
+
+    return result;
+  } catch (e) {
+    return {
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
+  }
+};
+
 module.exports = {
   getClassesByLecturer,
   getClassByLecturerAndId,
@@ -793,4 +829,5 @@ module.exports = {
   getAllLecturer,
   getStudentsByAdvisor,
   getClassesByAdvisor,
+  getAllThuky,
 };

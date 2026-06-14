@@ -266,12 +266,16 @@ const getAllStudents = async (
       }
 
       if (maLop) {
-        const trimmedMaLop = String(maLop).trim();
-        const hasWildcard =
-          trimmedMaLop.includes("%") || trimmedMaLop.includes("_");
-        whereCondition.lop_chuyen_nganh = hasWildcard
-          ? { [Op.like]: trimmedMaLop }
-          : { [Op.like]: `%${trimmedMaLop}%` };
+        const parts = String(maLop).split(',').map(s => s.trim()).filter(Boolean);
+        if (parts.length > 0) {
+          const conditions = parts.map(part => {
+            const hasWildcard = part.includes("%") || part.includes("_");
+            return hasWildcard
+              ? { [Op.like]: part }
+              : { [Op.like]: `%${part}%` };
+          });
+          whereCondition.lop_chuyen_nganh = { [Op.or]: conditions };
+        }
       }
 
       const queryOptions = {
@@ -566,9 +570,12 @@ const getAttendanceByStudentId = async (studentId, semester, classCode) => {
 const getCoVanFilterData = async (khoa, nganh, maLop) => {
   try {
     if (maLop) {
+      const parts = String(maLop).split(',').map(s => s.trim()).filter(Boolean);
       const records = await CoVanHocTap.findAll({
         where: {
-          ma_lop: maLop.trim(),
+          ma_lop: {
+            [Op.in]: parts
+          },
         },
       });
       return {
@@ -580,12 +587,23 @@ const getCoVanFilterData = async (khoa, nganh, maLop) => {
     }
 
     if (khoa && nganh) {
-      const nganhChuan = nganh.trim().toUpperCase();
+      const khoaParts = String(khoa).split(',').map(s => s.trim()).filter(Boolean);
+      const nganhParts = String(nganh).split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      
+      const conditions = [];
+      for (const k of khoaParts) {
+        for (const n of nganhParts) {
+          conditions.push({
+            ma_lop: {
+              [Op.like]: `${n}${k}%`
+            }
+          });
+        }
+      }
+
       const resultLop = await CoVanHocTap.findAll({
         where: {
-          ma_lop: {
-            [Op.like]: `${nganhChuan}${khoa}%`,
-          },
+          [Op.or]: conditions
         },
         attributes: [
           [sequelize.fn("DISTINCT", sequelize.col("ma_lop")), "ma_lop"],
@@ -602,11 +620,16 @@ const getCoVanFilterData = async (khoa, nganh, maLop) => {
     }
 
     if (khoa) {
+      const khoaParts = String(khoa).split(',').map(s => s.trim()).filter(Boolean);
+      const conditions = khoaParts.map(k => ({
+        ma_lop: {
+          [Op.like]: `__${k}%`
+        }
+      }));
+
       const resultNganh = await CoVanHocTap.findAll({
         where: {
-          ma_lop: {
-            [Op.like]: `__${khoa}%`,
-          },
+          [Op.or]: conditions
         },
         attributes: [
           [

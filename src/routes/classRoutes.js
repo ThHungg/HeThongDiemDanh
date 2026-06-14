@@ -33,6 +33,8 @@ router.get(
 
 router.get("/getAllLecturer", authMiddleware, classController.getAllLecturer);
 
+router.get("/getAllThuky", authMiddleware, classController.getAllThuky)
+
 //Advisor
 router.get(
   "/studentbyAdvisor",
