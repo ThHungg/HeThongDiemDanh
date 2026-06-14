@@ -1,5 +1,5 @@
 "use client";
-import { memo, useState, useEffect } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import * as studentService from "@/services/studentService";
 
 interface FilterOptions {
@@ -17,15 +17,140 @@ interface FilterBarProps {
   onFilterChange?: (filters: FilterOptions) => void;
 }
 
+interface MultiSelectDropdownProps {
+  label: string;
+  placeholder: string;
+  options: (string | number)[];
+  selectedValues: string[];
+  onChange: (values: string[]) => void;
+  disabled?: boolean;
+}
+
+const MultiSelectDropdown = ({
+  label,
+  placeholder,
+  options,
+  selectedValues,
+  onChange,
+  disabled = false,
+}: MultiSelectDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleToggleOption = (option: string) => {
+    if (selectedValues.includes(option)) {
+      onChange(selectedValues.filter((v) => v !== option));
+    } else {
+      onChange([...selectedValues, option]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    const stringOptions = options.map(String);
+    if (selectedValues.length === stringOptions.length) {
+      onChange([]);
+    } else {
+      onChange(stringOptions);
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex flex-col gap-1 relative w-full select-none"
+    >
+      <label className="font-bold text-[13px] text-[#737373]">{label}</label>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setIsOpen(!isOpen)}
+        className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50 text-left flex justify-between items-center cursor-pointer min-h-[38px] w-full"
+      >
+        <span className="truncate text-gray-700">
+          {selectedValues.length > 0 ? selectedValues.join(", ") : placeholder}
+        </span>
+        <svg
+          className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[100%] left-0 w-full bg-white border border-gray-200 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto z-[99] p-2 space-y-1">
+          {options.length > 0 ? (
+            <>
+              <label className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer text-[13px] font-semibold text-gray-700 border-b border-gray-100 mb-1 pb-1.5">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedValues.length === options.length &&
+                    options.length > 0
+                  }
+                  onChange={handleSelectAll}
+                  className="w-4 h-4 accent-[#8B0000] cursor-pointer"
+                />
+                Chọn tất cả
+              </label>
+              {options.map((opt) => {
+                const val = String(opt);
+                return (
+                  <label
+                    key={val}
+                    className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded cursor-pointer text-[13px] text-gray-700"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedValues.includes(val)}
+                      onChange={() => handleToggleOption(val)}
+                      className="w-4 h-4 accent-[#8B0000] cursor-pointer"
+                    />
+                    {val}
+                  </label>
+                );
+              })}
+            </>
+          ) : (
+            <div className="text-[12px] text-gray-400 p-2 text-center font-medium">
+              Không có tùy chọn
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   const [searchInput, setSearchInput] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [minScore, setMinScore] = useState("");
   const [maxScore, setMaxScore] = useState("");
-  const [khoa, setKhoa] = useState("");
-  const [nganh, setNganh] = useState("");
-  const [maLop, setMaLop] = useState("");
+  const [selectedKhoas, setSelectedKhoas] = useState<string[]>([]);
+  const [selectedNganhs, setSelectedNganhs] = useState<string[]>([]);
+  const [selectedLops, setSelectedLops] = useState<string[]>([]);
   const [khoaList, setKhoaList] = useState<string[]>([]);
   const [nganhList, setNganhList] = useState<string[]>([]);
   const [maLopList, setMaLopList] = useState<string[]>([]);
@@ -41,7 +166,7 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         setLoadingFilters(true);
         const response = await studentService.getCoVanFilterDataService();
         if (response?.data) {
-          setKhoaList(response.data);
+          setKhoaList(response.data.map(String));
         }
       } catch (error) {
         console.error("Error fetching khoa list:", error);
@@ -52,12 +177,14 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
     fetchKhoaList();
   }, []);
 
-  // Fetch nganh list when khoa changes
+  // Fetch nganh list when selectedKhoas changes
   useEffect(() => {
-    if (khoa) {
+    if (selectedKhoas.length > 0) {
       const fetchNganhList = async () => {
         try {
-          const response = await studentService.getCoVanFilterDataService(khoa);
+          const response = await studentService.getCoVanFilterDataService(
+            selectedKhoas.join(","),
+          );
           if (response?.data) {
             setNganhList(response.data);
           }
@@ -66,17 +193,22 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         }
       };
       fetchNganhList();
+    } else {
+      setNganhList([]);
+      setSelectedNganhs([]);
+      setMaLopList([]);
+      setSelectedLops([]);
     }
-  }, [khoa]);
+  }, [selectedKhoas]);
 
-  // Fetch maLop list when khoa and nganh change
+  // Fetch maLop list when selectedKhoas and selectedNganhs change
   useEffect(() => {
-    if (khoa && nganh) {
+    if (selectedKhoas.length > 0 && selectedNganhs.length > 0) {
       const fetchMaLopList = async () => {
         try {
           const response = await studentService.getCoVanFilterDataService(
-            khoa,
-            nganh,
+            selectedKhoas.join(","),
+            selectedNganhs.join(","),
           );
           if (response?.data) {
             setMaLopList(response.data);
@@ -86,8 +218,11 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
         }
       };
       fetchMaLopList();
+    } else {
+      setMaLopList([]);
+      setSelectedLops([]);
     }
-  }, [khoa, nganh]);
+  }, [selectedKhoas, selectedNganhs]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -104,9 +239,20 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
   }, [searchInput, onSearchChange]);
 
   const handleFilterSubmit = () => {
-    let effectiveMaLop = maLop;
-    if (!effectiveMaLop && khoa) {
-      effectiveMaLop = nganh ? `${khoa}${nganh}` : khoa;
+    let effectiveMaLop = selectedLops.join(",");
+    if (!effectiveMaLop && selectedKhoas.length > 0) {
+      if (selectedNganhs.length > 0) {
+        // Generate combination of selectedKhoas and selectedNganhs
+        const combos: string[] = [];
+        selectedKhoas.forEach((k) => {
+          selectedNganhs.forEach((n) => {
+            combos.push(`${n}${k}`);
+          });
+        });
+        effectiveMaLop = combos.join(",");
+      } else {
+        effectiveMaLop = selectedKhoas.join(",");
+      }
     }
 
     onFilterChange?.({
@@ -114,8 +260,8 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
       endDate: endDate || undefined,
       minScore: minScore || undefined,
       maxScore: maxScore || undefined,
-      khoa: khoa || undefined,
-      nganh: nganh || undefined,
+      khoa: selectedKhoas.join(",") || undefined,
+      nganh: selectedNganhs.join(",") || undefined,
       maLop: effectiveMaLop || undefined,
     });
   };
@@ -146,26 +292,44 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
           ? String(filtersApplied.maxScore)
           : "";
       const appliedMaLopRaw = filtersApplied.maLop || "";
+      const appliedKhoa = filtersApplied.khoa || "";
+      const appliedNganh = filtersApplied.nganh || "";
 
-      let appliedKhoa = "";
-      let appliedNganh = "";
-      let appliedLop = "";
+      // Parse comma-separated strings directly into arrays
+      const newKhoas = appliedKhoa
+        ? String(appliedKhoa)
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : [];
+      const newNganhs = appliedNganh
+        ? String(appliedNganh)
+            .split(",")
+            .map((s: string) => s.trim().toUpperCase())
+            .filter(Boolean)
+        : [];
+      const newLops = appliedMaLopRaw
+        ? String(appliedMaLopRaw)
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+        : [];
 
-      if (appliedMaLopRaw) {
-        const match = appliedMaLopRaw.match(/^([a-zA-Z]{2})(\d+)(.*)$/);
-        if (match) {
-          appliedNganh = match[1].toUpperCase();
-          appliedKhoa = match[2];
-          if (match[3]) {
-            appliedLop = appliedMaLopRaw;
+      // Tự động tách khóa và ngành từ danh sách lớp nếu các trường này chưa có
+      if (newLops.length > 0) {
+        newLops.forEach((lop: string) => {
+          const match = lop.match(/^([a-zA-Z]{2})(\d+)(.*)$/);
+          if (match) {
+            const nganhPart = match[1].toUpperCase();
+            const khoaPart = match[2];
+            if (!newKhoas.includes(khoaPart)) {
+              newKhoas.push(khoaPart);
+            }
+            if (!newNganhs.includes(nganhPart)) {
+              newNganhs.push(nganhPart);
+            }
           }
-        } else {
-          if (/^\d+$/.test(appliedMaLopRaw)) {
-            appliedKhoa = appliedMaLopRaw;
-          } else {
-            appliedLop = appliedMaLopRaw;
-          }
-        }
+        });
       }
 
       setSearchInput(appliedSearch);
@@ -173,29 +337,53 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
       setEndDate(appliedEndDate);
       setMinScore(appliedMinScore);
       setMaxScore(appliedMaxScore);
-      if (appliedKhoa && !khoaList.includes(appliedKhoa)) {
-        setKhoaList((prev) => [...prev, appliedKhoa]);
-      }
-      if (appliedNganh) {
-        setNganhList((prev) => prev.includes(appliedNganh) ? prev : [...prev, appliedNganh]);
-      }
-      if (appliedLop) {
-        setMaLopList((prev) => prev.includes(appliedLop) ? prev : [...prev, appliedLop]);
-      }
 
-      setKhoa(appliedKhoa);
-      setNganh(appliedNganh);
-      setMaLop(appliedLop);
+      newKhoas.forEach((k: string) => {
+        if (!khoaList.includes(k)) {
+          setKhoaList((prev) => [...prev, k]);
+        }
+      });
+      newNganhs.forEach((n: string) => {
+        if (!nganhList.includes(n)) {
+          setNganhList((prev) => [...prev, n]);
+        }
+      });
+      newLops.forEach((l: string) => {
+        if (!maLopList.includes(l)) {
+          setMaLopList((prev) => [...prev, l]);
+        }
+      });
+
+      setSelectedKhoas(newKhoas);
+      setSelectedNganhs(newNganhs);
+      setSelectedLops(newLops);
 
       onSearchChange?.(appliedSearch);
+
+      // Submit immediately
+      let effectiveMaLop = newLops.join(",");
+      if (!effectiveMaLop && newKhoas.length > 0) {
+        if (newNganhs.length > 0) {
+          const combos: string[] = [];
+          newKhoas.forEach((k) => {
+            newNganhs.forEach((n) => {
+              combos.push(`${n}${k}`);
+            });
+          });
+          effectiveMaLop = combos.join(",");
+        } else {
+          effectiveMaLop = newKhoas.join(",");
+        }
+      }
+
       onFilterChange?.({
         startDate: appliedStartDate || undefined,
         endDate: appliedEndDate || undefined,
         minScore: appliedMinScore || undefined,
         maxScore: appliedMaxScore || undefined,
-        khoa: appliedKhoa || undefined,
-        nganh: appliedNganh || undefined,
-        maLop: appliedMaLopRaw || undefined,
+        khoa: newKhoas.join(",") || undefined,
+        nganh: newNganhs.join(",") || undefined,
+        maLop: effectiveMaLop || undefined,
       });
     } catch (error) {
       console.log("error", error);
@@ -274,70 +462,36 @@ const FilterBar = ({ onSearchChange, onFilterChange }: FilterBarProps) => {
       <div className="border-t border-gray-200 flex items-end justify-between gap-4">
         <div className="grid grid-cols-7 mt-3 gap-3 w-full">
           {/* Khoa */}
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-[13px] text-[#737373]">Khóa</label>
-            <select
-              value={khoa}
-              onChange={(e) => {
-                setKhoa(e.target.value);
-                setNganh("");
-                setMaLop("");
-                setNganhList([]);
-                setMaLopList([]);
-              }}
-              disabled={loadingFilters}
-              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
-            >
-              <option value="">Chọn khóa</option>
-              {khoaList.map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
-          </div>
+          <MultiSelectDropdown
+            label="Khóa"
+            placeholder="Chọn khóa"
+            options={khoaList}
+            selectedValues={selectedKhoas}
+            onChange={setSelectedKhoas}
+            disabled={loadingFilters}
+          />
           {/* Nganh */}
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-[13px] text-[#737373]">
-              Ngành
-            </label>
-            <select
-              value={nganh}
-              onChange={(e) => {
-                setNganh(e.target.value);
-                setMaLop("");
-                setMaLopList([]);
-              }}
-              disabled={!khoa || loadingFilters}
-              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
-            >
-              <option value="">Chọn ngành</option>
-              {nganhList.map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
+          <MultiSelectDropdown
+            label="Ngành"
+            placeholder="Chọn ngành"
+            options={nganhList}
+            selectedValues={selectedNganhs}
+            onChange={setSelectedNganhs}
+            disabled={selectedKhoas.length === 0 || loadingFilters}
+          />
           {/* Ma lop */}
-          <div className="flex flex-col gap-1">
-            <label className="font-bold text-[13px] text-[#737373]">
-              Mã lớp
-            </label>
-            <select
-              value={maLop}
-              onChange={(e) => setMaLop(e.target.value)}
-              disabled={!khoa || !nganh || loadingFilters}
-              className="bg-[#F8FAFC] px-3 py-2 text-[13px] rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#8B0000]/80 transition-all disabled:opacity-50"
-            >
-              <option value="">Chọn lớp</option>
-              {maLopList.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </div>
+          <MultiSelectDropdown
+            label="Mã lớp"
+            placeholder="Chọn lớp"
+            options={maLopList}
+            selectedValues={selectedLops}
+            onChange={setSelectedLops}
+            disabled={
+              selectedKhoas.length === 0 ||
+              selectedNganhs.length === 0 ||
+              loadingFilters
+            }
+          />
           {/* Từ ngày */}
           <div className="flex flex-col gap-1">
             <label className="font-bold text-[13px] text-[#737373]">

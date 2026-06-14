@@ -20,6 +20,7 @@ export const getClassesByStudentService = async () => {
 
 //Department
 export const getAllStudentsService = async (
+  semesterParam?: string | null,
   page: number = 1,
   limit: number = 10,
   search?: string,
@@ -31,9 +32,11 @@ export const getAllStudentsService = async (
 ) => {
   try {
     const semesterData = localStorage.getItem("semester-data");
-    const semester = semesterData
+    const semesterFromStore = semesterData
       ? JSON.parse(semesterData).state.selectedSemester
       : "";
+    const semester = semesterParam !== undefined && semesterParam !== null ? semesterParam : semesterFromStore;
+
     const res = await axiosInstance.get("/students", {
       params: {
         semester: semester,

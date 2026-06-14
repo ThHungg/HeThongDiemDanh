@@ -7,6 +7,7 @@ import * as studentService from "@/services/studentService";
 import { useQuery } from "@tanstack/react-query";
 import isStudentRole from "@/utils/isStudent";
 import Loading from "@/components/Common/Loading";
+import { useSemesterStore } from "@/store/useSemesterStore";
 
 interface FilterOptions {
   startDate?: string;
@@ -34,6 +35,7 @@ const StudentsTable = ({
   searchValue = "",
   filters = {},
 }: StudentsTableProps) => {
+  const { selectedSemester } = useSemesterStore();
   const [isSelectedStudentId, setIsSelectedStudentId] = useState("");
   const [openAttendanceDetail, setOpenAttendanceDetail] = useState(false);
   const [openBulkEmailModal, setOpenBulkEmailModal] = useState(false);
@@ -48,6 +50,7 @@ const StudentsTable = ({
 
   const getAllStudents = async () => {
     const res = await studentService.getAllStudentsService(
+      selectedSemester,
       page,
       limit,
       searchValue,
@@ -65,7 +68,7 @@ const StudentsTable = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["all-students", page, limit, searchValue, filters],
+    queryKey: ["all-students", selectedSemester, page, limit, searchValue, filters],
     queryFn: () => getAllStudents(),
   });
 

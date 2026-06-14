@@ -50,6 +50,7 @@ const ClassDetailListTable = ({
     attendanceData: [],
   });
   const [noteUpdates, setNoteUpdates] = useState<{ [key: number]: string }>({});
+  const [resetKey, setResetKey] = useState<number>(0);
   const [searchText, setSearchText] = useState<string>("");
   const [isOpenSendEmailModal, setIsOpenSendEmailModal] = useState(false);
   const [detailStudent, setDetailStudent] = useState<any>(null);
@@ -206,7 +207,9 @@ const ClassDetailListTable = ({
           setNoteUpdates({});
         },
         onError: (error: any) => {
-          toast.error(error?.response?.data?.message || "Cập nhật thất bại");
+          setResetKey((prev) => prev + 1);
+          setAttendance({ attendanceData: [] });
+          setNoteUpdates({});
         },
       },
     );
@@ -312,7 +315,10 @@ const ClassDetailListTable = ({
         </div>
       </div>
       {/* Table */}
-      <div className="flex bg-white rounded-xl border border-gray-200 overflow-hidden relative">
+      <div
+        key={resetKey}
+        className="flex bg-white rounded-xl border border-gray-200 overflow-hidden relative"
+      >
         {isLoading && (
           <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-50 rounded-lg">
             <Loading text="Đang tải dữ..." />

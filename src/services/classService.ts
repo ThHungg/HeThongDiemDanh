@@ -1,5 +1,6 @@
 import axiosInstance from "./axiosInstance";
 
+//Semesters
 export const getAllSemestersService = async () => {
   try {
     const res = await axiosInstance.get("/semesters");
@@ -18,6 +19,19 @@ export const getCurrentSemesterService = async () => {
   }
 };
 
+
+export const toggleLockSemester = async (maKy: string, trangThai: number) => {
+  try {
+    const res = await axiosInstance.post("/semesters/toggleLock", {
+      maKy: maKy,
+      trangThai: trangThai,
+    });
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}
+//Classes
 export const getClassesByLecturerService = async () => {
   try {
     const semesterData = localStorage.getItem("semester-data");
@@ -96,6 +110,15 @@ export const getClassesByStudentService = async () => {
 export const getAllLecturerService = async () => {
   try {
     const res = await axiosInstance.get("/classes/getAllLecturer");
+    return res.data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export const getAllThuky = async () => {
+  try {
+    const res = await axiosInstance.get("/classes/getAllThuky") ;
     return res.data;
   } catch (e) {
     throw e;

@@ -39,6 +39,7 @@ const Header = () => {
       queryClient.invalidateQueries({ queryKey: ["lecturer-classes"] });
       queryClient.invalidateQueries({ queryKey: ["all-classes"] });
       queryClient.invalidateQueries({ queryKey: ["student-classes"] });
+      queryClient.invalidateQueries({ queryKey: ["all-students"] });
     }
   }, [selectedSemester, queryClient]);
 
@@ -88,6 +89,8 @@ const Header = () => {
                 {Semesters?.data?.map((semester: any) => (
                   <option key={semester.ma_ky} value={semester.ma_ky}>
                     {semester.ma_ky} - {semester.ma_nam}
+                    {semester.mac_dinh === 1 ? " 🟢" : ""}
+                    {semester.trang_thai === 1 ? " 🔒" : ""}
                   </option>
                 ))}
               </select>

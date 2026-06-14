@@ -10,7 +10,7 @@ interface SemesterState {
 export const useSemesterStore = create<SemesterState>()(
     persist(
         (set) => ({
-            selectedSemester: null, 
+            selectedSemester: null as string | null, 
             setSelectedSemester: (semester) => set({ selectedSemester: semester }),
             clearSemester: () => set({ selectedSemester: null }),
         }),
