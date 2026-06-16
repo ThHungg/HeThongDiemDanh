@@ -3,12 +3,14 @@ import { memo, useEffect, useState } from "react";
 import * as classService from "@/services/classService";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSemesterStore } from "@/store/useSemesterStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 import { formatClassCode } from "@/utils/formatClassCode";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const Header = () => {
   const { selectedSemester, setSelectedSemester } = useSemesterStore();
+  const { toggleSidebar } = useSidebarStore();
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const getSemesters = async () => {
@@ -56,7 +58,30 @@ const Header = () => {
 
   return (
     <div className="w-full py-2 bg-white border-b border-[#E2E8F0] relative flex items-center justify-between px-4">
-      <div></div>
+      <div className="flex items-center">
+        {/* Toggle Sidebar Button on Mobile */}
+        <button
+          onClick={toggleSidebar}
+          className="p-2 mr-2 text-gray-600 hover:bg-gray-100 rounded-lg sm:hidden"
+          aria-label="Toggle Sidebar"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
       <div className="flex items-center h-full gap-4">
         {currentClass?.data?.[0] && (
           <Link

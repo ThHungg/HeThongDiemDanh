@@ -7,12 +7,14 @@ import { memo, useState } from "react";
 import * as authService from "@/services/authenService";
 import { toast } from "react-toastify";
 import { useUserStore } from "@/store/useUserStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 
 const Sidebar = () => {
   const pathname = usePathname();
   const { role } = useUserHooks();
   const router = useRouter();
   const { profile, clearProfile } = useUserStore();
+  const { isOpen, setIsOpen } = useSidebarStore();
 
   // const [isSelected, setIsSelected] = useState("/");
 
@@ -250,8 +252,22 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="flex flex-col h-full justify-between w-full h-screen sticky top-0 bg-white border-r border-[#E2E8F0] sm:max-w-[270px]">
-      <div className="p-2 ">
+    <>
+      {/* Overlay on mobile screens when sidebar is open */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 sm:hidden transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <div
+        className={`flex flex-col justify-between h-screen bg-white border-r border-[#E2E8F0] z-50
+          fixed inset-y-0 left-0 w-[270px] transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          sm:translate-x-0 sm:sticky sm:top-0 sm:flex sm:max-w-[270px] sm:w-[270px]`}
+      >
+        <div className="p-2 overflow-y-auto">
         {/* logo */}
         <div className="flex flex-col items-center justify-center gap-2 mb-4 p-[12px]">
           <img
@@ -275,7 +291,7 @@ const Sidebar = () => {
                   <Link
                     key={index}
                     href={item.link}
-                    // onClick={() => setIsSelected(item.link)}
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
                       pathname === item.link
                         ? "bg-[#F4E6E6] text-[#8B0000]"
@@ -295,7 +311,7 @@ const Sidebar = () => {
                   <Link
                     key={index}
                     href={item.link}
-                    // onClick={() => setIsSelected(item.link)}
+                    onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg mb-[8px] cursor-pointer hover:bg-[#F4E6E6] hover:text-[#8B0000] ${
                       isActive(item.link)
                         ? "bg-[#F4E6E6] text-[#8B0000]"
@@ -381,6 +397,7 @@ const Sidebar = () => {
         </div>
       </div>
     </div>
+  </>
   );
 };
 

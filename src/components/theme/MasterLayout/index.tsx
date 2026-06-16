@@ -23,7 +23,7 @@ const MasterLayout = ({
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-w-0 overflow-auto">
         <Header />
         <div className="">{children}</div>
       </div>
