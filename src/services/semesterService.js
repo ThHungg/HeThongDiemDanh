@@ -103,14 +103,14 @@ const getAllSemesters = async () => {
 const toggleLockSemester = async (maKy, trangThai) => {
   try {
     const semester = await Ky.findOne({
-      where: { ma_ky: maKy }
-    })
+      where: { ma_ky: maKy },
+    });
     if (!semester) {
       return {
         status: "Err",
         code: 404,
-        message: "Không tìm thấy học kỳ"
-      }
+        message: "Không tìm thấy học kỳ",
+      };
     }
 
     semester.trang_thai = trangThai;
@@ -124,17 +124,16 @@ const toggleLockSemester = async (maKy, trangThai) => {
       data: {
         ma_ky: semester.ma_ky,
         trang_thai: semester.trang_thai,
-      }
-    }
-
+      },
+    };
   } catch (e) {
     return {
       status: "Err",
       code: 500,
-      message: "Lỗi hệ thống vui lòng thử lại sau"
-    }
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    };
   }
-}
+};
 
 module.exports = {
   getCurrentSemester,

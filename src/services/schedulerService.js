@@ -1,4 +1,5 @@
-const cron = require("node-cron");
+const { Queue, Worker } = require("bullmq");
+const redis = require("../config/redis");
 const { ReportMailConfig, GiangVien } = require("../models");
 const { getVietnamTime } = require("../utils/getVietnamTime");
 const { formatDate } = require("../utils/formatDate");
@@ -8,7 +9,7 @@ const { isLastDayOfMonth } = require("../utils/isLastDayOfMonth");
 const studentService = require("./studentService");
 const { emailQueue } = require("./mailQueueService");
 
-cron.schedule("0 * * * *", async () => {
+const runSchedulerTask = async () => {
   try {
     const vnTime = getVietnamTime();
     const currentHour = vnTime.getHours();
@@ -143,7 +144,7 @@ cron.schedule("0 * * * *", async () => {
                             ? student.dangKy
                                 .map(
                                   (dk) =>
-                                    `${dk.tenHocPhan || dk.maLopHocPhan}: <strong>${dk.diemChuyenCan !== null ? dk.diemChuyenCan : "N/A"}</strong>`,
+                                    `${dk.tenHocPhan || dk.maLopHocPhan}: <strong>${dk.diemChuyenCan !== null ? dk.diemChuyenCan : "-"}</strong>`,
                                 )
                                 .join("<br/>")
                             : "Không đăng ký";
@@ -154,7 +155,7 @@ cron.schedule("0 * * * *", async () => {
                           <td style="padding: 10px; border: 1px solid #ddd;">${student.ten}</td>
                           <td style="padding: 10px; border: 1px solid #ddd;">${student.lopChuyenNganh || ""}</td>
                           <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold; color: #d32f2f; text-align: center;">
-                            ${student.diemTrungBinhChuyenCan !== null ? student.diemTrungBinhChuyenCan : "N/A"}
+                            ${student.diemTrungBinhChuyenCan !== null ? student.diemTrungBinhChuyenCan : "-"}
                           </td>
                           <td style="padding: 10px; border: 1px solid #ddd; font-size: 13px;">${classDetails}</td>
                         </tr>
@@ -182,18 +183,55 @@ cron.schedule("0 * * * *", async () => {
             });
             console.log(`[Scheduler] Queued email to ${toEmail}`);
           } catch (e) {
-            return {
-              status: "Err",
-              message: "Loi trong qua trinh gui mail",
-            };
+            console.error(`[Scheduler] Failed to queue email to ${toEmail}:`, e);
           }
         }
       }
     }
   } catch (e) {
-    return {
-      status: "Err",
-      message: "Loi trong qua trinh gui mail",
-    };
+    console.error("[Scheduler] Error in runSchedulerTask:", e);
   }
+};
+
+const schedulerQueue = new Queue("schedulerQueue", {
+  connection: redis.connectionOpts,
 });
+
+const initScheduler = async () => {
+  try {
+    // Clear existing repeatable jobs to avoid duplicates
+    const repeatableJobs = await schedulerQueue.getRepeatableJobs();
+    for (const job of repeatableJobs) {
+      await schedulerQueue.removeRepeatableByKey(job.key);
+    }
+
+    // Add new repeatable job to run every hour on the hour
+    await schedulerQueue.add(
+      "checkMailConfigs",
+      {},
+      {
+        repeat: {
+          pattern: "0 * * * *",
+        },
+      }
+    );
+    console.log("[Scheduler] BullMQ Repeatable Job initialized successfully.");
+  } catch (error) {
+    console.error("[Scheduler] Failed to initialize repeatable job:", error);
+  }
+};
+
+initScheduler();
+
+const schedulerWorker = new Worker(
+  "schedulerQueue",
+  async (job) => {
+    if (job.name === "checkMailConfigs") {
+      console.log(`[Scheduler Worker] Executing repeatable task...`);
+      await runSchedulerTask();
+    }
+  },
+  {
+    connection: redis.connectionOpts,
+  }
+);

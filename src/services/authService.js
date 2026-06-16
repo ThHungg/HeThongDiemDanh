@@ -51,6 +51,7 @@ const SendOtp = async (userCode) => {
       to: email,
       subject: subject,
       html: html,
+      createdAt: Date.now(),
     });
 
     // const expiresIn = 5 * 60 * 1000;

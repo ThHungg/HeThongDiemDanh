@@ -264,7 +264,7 @@ const sendMailNow = async (id) => {
                         ? student.dangKy
                             .map(
                               (dk) =>
-                                `${dk.tenHocPhan || dk.maLopHocPhan}: <strong>${dk.diemChuyenCan !== null ? dk.diemChuyenCan : "N/A"}</strong>`,
+                                `${dk.tenHocPhan || dk.maLopHocPhan}: <strong>${dk.diemChuyenCan !== null ? dk.diemChuyenCan : "-"}</strong>`,
                             )
                             .join("<br/>")
                         : "Không đăng ký";
