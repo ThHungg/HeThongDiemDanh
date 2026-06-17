@@ -68,7 +68,7 @@ const AIService = async (userMessage) => {
 
   // Tinh toan cac khoang thoi gian relative
   const thisWeek = getWeekRange(vnTime);
-  
+
   const lastWeekTime = new Date(vnTime);
   lastWeekTime.setDate(vnTime.getDate() - 7);
   const lastWeek = getWeekRange(lastWeekTime);
@@ -88,63 +88,68 @@ Quy tac:
    - "Tuan nay": tu ngay ${thisWeek.startDate} den ngay ${thisWeek.endDate}
    - "Tuan truoc": tu ngay ${lastWeek.startDate} den ngay ${lastWeek.endDate}
    - "Thang nay": tu ngay ${thisMonth.startDate} den ngay ${thisMonth.endDate}
+7. "khong di hoc" -> minScore = 0, maxScore = 0.
 Chi tra ve chuoi JSON hop le, tuyet doi khong giai thich van ban.`;
 
   try {
     let response;
     let usedBackup = false;
 
-  // Thu goi truc tiep Google Gemini API truoc
-  if (geminiApiKey) {
-    try {
-      console.log("Calling Google Gemini API directly...");
-      response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${geminiApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "gemini-2.5-flash",
-            messages: [
-              { role: "system", content: dynamicInstruction },
-              { role: "user", content: userMessage },
-            ],
-            tools: [filterAllStudentsTool],
-            tool_choice: {
-              type: "function",
-              function: { name: "get_all_students_filters" },
+    // Thu goi truc tiep Google Gemini API truoc
+    if (geminiApiKey) {
+      try {
+        console.log("Calling Google Gemini API directly...");
+        response = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${geminiApiKey}`,
+              "Content-Type": "application/json",
             },
-          }),
-        }
-      );
+            body: JSON.stringify({
+              model: "gemini-2.5-flash",
+              messages: [
+                { role: "system", content: dynamicInstruction },
+                { role: "user", content: userMessage },
+              ],
+              tools: [filterAllStudentsTool],
+              tool_choice: {
+                type: "function",
+                function: { name: "get_all_students_filters" },
+              },
+            }),
+          },
+        );
 
-      if (!response.ok) {
-        console.warn(`Direct Google Gemini API failed with status ${response.status}. Falling back to Orimise...`);
+        if (!response.ok) {
+          console.warn(
+            `Direct Google Gemini API failed with status ${response.status}. Falling back to Orimise...`,
+          );
+          response = null; // Kich hoat fallback
+        }
+      } catch (err) {
+        console.error(
+          "Direct Google Gemini API connection error:",
+          err.message,
+          "Falling back to Orimise...",
+        );
         response = null; // Kich hoat fallback
       }
-    } catch (err) {
-      console.error("Direct Google Gemini API connection error:", err.message, "Falling back to Orimise...");
-      response = null; // Kich hoat fallback
-    }
-  }
-
-  // Backup: Neu goi truc tiep loi hoac khong co key Google, goi qua Orimise proxy
-  if (!response) {
-    if (!orimiseApiKey) {
-      return {
-        status: "Err",
-        message: "Tro ly AI dang ban, vui long thu lai sau.",
-      };
     }
 
-    console.log("Calling Orimise API backup...");
-    try {
-      response = await fetch(
-        "https://api.orimise.com/v1/chat/completions",
-        {
+    // Backup: Neu goi truc tiep loi hoac khong co key Google, goi qua Orimise proxy
+    if (!response) {
+      if (!orimiseApiKey) {
+        return {
+          status: "Err",
+          message: "Tro ly AI dang ban, vui long thu lai sau.",
+        };
+      }
+
+      console.log("Calling Orimise API backup...");
+      try {
+        response = await fetch("https://api.orimise.com/v1/chat/completions", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${orimiseApiKey}`,
@@ -162,25 +167,24 @@ Chi tra ve chuoi JSON hop le, tuyet doi khong giai thich van ban.`;
               function: { name: "get_all_students_filters" },
             },
           }),
-        }
-      );
-      usedBackup = true;
-    } catch (err) {
-      console.error("Orimise API connection error:", err.message);
+        });
+        usedBackup = true;
+      } catch (err) {
+        console.error("Orimise API connection error:", err.message);
+        return {
+          status: "Err",
+          message: "Tro ly AI dang ban, vui long thu lai sau.",
+        };
+      }
+    }
+
+    if (!response || !response.ok) {
+      console.error(`Both AI API calls failed (usedBackup: ${usedBackup})`);
       return {
         status: "Err",
         message: "Tro ly AI dang ban, vui long thu lai sau.",
       };
     }
-  }
-
-  if (!response || !response.ok) {
-    console.error(`Both AI API calls failed (usedBackup: ${usedBackup})`);
-    return {
-      status: "Err",
-      message: "Tro ly AI dang ban, vui long thu lai sau.",
-    };
-  }
 
     const data = await response.json();
     const message = data.choices?.[0]?.message;

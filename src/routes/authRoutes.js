@@ -5,6 +5,7 @@ const { authMiddleware } = require("../middleware/authMiddleware");
 
 router.post("/sendOtp", authController.SendOtp);
 router.post("/verifyOtp", authController.VerifyOtp);
+router.post("/verifyOtpApp", authController.VerifyOtpApp);
 router.post("/logout", authController.Logout);
 
 router.get("/me", authMiddleware, authController.GetCurrentUser);

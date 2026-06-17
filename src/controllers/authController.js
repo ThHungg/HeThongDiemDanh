@@ -63,7 +63,41 @@ const VerifyOtp = async (req, res) => {
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    
     return res.status(200).json(newResponse);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({
+      status: "Err",
+      code: 500,
+      message: "Lỗi hệ thống vui lòng thử lại sau",
+    });
+  }
+};
+
+const VerifyOtpApp = async (req, res) => {
+  try {
+    const { userCode, otp } = req.body;
+    if (!userCode || !otp) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "Vui lòng nhập mã sinh viên và OTP",
+      });
+    }
+    if (otp.length !== 6) {
+      return res.status(400).json({
+        status: "Err",
+        code: 400,
+        message: "OTP phải có 6 chữ số",
+      });
+    }
+    const response = await authService.VerifyOtp(userCode.toUpperCase(), otp);
+    if (response.status === "Err") {
+      return res.status(response.code || 400).json(response);
+    }
+    
+    return res.status(200).json(response);
   } catch (e) {
     console.log(e);
     return res.status(500).json({
@@ -127,7 +161,8 @@ const GetCurrentUser = async (req, res) => {
 
 const RefreshToken = async (req, res) => {
   try {
-    const token = req.cookies.refreshToken;
+    // Read from cookies (Web) or body (Mobile App)
+    const token = req.cookies?.refreshToken || req.body?.refreshToken;
 
     if (!token) {
       return res.status(401).json({
@@ -144,4 +179,4 @@ const RefreshToken = async (req, res) => {
   }
 };
 
-module.exports = { SendOtp, VerifyOtp, Logout, GetCurrentUser, RefreshToken };
+module.exports = { SendOtp, VerifyOtp, VerifyOtpApp, Logout, GetCurrentUser, RefreshToken };
