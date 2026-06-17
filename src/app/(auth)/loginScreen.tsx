@@ -1,10 +1,31 @@
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, ActivityIndicator, Alert } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useState } from "react";
 import VerifyOtpModal from "@/components/Common/Modal/VerifyOtpModal";
+import { useMutation } from "@tanstack/react-query";
+import { loginService } from "@/services/authService";
 
 const LoginScreen = () => {
   const [isOtpVisible, setIsOtpVisible] = useState(false);
+  const [userCode, setUserCode] = useState("");
+
+  const loginMutation = useMutation({
+    mutationFn: loginService,
+    onSuccess: () => {
+      setIsOtpVisible(true);
+    },
+    onError: (error: any) => {
+      Alert.alert("Lỗi", error.response?.data?.message || "Đăng nhập thất bại");
+    },
+  });
+
+  const handleLogin = () => {
+    if (!userCode.trim()) {
+      Alert.alert("Lỗi", "Vui lòng nhập mã sinh viên");
+      return;
+    }
+    loginMutation.mutate(userCode.trim());
+  };
   return (
     <>
       <View className="flex-1 justify-center items-center bg-slate-50 px-4">
@@ -33,6 +54,8 @@ const LoginScreen = () => {
                 placeholder="Ví dụ: CT050212..."
                 placeholderTextColor="#9ca3af"
                 autoCapitalize="characters"
+                value={userCode}
+                onChangeText={setUserCode}
               />
               {/* Icon nhỏ nằm trong ô Input */}
               <View
@@ -46,24 +69,32 @@ const LoginScreen = () => {
 
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => setIsOtpVisible(true)}
+            onPress={handleLogin}
+            disabled={loginMutation.isPending}
             className="w-full mt-8 bg-[#8D0000] p-4 rounded-2xl flex-row items-center justify-center shadow-sm"
           >
-            <Text className="text-white font-bold text-lg tracking-wide">
-              Gửi mã xác thực
-            </Text>
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color="white"
-              style={{ marginLeft: 8 }}
-            />
+            {loginMutation.isPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Text className="text-white font-bold text-lg tracking-wide">
+                  Gửi mã xác thực
+                </Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color="white"
+                  style={{ marginLeft: 8 }}
+                />
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </View>
       <VerifyOtpModal
         visible={isOtpVisible}
         onClose={() => setIsOtpVisible(false)}
+        userCode={userCode}
       />
     </>
   );

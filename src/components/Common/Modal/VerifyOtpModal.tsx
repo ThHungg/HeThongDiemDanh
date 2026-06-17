@@ -1,19 +1,116 @@
-import React from "react";
-import { Modal, View, Text, TouchableOpacity, TextInput } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useRouter } from "expo-router";
+import { useMutation } from "@tanstack/react-query";
+import {
+  verifyOtpService,
+  getProfileService,
+  logoutService,
+} from "@/services/authService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useUserStore } from "@/store/useUserStore";
+import { jwtDecode } from "jwt-decode";
 
 const VerifyOtpModal = ({
   visible,
   onClose,
+  userCode,
 }: {
   visible: boolean;
   onClose: () => void;
+  userCode: string;
 }) => {
   const router = useRouter();
-  
-  // Tạo mảng 6 phần tử để map ra 6 ô nhập tĩnh
-  const otpBoxes = new Array(6).fill("");
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
+  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const { setProfile, setRole } = useUserStore();
+
+  useEffect(() => {
+    if (!visible) {
+      setOtp(Array(6).fill(""));
+    }
+  }, [visible]);
+
+  const verifyMutation = useMutation({
+    mutationFn: async (otpString: string) => {
+      const res = await verifyOtpService(userCode, otpString);
+      await AsyncStorage.setItem("accessToken", res.accessToken);
+      if (res.refreshToken) {
+        await AsyncStorage.setItem("refreshToken", res.refreshToken);
+      }
+      const profileData = await getProfileService();
+      
+      // Giải mã token để check quyền
+      const decoded: any = jwtDecode(res.accessToken);
+      return { profileData, decodedRole: decoded.role };
+    },
+    onSuccess: async (data) => {
+      setProfile(data.profileData.data);
+      setRole(data.decodedRole);
+      
+      if (data.decodedRole === "Sinh_vien") {
+        onClose();
+        router.replace("/(screens)/student");
+      } else {
+        Alert.alert("Lỗi", "Chỉ sinh viên mới được đăng nhập trên App!");
+        await logoutService();
+        onClose();
+      }
+    },
+    onError: (error: any) => {
+      console.log(error);
+      Alert.alert("Lỗi", error.response?.data?.message || "Xác thực thất bại");
+    },
+  });
+
+  const handleVerify = () => {
+    const otpString = otp.join("");
+    if (otpString.length !== 6) {
+      Alert.alert("Lỗi", "Vui lòng nhập đủ 6 số OTP");
+      return;
+    }
+    verifyMutation.mutate(otpString);
+  };
+
+  const handleOtpChange = (text: string, index: number) => {
+    // Xử lý Paste (dán chuỗi nhiều ký tự)
+    if (text.length > 1) {
+      const pastedData = text.replace(/[^0-9]/g, "").slice(0, 6).split("");
+      const newOtp = [...otp];
+      for (let i = 0; i < pastedData.length; i++) {
+        if (index + i < 6) {
+          newOtp[index + i] = pastedData[i];
+        }
+      }
+      setOtp(newOtp);
+      // Chuyển focus đến ô cuối cùng vừa điền
+      const nextIndex = Math.min(index + pastedData.length, 5);
+      inputRefs.current[nextIndex]?.focus();
+      return;
+    }
+
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+    if (text !== "" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
 
   return (
     <Modal transparent={true} visible={visible} animationType="fade">
@@ -39,9 +136,13 @@ const VerifyOtpModal = ({
           </Text>
 
           <View className="flex-row items-center justify-between w-full mb-8">
-            {otpBoxes.map((_, index) => (
+            {otp.map((value, index) => (
               <TextInput
                 key={index}
+                ref={(el) => (inputRefs.current[index] = el)}
+                value={value}
+                onChangeText={(text) => handleOtpChange(text, index)}
+                onKeyPress={(e) => handleKeyPress(e, index)}
                 style={{
                   backgroundColor: "#F6ECEC",
                   width: 44,
@@ -63,14 +164,16 @@ const VerifyOtpModal = ({
             style={{ backgroundColor: "#8D0000" }}
             className="rounded-xl w-full h-[52px] flex justify-center items-center mb-5 shadow-sm"
             activeOpacity={0.8}
-            onPress={() => {
-              onClose(); // Đóng modal trước
-              router.replace("/(screens)/detailClassScreen"); // Chuyển hướng sang màn detail
-            }}
+            onPress={handleVerify}
+            disabled={verifyMutation.isPending}
           >
-            <Text className="text-white font-bold text-[17px] tracking-wide">
-              Xác thực
-            </Text>
+            {verifyMutation.isPending ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white font-bold text-[17px] tracking-wide">
+                Xác thực
+              </Text>
+            )}
           </TouchableOpacity>
 
           {/* Thời gian gửi lại mã */}

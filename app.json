@@ -8,9 +8,14 @@
     "scheme": "HeThongDiemDanh",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.student.hethongdiemdanh",
+      "buildNumber": "1.0.0",
+      "icon": "./assets/images/icon.png"
     },
     "android": {
+      "package": "com.student.hethongdiemdanh",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
